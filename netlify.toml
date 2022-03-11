@@ -27,7 +27,7 @@
 
 [[redirects]]
     from = "/blogs/:blog"
-    to = "https://legacy.blog.ari-web.xyz/:blog"
+    to = "https://legacy.blog.ari-web.xyz/blogs/:blog"
     status = 301
     force = true
 
