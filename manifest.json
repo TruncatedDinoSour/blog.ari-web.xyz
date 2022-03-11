@@ -1,0 +1,14 @@
+{
+    "$schema": "https://json.schemastore.org/web-manifest-combined.json",
+    "short_name": "Ari-web blogs",
+    "name": "Ari::web -> Blogs",
+    "icons": [{
+        "src": "/favicon.ico",
+        "sizes": "128x128",
+        "type": "image/png"
+    }],
+    "start_url": ".",
+    "display": "standalone",
+    "theme_color": "#f9f6e8",
+    "background_color": "#262220"
+}

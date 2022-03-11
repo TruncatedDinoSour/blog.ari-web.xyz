@@ -100,7 +100,8 @@ BLOG_HTML_TEMPLATE = f"""<!DOCTYPE html>
 HOME_PAGE_HTML_TEMPLATE = f"""<!DOCTYPE html>
 <html lang="en">
 {HTML_HEADER}
-    <meta name="description" content="{{home_page_description}}">
+    <meta name="description" content="{{home_page_description}}" />
+    <link rel="manifest" href="/manifest.json" />
 </head>
 <body>
     <h1>My blogs</h1>
