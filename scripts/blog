@@ -11,15 +11,16 @@ import sys
 from atexit import register as fn_register
 from base64 import b64decode, b64encode
 from datetime import datetime
+from glob import iglob
 from html import escape as html_escape
 from shutil import rmtree
 from threading import Thread
 from timeit import default_timer as code_timer
-from typing import Dict, List, Tuple
+from typing import Dict, List, Set, Tuple
 from warnings import filterwarnings as filter_warnings
 
-from css_html_js_minify import (html_minify,  # type: ignore
-                                process_single_css_file)
+from css_html_js_minify import html_minify  # type: ignore
+from css_html_js_minify import process_single_css_file
 from markdown import markdown  # type: ignore
 from plumbum.commands.processes import ProcessExecutionError  # type: ignore
 from pyfzf import FzfPrompt  # type: ignore
@@ -259,6 +260,12 @@ def build(config: Dict) -> Tuple[int, Dict]:
     log("Building blogs...", "INFO")
 
     def thread(blog_name: str, blog_meta: Dict):
+        if blog_meta["version"] != BLOG_VERSION:
+            log(
+                f"{blog_name}: unmatching version between {blog_meta['version']} and {BLOG_VERSION}",
+                "WARNING",
+            )
+
         blog_dir: str = os.path.join(config["blog-dir"], blog_name)
         os.makedirs(blog_dir, exist_ok=True)
 
@@ -348,6 +355,9 @@ def build(config: Dict) -> Tuple[int, Dict]:
 def list_blogs(config: Dict) -> Tuple[int, Dict]:
     """List blogs"""
 
+    if not config["blogs"]:
+        return log("No blogs to list"), config
+
     for blog_id, blog_meta in config["blogs"].items():
         print(
             f"""ID: {blog_id}
@@ -363,6 +373,9 @@ Keywords: {blog_meta['keywords'].replace(' ', ', ')}
 
 def remove_blog(config: Dict) -> Tuple[int, Dict]:
     """Remove a blog page"""
+
+    if not config["blogs"]:
+        return log("No blogs to remove"), config
 
     blog_id: str = pick_blog(config)
 
@@ -386,6 +399,9 @@ def edit_title(blog: str, config: Dict) -> int:
         return log("New title cannot be empty")
 
     config["blogs"][blog]["title"] = b64encode(new_title.encode()).decode()
+    config["blogs"][sanitise_title(new_title, config["blogs"])] = config["blogs"][blog]
+
+    del config["blogs"][blog]
 
     return EXIT_OK
 
@@ -431,6 +447,9 @@ EDIT_HOOKS: Dict = {
 def edit(config: Dict) -> Tuple[int, Dict]:
     """Edit a blog"""
 
+    if not config["blogs"]:
+        return log("No blogs to edit"), config
+
     blog_id: str = pick_blog(config)
 
     if not blog_id:
@@ -466,6 +485,33 @@ def gen_new_config(config: Dict) -> Tuple[int, Dict]:
     return EXIT_OK, config
 
 
+def clean(config: Dict) -> Tuple[int, Dict]:
+    """Clean up current directory"""
+
+    TRASH: Set[str] = {
+        HISTORY_FILE,
+        config["blog-dir"],
+        "index.html",
+        "content/*.min.*",
+    }
+
+    def remove(file: str) -> None:
+        log(f"Removing {file!r}", "REMOVE")
+
+        try:
+            os.remove(file)
+        except IsADirectoryError:
+            rmtree(file)
+
+    for glob_ex in TRASH:
+        for file in iglob(glob_ex, recursive=True):
+            remove(file)
+
+    open(HISTORY_FILE, "w").close()
+
+    return EXIT_OK, config
+
+
 SUBCOMMANDS: Dict = {
     "help": dummy,
     "new": new_blog,
@@ -474,6 +520,7 @@ SUBCOMMANDS: Dict = {
     "rm": remove_blog,
     "edit": edit,
     "new-config": gen_new_config,
+    "clean": clean,
 }
 
 
@@ -514,13 +561,14 @@ def main() -> int:
     with open(DEFAULT_CONFIG_FILE, "r") as lcfg:
         code, config = SUBCOMMANDS[sys.argv[1]](config=json.load(lcfg))
 
-        log("Sorting blogs by creation time...", "CLEANUP")
-        config["blogs"] = dict(
-            map(
-                lambda k: (k, config["blogs"][k]),
-                sorted(config["blogs"], key=lambda k: config["blogs"][k]["time"]),
+        if config["blogs"]:
+            log("Sorting blogs by creation time...", "CLEANUP")
+            config["blogs"] = dict(
+                map(
+                    lambda k: (k, config["blogs"][k]),
+                    sorted(config["blogs"], key=lambda k: config["blogs"][k]["time"]),
+                )
             )
-        )
 
         with open(DEFAULT_CONFIG_FILE, "w") as dcfg:
             json.dump(config, dcfg, indent=4)
