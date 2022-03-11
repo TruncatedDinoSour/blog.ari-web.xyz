@@ -26,9 +26,9 @@
     force = true
 
 [[redirects]]
-    from = "/blogs/*"
-    to = "https://legacy.blog.ari-web.xyz/:splat"
-    status = 302
+    from = "/blogs/:blog"
+    to = "https://legacy.blog.ari-web.xyz/:blog"
+    status = 301
     force = true
 
 [[redirects]]

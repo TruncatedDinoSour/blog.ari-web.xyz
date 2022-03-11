@@ -14,7 +14,6 @@ from datetime import datetime
 from html import escape as html_escape
 from shutil import rmtree
 from threading import Thread
-from time import strftime as format_system_time
 from timeit import default_timer as code_timer
 from typing import Dict, List, Tuple
 from warnings import filterwarnings as filter_warnings
@@ -137,9 +136,7 @@ def sanitise_title(title: str, titleset: Dict) -> str:
 
 
 def format_time(timestamp: float) -> str:
-    return datetime.fromtimestamp(timestamp).strftime(
-        "%Y-%m-%d %H:%M:%S " + format_system_time("%Z")
-    )
+    return datetime.fromtimestamp(timestamp).strftime("%Y-%m-%d %H:%M:%S")
 
 
 def iinput(prompt: str, default_text: str = "") -> str:
