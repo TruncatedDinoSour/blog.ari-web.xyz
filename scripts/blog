@@ -18,8 +18,8 @@ from timeit import default_timer as code_timer
 from typing import Dict, List, Tuple
 from warnings import filterwarnings as filter_warnings
 
-from css_html_js_minify import html_minify  # type: ignore
-from css_html_js_minify import process_single_css_file
+from css_html_js_minify import (html_minify,  # type: ignore
+                                process_single_css_file)
 from markdown import markdown  # type: ignore
 from plumbum.commands.processes import ProcessExecutionError  # type: ignore
 from pyfzf import FzfPrompt  # type: ignore
@@ -173,7 +173,7 @@ def pick_blog(config: Dict) -> str:
                     lambda key: f"{key} | {b64decode(config['blogs'][key]['title']).decode()!r}",
                     config["blogs"].keys(),
                 ),
-                "--prompt='Pick blog'",
+                "--prompt='Pick blog: '",
             )[0]
             .split()[0]
         )
@@ -437,7 +437,9 @@ def edit(config: Dict) -> Tuple[int, Dict]:
         return EXIT_ERR, config
 
     try:
-        hook: str = FzfPrompt().prompt(EDIT_HOOKS.keys(), "--prompt='What to edit'")[0]
+        hook: str = FzfPrompt().prompt(EDIT_HOOKS.keys(), "--prompt='What to edit: '")[
+            0
+        ]
 
         if hook not in EDIT_HOOKS:
             return log(f"Hook {hook!r} does not exist"), config
