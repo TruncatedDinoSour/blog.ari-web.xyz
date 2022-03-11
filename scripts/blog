@@ -83,8 +83,6 @@ HTML_HEADER = """<head>
     <meta name="keywords" content="{keywords}">
     <meta name="robots" content="follow"/>
 
-    <base target="_blank"/>
-
     <link rel="stylesheet" href="/content/styles.min.css"/>"""
 
 BLOG_HTML_TEMPLATE = f"""<!DOCTYPE html>
