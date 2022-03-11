@@ -1,0 +1,45 @@
+[build]
+    command = "python3 ./scripts/blog build"
+
+[[redirects]]
+    from = "/git/*"
+    to = "https://ari-web.xyz/gh/blog.ari-web.xyz/:splat"
+    status = 301
+    force = true
+
+[[redirects]]
+    from = "/favicon.ico"
+    to = "https://ari-web.xyz/favicon.ico"
+    status = 200
+    force = true
+
+[[redirects]]
+    from = "/robots.txt"
+    to = "https://ari-web.xyz/robots.txt"
+    status = 200
+    force = true
+
+[[redirects]]
+    from = "/sitemap.xml"
+    to = "https://ari-web.xyz/sitemap.xml"
+    status = 200
+    force = true
+
+[[redirects]]
+    from = "/blogs/*"
+    to = "https://legacy.blog.ari-web.xyz/:splat"
+    status = 302
+    force = true
+
+[[redirects]]
+    from = "/netlify.toml"
+    to = "https://ari-web.xyz/404.files.xyz"
+    status = 404
+    force = true
+
+[[redirects]]
+    from = "/*"
+    to = "https://ari-web.xyz/404.files.xyz"
+    status = 404
+    force = false
+

@@ -1,0 +1,7 @@
+/b/
+*.min.css
+index.html
+.mypy_cache/
+.blog_history
+venv/
+

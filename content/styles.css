@@ -1,0 +1,45 @@
+:root {
+    color-scheme: dark !important;
+}
+
+*,
+*::before,
+*::after {
+    background-color: #262220 !important;
+    color: #f9f6e8 !important;
+    font-family: Hack, hack, monospace, sans, opensans, sans-serif !important;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+::-webkit-scrollbar {
+    display: none;
+}
+
+body {
+    margin: auto !important;
+    padding: 2rem !important;
+    max-width: 1200px !important;
+}
+
+h1 {
+    text-align: center !important;
+    margin: 1em !important;
+}
+
+li {
+    margin: 0.5em !important;
+}
+
+a {
+    text-decoration: none !important;
+    text-shadow: 0px 0px 6px white !important;
+}
+
+.info-bar {
+    text-align: center;
+}
+
+h1 {
+    font-size: 2em;
+}

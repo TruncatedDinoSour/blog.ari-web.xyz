@@ -1,0 +1,7 @@
+css-html-js-minify
+readline
+datetime
+markdown
+plumbum
+pyfzf
+

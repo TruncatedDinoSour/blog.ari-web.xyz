@@ -1,0 +1,52 @@
+{
+    "editor-command": "vim -- %s",
+    "blog-dir": "b",
+    "git-url": "/git",
+    "py-markdown-extensions": [
+        "markdown.extensions.abbr",
+        "markdown.extensions.def_list",
+        "markdown.extensions.fenced_code",
+        "markdown.extensions.footnotes",
+        "markdown.extensions.md_in_html",
+        "markdown.extensions.tables",
+        "markdown.extensions.admonition",
+        "markdown.extensions.sane_lists",
+        "markdown.extensions.toc",
+        "markdown.extensions.wikilinks",
+        "pymdownx.betterem",
+        "pymdownx.caret",
+        "pymdownx.magiclink",
+        "pymdownx.mark",
+        "pymdownx.tilde"
+    ],
+    "default-keywords": [
+        "website",
+        "blog",
+        "opinion",
+        "article",
+        "ari-web",
+        "ari"
+    ],
+    "page-title": "Ari::web -> Blog",
+    "page-description": "My blog page",
+    "colourscheme-type": "dark",
+    "home-keywords": [
+        "ari",
+        "ari-web",
+        "blog",
+        "ari-archer",
+        "foss",
+        "free",
+        "linux"
+    ],
+    "base-homepage": "https://ari-web.xyz/",
+    "blogs": {
+        "new-blog-management-system-": {
+            "title": "TmV3IGJsb2cgbWFuYWdlbWVudCBzeXN0ZW0h",
+            "content": "SGVsbG8gd29ybGQgOikKCkkgaGF2ZSBjb21wbGV0ZWx5IHJlZG9uZSBob3cgYmxvZ3MgYXJlIG1hbmFnZWQsIG1hZGUKYW5kIHN0b3JlZCBzbyBub3cgaHR0cHM6Ly9ibG9nLmFyaS13ZWIueHl6LyAob2xkKSBpcyBtb3ZlZCB0byBodHRwczovL2xlZ2FjeS5ibG9nLmFyaS13ZWIueHl6Lwp3aGlsZSB0aGlzIG5ldyBzeXN0ZW0gaXMgb24gdGhlIG9yaWdpbmFsLCBodHRwczovL2Jsb2cuYXJpLXdlYi54eXovIHN1YmRvbWFpbiwgdGhlCmxlZ2FjeSBzdWJkb21haW4gd2lsbCBzdGlsbCBiZSBoZXJlIGFuZCB3aWxsIHN0aWxsIGJlIGJhY2t3YXJkcyBjb21wYXRpYmxlIHdpdGgKdGhlIG5ldyBvbmUsIHRob3VnaCBub3cgaXQgd2lsbCBiZSBhbiBIVFRQIHJlZGlyZWN0CgpJZiBhbnlvbmUgaXMgdXNpbmcgbXkgYmxvZyBmb3IgYW55dGhpbmcgYnV0IHZpc2l0aW5nLCBwbGVhc2UgY29uc2lkZXIKdGhlIHJlZGlyZWN0IDopCgo=",
+            "version": 1,
+            "time": 1646996956.328543,
+            "keywords": "management linux http-redirect new website blog opinion article ari-web ari"
+        }
+    }
+}

@@ -1,0 +1,536 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""Manage blogs"""
+
+import json
+import os
+import random
+import readline
+import string
+import sys
+from atexit import register as fn_register
+from base64 import b64decode, b64encode
+from datetime import datetime
+from html import escape as html_escape
+from shutil import rmtree
+from threading import Thread
+from time import strftime as format_system_time
+from timeit import default_timer as code_timer
+from warnings import filterwarnings as filter_warnings
+
+from css_html_js_minify import html_minify  # type: ignore
+from css_html_js_minify import process_single_css_file
+from markdown import markdown  # type: ignore
+from plumbum.commands.processes import ProcessExecutionError  # type: ignore
+from pyfzf import FzfPrompt  # type: ignore
+
+EXIT_OK: int = 0
+EXIT_ERR: int = 1
+
+DEFAULT_CONFIG: dict = {
+    "editor-command": f"{os.environ.get('EDITOR', 'vim')} -- %s",
+    "blog-dir": "b",
+    "git-url": "/git",
+    "py-markdown-extensions": [
+        "markdown.extensions.abbr",
+        "markdown.extensions.def_list",
+        "markdown.extensions.fenced_code",
+        "markdown.extensions.footnotes",
+        "markdown.extensions.md_in_html",
+        "markdown.extensions.tables",
+        "markdown.extensions.admonition",
+        "markdown.extensions.sane_lists",
+        "markdown.extensions.toc",
+        "markdown.extensions.wikilinks",
+        "pymdownx.betterem",
+        "pymdownx.caret",
+        "pymdownx.magiclink",
+        "pymdownx.mark",
+        "pymdownx.tilde",
+    ],
+    "default-keywords": ["website", "blog", "opinion", "article", "ari-web", "ari"],
+    "page-title": "Ari::web -> Blog",
+    "page-description": "My blog page",
+    "colourscheme-type": "dark",
+    "home-keywords": ["ari", "ari-web", "blog", "ari-archer", "foss", "free", "linux"],
+    "base-homepage": "https://ari-web.xyz/",
+    "blogs": {},
+}
+DEFAULT_CONFIG_FILE: str = "blog.json"
+HISTORY_FILE: str = ".blog_history"
+BLOG_VERSION: int = 1
+
+BLOG_MARKDOWN_TEMPLATE = """# %s
+
+<div class="info-bar" aria-hidden="true">
+    %s | <a href="%s">back</a> | <a href="/">home</a> | <a href="%s">git</a>
+</div>
+
+<hr/>
+
+%s"""
+
+HTML_HEADER = """<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{title}</title>
+
+    <meta property="og:type" content="website">
+
+    <meta name="color-scheme" content="{theme_type}">
+
+    <meta name="keywords" content="{keywords}">
+    <meta name="robots" content="follow"/>
+
+    <link rel="stylesheet" href="/content/styles.min.css"/>"""
+
+BLOG_HTML_TEMPLATE = f"""<!DOCTYPE html>
+<html lang="en">
+{HTML_HEADER}
+    <meta name="description" content="{{blog_description}}">
+</head>
+<body>
+    <div>
+{{blog}}
+    </div>
+</body>
+</html>"""
+
+HOME_PAGE_HTML_TEMPLATE = f"""<!DOCTYPE html>
+<html lang="en">
+{HTML_HEADER}
+    <meta name="description" content="{{home_page_description}}">
+</head>
+<body>
+    <h1>My blogs</h1>
+    <div class="info-bar" aria-hidden="true">
+        <p>last blog on: <code>{{lastest_blog_time}}</code> | latest blog: <a href="{{latest_blog_url}}">{{latest_blog_title}}</a> | <a href="{{git_url}}">source code</a></p>
+        <hr/>
+    </div>
+    <div>
+{{content}}
+    </div>
+</body>
+</html>"""
+
+
+def log(message: str, header: str = "ERROR", code: int = EXIT_ERR) -> int:
+    sys.stderr.write(f"{header}: {message}\n")
+    return code
+
+
+def sanitise_title(title: str, titleset: dict) -> str:
+    _title: str = ""
+
+    for char in title:
+        _title += char if char not in string.whitespace + string.punctuation else "-"
+
+    _title = _title.lower()
+
+    return (
+        _title
+        if _title not in titleset and _title.strip()
+        else sanitise_title(_title + random.choice(string.digits), titleset)
+    )
+
+
+def format_time(timestamp: float) -> str:
+    return datetime.fromtimestamp(timestamp).strftime(
+        "%Y-%m-%d %H:%M:%S " + format_system_time("%Z")
+    )
+
+
+def iinput(prompt: str, default_text: str = "") -> str:
+    default_text = default_text.strip()
+
+    def hook():
+        if not default_text:
+            return
+
+        readline.insert_text(default_text)
+        readline.redisplay()
+
+    readline.set_pre_input_hook(hook)
+    user_inpt: str = input(f"({prompt}) ").strip()
+    readline.set_pre_input_hook()
+
+    return user_inpt
+
+
+def new_config() -> None:
+    log("Making new config...", "INFO")
+
+    with open(DEFAULT_CONFIG_FILE, "w") as cfg:
+        json.dump(DEFAULT_CONFIG, cfg, indent=4)
+
+
+def pick_blog(config: dict) -> str:
+    try:
+        blog_id: str = (
+            FzfPrompt()
+            .prompt(
+                map(
+                    lambda key: f"{key} | {b64decode(config['blogs'][key]['title']).decode()!r}",
+                    config["blogs"].keys(),
+                ),
+                "--prompt='Pick blog'",
+            )[0]
+            .split()[0]
+        )
+    except ProcessExecutionError:
+        log("Fzf process exited unexpectedly")
+        return ""
+
+    if blog_id not in config["blogs"]:
+        log(f"Blog {blog_id!r} does not exist")
+        return ""
+
+    return blog_id
+
+
+def new_blog(config: dict) -> tuple[int, dict]:
+    """Make a new blog"""
+
+    if title := iinput("blog title"):
+        us_title: str = title
+        s_title: str = sanitise_title(us_title, config["blogs"])
+
+    blog = {
+        "title": b64encode(us_title.encode()).decode(),
+        "content": "",
+        "version": BLOG_VERSION,
+        "time": "Unknown",
+        "keywords": "",
+    }
+
+    file: str = f"/tmp/{s_title}.md"
+
+    open(file, "w").close()
+    os.system(config["editor-command"] % file)
+
+    if not os.path.isfile(file):
+        return log(f"{file!r} does not exist"), config
+
+    with open(file, "r") as md:
+        blog["content"] = b64encode(md.read().encode()).decode()
+
+    if not blog["content"].strip():  # type: ignore
+        return log("Blog cannot be empty"), config
+
+    blog["keywords"] = html_escape(
+        iinput("keywords (seperated by spaces)")
+        + " "
+        + " ".join(config["default-keywords"])
+    )
+
+    blog["time"] = datetime.now().timestamp()
+    config["blogs"][s_title] = blog
+
+    return EXIT_OK, config
+
+
+def build(config: dict) -> tuple[int, dict]:
+    """Build, minimise and generate site"""
+
+    if len(config["blogs"]) < 1:
+        return log("Cannot build no blogs"), config
+
+    code_timestamp = code_timer()
+
+    if os.path.isdir(config["blog-dir"]):
+        rmtree(config["blog-dir"])
+
+    os.makedirs(config["blog-dir"], exist_ok=True)
+
+    log("Building CSS...", "INFO")
+
+    def build_css() -> None:
+        saved_stdout = sys.stdout
+        sys.stdout = open(os.devnull, "w")
+
+        if os.path.isfile("content/styles.css"):
+            process_single_css_file("content/styles.css")
+
+        sys.stdout.close()
+        sys.stdout = saved_stdout
+
+    Thread(target=build_css, daemon=True).start()
+
+    log("Building blogs...", "INFO")
+
+    def thread(blog_name: str, blog_meta: dict):
+        blog_dir: str = os.path.join(config["blog-dir"], blog_name)
+        os.makedirs(blog_dir, exist_ok=True)
+
+        with open(os.path.join(blog_dir, "index.html"), "w") as blog_html:
+            blog_time: str = format_time(blog_meta["time"])
+
+            blog_title: str = html_escape(b64decode(blog_meta["title"]).decode())
+
+            blog_base_html: str = markdown(
+                BLOG_MARKDOWN_TEMPLATE
+                % (
+                    blog_title,
+                    blog_time,
+                    config["base-homepage"],
+                    config["git-url"],
+                    markdown(b64decode(blog_meta["content"]).decode())
+                    .replace("<h1>", "<h2>")
+                    .replace("<h1/>", "<h2/>"),
+                ),
+                extensions=config["py-markdown-extensions"],
+            )
+
+            blog_html.write(
+                html_minify(
+                    BLOG_HTML_TEMPLATE.format(
+                        title=config["page-title"],
+                        theme_type=config["colourscheme-type"],
+                        keywords=blog_meta["keywords"],
+                        blog_description=f"Blog on {blog_time} -- {blog_title}",
+                        blog=blog_base_html,
+                    )
+                )
+            )
+
+        log(f"Finished building blog {blog_name!r}", "BUILD")
+
+    _tmp_threads: list = []
+
+    for blog_name, blog_meta in config["blogs"].items():
+        t: Thread = Thread(target=thread, args=(blog_name, blog_meta), daemon=True)
+        _tmp_threads.append(t)
+
+        t.start()
+
+    for awaiting_thread in _tmp_threads:
+        awaiting_thread.join()
+
+    log("Building blog index...", "INFO")
+
+    with open("index.html", "w") as index:
+        latest_blog_id: str = tuple(config["blogs"].keys())[-1]
+        lastest_blog: dict = config["blogs"][latest_blog_id]
+        lastest_blog_time: str = format_time(lastest_blog["time"])
+
+        blog_list = "<ul>"
+
+        for blog_id, blog_meta in reversed(config["blogs"].items()):
+            blog_list += f'<li><a href="{os.path.join(config["blog-dir"], blog_id)}">{html_escape(b64decode(blog_meta["title"]).decode())}</a></li>'
+
+        blog_list += "</ul>"
+
+        index.write(
+            html_minify(
+                HOME_PAGE_HTML_TEMPLATE.format(
+                    title=config["page-title"],
+                    theme_type=config["colourscheme-type"],
+                    keywords=config["home-keywords"],
+                    home_page_description=config["page-description"],
+                    lastest_blog_time=lastest_blog_time,
+                    latest_blog_url=os.path.join(config["blog-dir"], latest_blog_id),
+                    latest_blog_title=b64decode(
+                        html_escape(lastest_blog["title"])
+                    ).decode(),
+                    git_url=config["git-url"],
+                    content=blog_list,
+                )
+            )
+        )
+
+    log(
+        f"Successfully built blog page in {code_timer() - code_timestamp} seconds",
+        "TIME",
+    )
+    return EXIT_OK, config
+
+
+def list_blogs(config: dict) -> tuple[int, dict]:
+    """List blogs"""
+
+    for blog_id, blog_meta in config["blogs"].items():
+        print(
+            f"""ID: {blog_id}
+Title: {b64decode(blog_meta['title']).decode()!r}
+Version: {blog_meta['version']}
+Time of creation: {format_time(blog_meta['time'])}
+Keywords: {blog_meta['keywords'].replace(' ', ', ')}
+"""
+        )
+
+    return EXIT_OK, config
+
+
+def remove_blog(config: dict) -> tuple[int, dict]:
+    """Remove a blog page"""
+
+    blog_id: str = pick_blog(config)
+
+    if not blog_id:
+        return EXIT_ERR, config
+
+    del config["blogs"][blog_id]
+    return EXIT_OK, config
+
+
+def dummy() -> None:
+    """Print help/usage information"""
+
+
+def edit_title(blog: str, config: dict) -> int:
+    new_title: str = iinput(
+        "edit title", b64decode(config["blogs"][blog]["title"]).decode()
+    )
+
+    if not new_title.strip():
+        return log("New title cannot be empty")
+
+    config["blogs"][blog]["title"] = b64encode(new_title.encode()).decode()
+
+    return EXIT_OK
+
+
+def edit_keywords(blog: str, config: dict) -> int:
+    new_keywords: str = iinput("edit keywords", config["blogs"][blog]["keywords"])
+
+    if not new_keywords.strip():
+        return log("Keywords cannot be empty")
+
+    config["blogs"][blog]["keywords"] = new_keywords
+
+    return EXIT_OK
+
+
+def edit_content(blog: str, config: dict) -> int:
+    file: str = f"/tmp/{blog}.md"
+
+    with open(file, "w") as blog_md:
+        blog_md.write(b64decode(config["blogs"][blog]["content"]).decode())
+
+    os.system(config["editor-command"] % (file))
+
+    with open(file, "r") as blog_md_new:
+        content: str = blog_md_new.read()
+
+        if not content.strip():
+            blog_md_new.close()
+            return log("Content of a blog cannot be empty")
+
+        config["blogs"][blog]["content"] = b64encode(content.encode()).decode()
+
+    return EXIT_OK
+
+
+EDIT_HOOKS: dict = {
+    "title": edit_title,
+    "keywords": edit_keywords,
+    "content": edit_content,
+}
+
+
+def edit(config: dict) -> tuple[int, dict]:
+    """Edit a blog"""
+
+    blog_id: str = pick_blog(config)
+
+    if not blog_id:
+        return EXIT_ERR, config
+
+    try:
+        hook: str = FzfPrompt().prompt(EDIT_HOOKS.keys(), "--prompt='What to edit'")[0]
+
+        if hook not in EDIT_HOOKS:
+            return log(f"Hook {hook!r} does not exist"), config
+
+        EDIT_HOOKS[hook](blog_id, config)
+    except ProcessExecutionError:
+        return log("Fzf unexpectedly exited"), config
+
+    return EXIT_OK, config
+
+
+def gen_new_config(config: dict) -> tuple[int, dict]:
+    """Make default config"""
+
+    if os.path.exists(DEFAULT_CONFIG_FILE):
+        if iinput("Do you want to overwite config? (y/n)").lower()[0] != "y":
+            return log("Not overwritting config", "INFO", EXIT_OK), config
+
+    new_config()
+
+    with open(DEFAULT_CONFIG_FILE, "r") as cfg:
+        config = json.load(cfg)
+
+    return EXIT_OK, config
+
+
+SUBCOMMANDS: dict = {
+    "help": dummy,
+    "new": new_blog,
+    "build": build,
+    "list": list_blogs,
+    "rm": remove_blog,
+    "edit": edit,
+    "new-config": gen_new_config,
+}
+
+
+def usage(code: int = EXIT_ERR, config: dict = None) -> int:
+    sys.stderr.write(f"Usage: {sys.argv[0]} <subcommand>\n")
+
+    for subcommand, func in SUBCOMMANDS.items():
+        sys.stderr.write(f"  {subcommand:20s}{func.__doc__ or ''}\n")
+
+    return code
+
+
+def main() -> int:
+    """Entry/main function"""
+
+    if not os.path.isfile(HISTORY_FILE):
+        open(HISTORY_FILE, "w").close()
+
+    readline.parse_and_bind("tab: complete")
+
+    fn_register(readline.write_history_file, HISTORY_FILE)
+    fn_register(readline.read_history_file, HISTORY_FILE)
+
+    readline.read_history_file(HISTORY_FILE)
+    readline.set_history_length(5000)
+
+    if not os.path.isfile(DEFAULT_CONFIG_FILE):
+        new_config()
+        return EXIT_ERR
+
+    if len(sys.argv) != 2:
+        return usage()
+    elif sys.argv[1] not in SUBCOMMANDS:
+        return log(f"{sys.argv[1]!r} is not a subcommand, try `{sys.argv[0]} help`")
+    elif sys.argv[1] == "help":
+        return usage(EXIT_OK)
+
+    with open(DEFAULT_CONFIG_FILE, "r") as lcfg:
+        code, config = SUBCOMMANDS[sys.argv[1]](config=json.load(lcfg))
+
+        log("Sorting blogs by creation time...", "CLEANUP")
+        config["blogs"] = dict(
+            map(
+                lambda k: (k, config["blogs"][k]),
+                sorted(config["blogs"], key=lambda k: config["blogs"][k]["time"]),
+            )
+        )
+
+        with open(DEFAULT_CONFIG_FILE, "w") as dcfg:
+            json.dump(config, dcfg, indent=4)
+
+        return code
+
+    return EXIT_OK
+
+
+if __name__ == "__main__":
+    assert main.__annotations__.get("return") is int, "main() should return an integer"
+
+    filter_warnings("error", category=Warning)
+    sys.exit(main())
