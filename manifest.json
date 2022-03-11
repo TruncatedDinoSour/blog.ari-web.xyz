@@ -2,6 +2,7 @@
     "$schema": "https://json.schemastore.org/web-manifest-combined.json",
     "short_name": "Ari-web blogs",
     "name": "Ari::web -> Blogs",
+    "description": "My blog page",
     "icons": [{
         "src": "/favicon.ico",
         "sizes": "128x128",
