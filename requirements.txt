@@ -4,4 +4,5 @@ datetime
 markdown
 plumbum
 pyfzf
+typing
 

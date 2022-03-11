@@ -16,6 +16,7 @@ from shutil import rmtree
 from threading import Thread
 from time import strftime as format_system_time
 from timeit import default_timer as code_timer
+from typing import Dict, List, Tuple
 from warnings import filterwarnings as filter_warnings
 
 from css_html_js_minify import html_minify  # type: ignore
@@ -27,7 +28,7 @@ from pyfzf import FzfPrompt  # type: ignore
 EXIT_OK: int = 0
 EXIT_ERR: int = 1
 
-DEFAULT_CONFIG: dict = {
+DEFAULT_CONFIG: Dict = {
     "editor-command": f"{os.environ.get('EDITOR', 'vim')} -- %s",
     "blog-dir": "b",
     "git-url": "/git",
@@ -120,7 +121,7 @@ def log(message: str, header: str = "ERROR", code: int = EXIT_ERR) -> int:
     return code
 
 
-def sanitise_title(title: str, titleset: dict) -> str:
+def sanitise_title(title: str, titleset: Dict) -> str:
     _title: str = ""
 
     for char in title:
@@ -165,7 +166,7 @@ def new_config() -> None:
         json.dump(DEFAULT_CONFIG, cfg, indent=4)
 
 
-def pick_blog(config: dict) -> str:
+def pick_blog(config: Dict) -> str:
     try:
         blog_id: str = (
             FzfPrompt()
@@ -189,7 +190,7 @@ def pick_blog(config: dict) -> str:
     return blog_id
 
 
-def new_blog(config: dict) -> tuple[int, dict]:
+def new_blog(config: Dict) -> Tuple[int, Dict]:
     """Make a new blog"""
 
     if title := iinput("blog title"):
@@ -230,7 +231,7 @@ def new_blog(config: dict) -> tuple[int, dict]:
     return EXIT_OK, config
 
 
-def build(config: dict) -> tuple[int, dict]:
+def build(config: Dict) -> Tuple[int, Dict]:
     """Build, minimise and generate site"""
 
     if len(config["blogs"]) < 1:
@@ -259,7 +260,7 @@ def build(config: dict) -> tuple[int, dict]:
 
     log("Building blogs...", "INFO")
 
-    def thread(blog_name: str, blog_meta: dict):
+    def thread(blog_name: str, blog_meta: Dict):
         blog_dir: str = os.path.join(config["blog-dir"], blog_name)
         os.makedirs(blog_dir, exist_ok=True)
 
@@ -296,7 +297,7 @@ def build(config: dict) -> tuple[int, dict]:
 
         log(f"Finished building blog {blog_name!r}", "BUILD")
 
-    _tmp_threads: list = []
+    _tmp_threads: List = []
 
     for blog_name, blog_meta in config["blogs"].items():
         t: Thread = Thread(target=thread, args=(blog_name, blog_meta), daemon=True)
@@ -311,7 +312,7 @@ def build(config: dict) -> tuple[int, dict]:
 
     with open("index.html", "w") as index:
         latest_blog_id: str = tuple(config["blogs"].keys())[-1]
-        lastest_blog: dict = config["blogs"][latest_blog_id]
+        lastest_blog: Dict = config["blogs"][latest_blog_id]
         lastest_blog_time: str = format_time(lastest_blog["time"])
 
         blog_list = "<ul>"
@@ -346,7 +347,7 @@ def build(config: dict) -> tuple[int, dict]:
     return EXIT_OK, config
 
 
-def list_blogs(config: dict) -> tuple[int, dict]:
+def list_blogs(config: Dict) -> Tuple[int, Dict]:
     """List blogs"""
 
     for blog_id, blog_meta in config["blogs"].items():
@@ -362,7 +363,7 @@ Keywords: {blog_meta['keywords'].replace(' ', ', ')}
     return EXIT_OK, config
 
 
-def remove_blog(config: dict) -> tuple[int, dict]:
+def remove_blog(config: Dict) -> Tuple[int, Dict]:
     """Remove a blog page"""
 
     blog_id: str = pick_blog(config)
@@ -378,7 +379,7 @@ def dummy() -> None:
     """Print help/usage information"""
 
 
-def edit_title(blog: str, config: dict) -> int:
+def edit_title(blog: str, config: Dict) -> int:
     new_title: str = iinput(
         "edit title", b64decode(config["blogs"][blog]["title"]).decode()
     )
@@ -391,7 +392,7 @@ def edit_title(blog: str, config: dict) -> int:
     return EXIT_OK
 
 
-def edit_keywords(blog: str, config: dict) -> int:
+def edit_keywords(blog: str, config: Dict) -> int:
     new_keywords: str = iinput("edit keywords", config["blogs"][blog]["keywords"])
 
     if not new_keywords.strip():
@@ -402,7 +403,7 @@ def edit_keywords(blog: str, config: dict) -> int:
     return EXIT_OK
 
 
-def edit_content(blog: str, config: dict) -> int:
+def edit_content(blog: str, config: Dict) -> int:
     file: str = f"/tmp/{blog}.md"
 
     with open(file, "w") as blog_md:
@@ -422,14 +423,14 @@ def edit_content(blog: str, config: dict) -> int:
     return EXIT_OK
 
 
-EDIT_HOOKS: dict = {
+EDIT_HOOKS: Dict = {
     "title": edit_title,
     "keywords": edit_keywords,
     "content": edit_content,
 }
 
 
-def edit(config: dict) -> tuple[int, dict]:
+def edit(config: Dict) -> Tuple[int, Dict]:
     """Edit a blog"""
 
     blog_id: str = pick_blog(config)
@@ -450,7 +451,7 @@ def edit(config: dict) -> tuple[int, dict]:
     return EXIT_OK, config
 
 
-def gen_new_config(config: dict) -> tuple[int, dict]:
+def gen_new_config(config: Dict) -> Tuple[int, Dict]:
     """Make default config"""
 
     if os.path.exists(DEFAULT_CONFIG_FILE):
@@ -465,7 +466,7 @@ def gen_new_config(config: dict) -> tuple[int, dict]:
     return EXIT_OK, config
 
 
-SUBCOMMANDS: dict = {
+SUBCOMMANDS: Dict = {
     "help": dummy,
     "new": new_blog,
     "build": build,
@@ -476,7 +477,7 @@ SUBCOMMANDS: dict = {
 }
 
 
-def usage(code: int = EXIT_ERR, config: dict = None) -> int:
+def usage(code: int = EXIT_ERR, config: Dict = None) -> int:
     sys.stderr.write(f"Usage: {sys.argv[0]} <subcommand>\n")
 
     for subcommand, func in SUBCOMMANDS.items():
