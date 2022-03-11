@@ -5,4 +5,5 @@ markdown
 plumbum
 pyfzf
 typing
+pymdown-extensions
 
