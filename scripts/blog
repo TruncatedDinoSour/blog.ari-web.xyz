@@ -63,13 +63,13 @@ BLOG_VERSION: int = 1
 
 BLOG_MARKDOWN_TEMPLATE: str = """# %s
 
-<div class="info-bar" aria-hidden="true">
+<div id="info-bar" aria-hidden="true">
     %s | <a href="%s">back</a> | <a href="/">home</a> | <a href="%s">git</a>
 </div>
 
 <hr/>
 
-<div class="blog-content">
+<div id="blog-content">
 
 %s
 
@@ -110,7 +110,7 @@ HOME_PAGE_HTML_TEMPLATE: str = f"""<!DOCTYPE html>
 </head>
 <body>
     <h1>My blogs</h1>
-    <div class="info-bar" aria-hidden="true">
+    <div id="info-bar" aria-hidden="true">
         <p>last blog on: <code>{{lastest_blog_time}}</code> | latest blog: <a href="{{latest_blog_url}}">{{latest_blog_title}}</a> | <a href="{{git_url}}">source code</a></p>
         <hr/>
     </div>

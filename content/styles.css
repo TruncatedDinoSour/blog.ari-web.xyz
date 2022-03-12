@@ -43,11 +43,11 @@ a {
     text-shadow: 0px 0px 6px white;
 }
 
-.info-bar {
+#info-bar {
     text-align: center;
 }
 
-.blog-content {
+#blog-content {
     padding: 0.3em;
 }
 
