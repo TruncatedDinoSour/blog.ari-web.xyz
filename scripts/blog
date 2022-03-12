@@ -61,7 +61,7 @@ DEFAULT_CONFIG_FILE: str = "blog.json"
 HISTORY_FILE: str = ".blog_history"
 BLOG_VERSION: int = 1
 
-BLOG_MARKDOWN_TEMPLATEL: str = """# %s
+BLOG_MARKDOWN_TEMPLATE: str = """# %s
 
 <div class="info-bar" aria-hidden="true">
     %s | <a href="%s">back</a> | <a href="/">home</a> | <a href="%s">git</a>
