@@ -1,15 +1,17 @@
 :root {
-    color-scheme: dark !important;
+    color-scheme: dark;
 }
 
 *,
 *::before,
 *::after {
-    background-color: #262220 !important;
-    color: #f9f6e8 !important;
-    font-family: Hack, hack, monospace, sans, opensans, sans-serif !important;
+    background-color: #262220;
+    color: #f9f6e8;
+    font-family: Hack, hack, monospace, sans, opensans, sans-serif;
     scrollbar-width: none;
     -ms-overflow-style: none;
+    box-sizing: border-box;
+    scroll-behavior: smooth;
 }
 
 ::-webkit-scrollbar {
@@ -17,23 +19,26 @@
 }
 
 body {
-    margin: auto !important;
-    padding: 2rem !important;
-    max-width: 1200px !important;
+    margin: auto;
+    padding: 2rem;
+    max-width: 1200px;
+    min-height: 100vh;
+    text-rendering: optimizeSpeed;
+    line-height: 1.5;
 }
 
 h1 {
-    text-align: center !important;
-    margin: 1em !important;
+    text-align: center;
+    margin: 1em;
 }
 
 li {
-    margin: 0.5em !important;
+    margin: 0.5em;
 }
 
 a {
-    text-decoration: none !important;
-    text-shadow: 0px 0px 6px white !important;
+    text-decoration: none;
+    text-shadow: 0px 0px 6px white;
 }
 
 .info-bar {
@@ -42,4 +47,21 @@ a {
 
 h1 {
     font-size: 2em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+@media screen and (max-width: 800px) {
+    body {
+        padding: 1em !important;
+    }
 }
