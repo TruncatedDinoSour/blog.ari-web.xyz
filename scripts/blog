@@ -61,7 +61,7 @@ DEFAULT_CONFIG_FILE: str = "blog.json"
 HISTORY_FILE: str = ".blog_history"
 BLOG_VERSION: int = 1
 
-BLOG_MARKDOWN_TEMPLATE = """# %s
+BLOG_MARKDOWN_TEMPLATEL: str = """# %s
 
 <div class="info-bar" aria-hidden="true">
     %s | <a href="%s">back</a> | <a href="/">home</a> | <a href="%s">git</a>
@@ -71,7 +71,7 @@ BLOG_MARKDOWN_TEMPLATE = """# %s
 
 %s"""
 
-HTML_HEADER = """<head>
+HTML_HEADER: str = """<head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -86,7 +86,7 @@ HTML_HEADER = """<head>
 
     <link rel="stylesheet" href="/content/styles.min.css"/>"""
 
-BLOG_HTML_TEMPLATE = f"""<!DOCTYPE html>
+BLOG_HTML_TEMPLATE: str = f"""<!DOCTYPE html>
 <html lang="en">
 {HTML_HEADER}
     <meta name="description" content="{{blog_description}}">
@@ -98,7 +98,7 @@ BLOG_HTML_TEMPLATE = f"""<!DOCTYPE html>
 </body>
 </html>"""
 
-HOME_PAGE_HTML_TEMPLATE = f"""<!DOCTYPE html>
+HOME_PAGE_HTML_TEMPLATE: str = f"""<!DOCTYPE html>
 <html lang="en">
 {HTML_HEADER}
     <meta name="description" content="{{home_page_description}}" />
@@ -214,6 +214,8 @@ def new_blog(config: Dict) -> Tuple[int, Dict]:
 
     with open(file, "r") as md:
         blog["content"] = b64encode(md.read().encode()).decode()
+
+    os.remove(file)
 
     if not blog["content"].strip():  # type: ignore
         return log("Blog cannot be empty"), config
