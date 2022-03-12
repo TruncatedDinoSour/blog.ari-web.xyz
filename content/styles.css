@@ -1,3 +1,5 @@
+@import url("https://cdn.jsdelivr.net/npm/hack-font@3/build/web/hack.min.css");
+
 :root {
     color-scheme: dark;
 }
@@ -7,7 +9,7 @@
 *::after {
     background-color: #262220;
     color: #f9f6e8;
-    font-family: Hack, hack, monospace, sans, opensans, sans-serif;
+    font-family: Hack, hack, monospace;
     scrollbar-width: none;
     -ms-overflow-style: none;
     box-sizing: border-box;
@@ -21,15 +23,15 @@
 body {
     margin: auto;
     padding: 2rem;
-    max-width: 1200px;
+    max-width: 1250px;
     min-height: 100vh;
     text-rendering: optimizeSpeed;
-    line-height: 1.5;
 }
 
 h1 {
     text-align: center;
     margin: 1em;
+    font-size: 2em;
 }
 
 li {
@@ -45,8 +47,8 @@ a {
     text-align: center;
 }
 
-h1 {
-    font-size: 2em;
+.blog-content {
+    padding: 0.3em;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -57,11 +59,5 @@ h1 {
         animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;
         scroll-behavior: auto !important;
-    }
-}
-
-@media screen and (max-width: 800px) {
-    body {
-        padding: 1em !important;
     }
 }

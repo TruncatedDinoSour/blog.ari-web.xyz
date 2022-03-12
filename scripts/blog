@@ -69,7 +69,11 @@ BLOG_MARKDOWN_TEMPLATE: str = """# %s
 
 <hr/>
 
-%s"""
+<div class="blog-content">
+
+%s
+
+</div>"""
 
 HTML_HEADER: str = """<head>
     <meta charset="UTF-8">
