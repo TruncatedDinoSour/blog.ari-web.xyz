@@ -406,7 +406,6 @@ def edit_title(blog: str, config: Dict) -> int:
 
     old_blog: dict = config["blogs"][blog].copy()
     old_blog["title"] = b64encode(new_title.encode()).decode()
-
     del config["blogs"][blog]
 
     config["blogs"][sanitise_title(new_title, config["blogs"])] = old_blog
