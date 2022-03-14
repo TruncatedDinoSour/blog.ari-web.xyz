@@ -404,10 +404,13 @@ def edit_title(blog: str, config: Dict) -> int:
     if not new_title.strip():
         return log("New title cannot be empty")
 
-    config["blogs"][blog]["title"] = b64encode(new_title.encode()).decode()
-    config["blogs"][sanitise_title(new_title, config["blogs"])] = config["blogs"][blog]
+    old_blog: dict = config["blogs"][blog].copy()
+    old_blog["title"] = b64encode(new_title.encode()).decode()
 
     del config["blogs"][blog]
+
+    config["blogs"][sanitise_title(new_title, config["blogs"])] = old_blog
+    del old_blog
 
     return EXIT_OK
 
