@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 """Manage blogs"""
 
+import hashlib
 import json
 import os
 import random
@@ -53,8 +54,12 @@ DEFAULT_CONFIG: Dict = {
     "page-title": "Ari::web -> Blog",
     "page-description": "My blog page",
     "colourscheme-type": "dark",
+    "short-name": "Ari's blogs",
     "home-keywords": ["ari", "ari-web", "blog", "ari-archer", "foss", "free", "linux"],
     "base-homepage": "https://ari-web.xyz/",
+    "meta-icons": [{"src": "/favicon.ico", "sizes": "128x128", "type": "image/png"}],
+    "theme-colour": "#f9f6e8",
+    "background-colour": "#262220",
     "blogs": {},
 }
 DEFAULT_CONFIG_FILE: str = "blog.json"
@@ -124,6 +129,27 @@ HOME_PAGE_HTML_TEMPLATE: str = f"""<!DOCTYPE html>
 def log(message: str, header: str = "ERROR", code: int = EXIT_ERR) -> int:
     sys.stderr.write(f"{header}: {message}\n")
     return code
+
+
+def generate_file_hash(filename: str):
+    hash_filename = filename + ".hash"
+
+    log(filename, "READ")
+
+    with open(filename, "rb") as file:
+        file_content = file.read()
+
+    log(hash_filename, "GENERATE")
+
+    with open(hash_filename, "w") as hash_file:
+        for hashf in hashlib.algorithms_available:
+            try:
+                print(
+                    f"{hashf} {getattr(hashlib, hashf)(file_content).hexdigest()}",
+                    file=hash_file,
+                )
+            except (TypeError, AttributeError):
+                pass
 
 
 def sanitise_title(title: str, titleset: Dict) -> str:
@@ -242,8 +268,6 @@ def build(config: Dict) -> Tuple[int, Dict]:
     if len(config["blogs"]) < 1:
         return log("Cannot build no blogs"), config
 
-    code_timestamp = code_timer()
-
     if os.path.isdir(config["blog-dir"]):
         rmtree(config["blog-dir"])
 
@@ -351,10 +375,6 @@ def build(config: Dict) -> Tuple[int, Dict]:
             )
         )
 
-    log(
-        f"Successfully built blog page in {code_timer() - code_timestamp} seconds",
-        "TIME",
-    )
     return EXIT_OK, config
 
 
@@ -501,6 +521,8 @@ def clean(config: Dict) -> Tuple[int, Dict]:
         config["blog-dir"],
         "index.html",
         "content/*.min.*",
+        "*.hash",
+        "manifest.json",
     }
 
     def remove(file: str) -> None:
@@ -520,6 +542,51 @@ def clean(config: Dict) -> Tuple[int, Dict]:
     return EXIT_OK, config
 
 
+def generate_metadata(config: Dict) -> Tuple[int, Dict]:
+    """Generate metadata"""
+
+    with open("manifest.json", "w") as manifest:
+        log(f"Generating {manifest.name}...", "GENERATE")
+        json.dump(
+            {
+                "$schema": "https://json.schemastore.org/web-manifest-combined.json",
+                "short_name": config["short-name"],
+                "name": config["page-title"],
+                "description": config["page-description"],
+                "icons": config["meta-icons"],
+                "start_url": ".",
+                "display": "standalone",
+                "theme_color": config["theme-colour"],
+                "background_color": config["background-colour"],
+            },
+            manifest,
+        )
+
+        log(f"Hashing {manifest.name}", "HASH")
+        generate_file_hash(manifest.name)
+
+    log(f"Hashing {DEFAULT_CONFIG_FILE}", "HASH")
+    generate_file_hash(DEFAULT_CONFIG_FILE)
+
+    return EXIT_OK, config
+
+
+def generate_static_full(config: Dict) -> Tuple[int, Dict]:
+    """Generate full static site"""
+
+    build_cfg: Dict = {
+        "Cleaning up": clean,
+        "Building static site": build,
+        "Generating metatata": generate_metadata,
+    }
+
+    for logger_msg, function in build_cfg.items():
+        log(f"{logger_msg}...", "STATIC")
+        _, config = function(config)
+
+    return EXIT_OK, config
+
+
 SUBCOMMANDS: Dict = {
     "help": dummy,
     "new": new_blog,
@@ -529,6 +596,8 @@ SUBCOMMANDS: Dict = {
     "edit": edit,
     "new-config": gen_new_config,
     "clean": clean,
+    "metadata": generate_metadata,
+    "static": generate_static_full,
 }
 
 
@@ -567,7 +636,11 @@ def main() -> int:
         return usage(EXIT_OK)
 
     with open(DEFAULT_CONFIG_FILE, "r") as lcfg:
+        cmd_time_init = code_timer()
+
         code, config = SUBCOMMANDS[sys.argv[1]](config=json.load(lcfg))
+
+        log(f"Finished in {code_timer() - cmd_time_init} seconds with code {code}", "TIME")
 
         if config["blogs"]:
             log("Sorting blogs by creation time...", "CLEANUP")

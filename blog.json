@@ -30,6 +30,7 @@
     "page-title": "Ari::web -> Blog",
     "page-description": "My blog page",
     "colourscheme-type": "dark",
+    "short-name": "Ari's blogs",
     "home-keywords": [
         "ari",
         "ari-web",
@@ -40,6 +41,15 @@
         "linux"
     ],
     "base-homepage": "https://ari-web.xyz/",
+    "meta-icons": [
+        {
+            "src": "/favicon.ico",
+            "sizes": "128x128",
+            "type": "image/png"
+        }
+    ],
+    "theme-colour": "#f9f6e8",
+    "background-colour": "#262220",
     "blogs": {
         "new-blog-management-system-": {
             "title": "TmV3IGJsb2cgbWFuYWdlbWVudCBzeXN0ZW0h",

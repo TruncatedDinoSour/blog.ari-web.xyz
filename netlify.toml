@@ -1,5 +1,5 @@
 [build]
-    command = "python3 ./scripts/blog clean && python3 ./scripts/blog build"
+    command = "python3 ./scripts/blog static"
 
 [[redirects]]
     from = "/git/*"
