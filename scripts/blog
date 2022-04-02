@@ -230,7 +230,7 @@ def new_blog(config: Dict) -> Tuple[int, Dict]:
         "title": b64encode(us_title.encode()).decode(),
         "content": "",
         "version": BLOG_VERSION,
-        "time": "Unknown",
+        "time": 0.0,
         "keywords": "",
     }
 
