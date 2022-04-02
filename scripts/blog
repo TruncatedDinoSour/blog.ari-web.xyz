@@ -574,13 +574,13 @@ def generate_metadata(config: Dict) -> Tuple[int, Dict]:
 def generate_static_full(config: Dict) -> Tuple[int, Dict]:
     """Generate full static site"""
 
-    build_cfg: Dict = {
+    BUILD_CFG: Dict = {
         "Cleaning up": clean,
         "Building static site": build,
         "Generating metatata": generate_metadata,
     }
 
-    for logger_msg, function in build_cfg.items():
+    for logger_msg, function in BUILD_CFG.items():
         log(f"{logger_msg}...", "STATIC")
         _, config = function(config)
 
@@ -640,7 +640,10 @@ def main() -> int:
 
         code, config = SUBCOMMANDS[sys.argv[1]](config=json.load(lcfg))
 
-        log(f"Finished in {code_timer() - cmd_time_init} seconds with code {code}", "TIME")
+        log(
+            f"Finished in {code_timer() - cmd_time_init} seconds with code {code}",
+            "TIME",
+        )
 
         if config["blogs"]:
             log("Sorting blogs by creation time...", "CLEANUP")
