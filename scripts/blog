@@ -582,7 +582,11 @@ def generate_static_full(config: Dict) -> Tuple[int, Dict]:
 
     for logger_msg, function in BUILD_CFG.items():
         log(f"{logger_msg}...", "STATIC")
-        _, config = function(config)
+        code, config = function(config)
+
+        if code != EXIT_OK:
+            log("Failed to generate static site")
+            return EXIT_ERR, config
 
     return EXIT_OK, config
 
