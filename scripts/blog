@@ -223,6 +223,8 @@ def new_blog(config: Dict) -> Tuple[int, Dict]:
     """Make a new blog"""
 
     if title := iinput("blog title"):
+        readline.add_history(title)
+
         us_title: str = title
         s_title: str = sanitise_title(us_title, config["blogs"])
 
@@ -250,10 +252,11 @@ def new_blog(config: Dict) -> Tuple[int, Dict]:
     if not blog["content"].strip():  # type: ignore
         return log("Blog cannot be empty"), config
 
+    user_keywords: str = iinput("keywords (seperated by spaces)")
+    readline.add_history(user_keywords)
+
     blog["keywords"] = html_escape(
-        iinput("keywords (seperated by spaces)")
-        + " "
-        + " ".join(config["default-keywords"])
+        user_keywords + " " + " ".join(config["default-keywords"])
     )
 
     blog["time"] = datetime.now().timestamp()
@@ -628,6 +631,8 @@ def main() -> int:
     readline.read_history_file(HISTORY_FILE)
     readline.set_history_length(5000)
 
+    readline.set_auto_history(False)
+
     if not os.path.isfile(DEFAULT_CONFIG_FILE):
         new_config()
         return EXIT_ERR
@@ -649,8 +654,13 @@ def main() -> int:
             "TIME",
         )
 
-        if config["blogs"]:
+        not_ci_build = not os.getenv("CI_BUILD")
+
+        if config["blogs"] and not_ci_build:
             log("Sorting blogs by creation time...", "CLEANUP")
+
+            sort_timer = code_timer()
+
             config["blogs"] = dict(
                 map(
                     lambda k: (k, config["blogs"][k]),
@@ -658,8 +668,17 @@ def main() -> int:
                 )
             )
 
-        with open(DEFAULT_CONFIG_FILE, "w") as dcfg:
-            json.dump(config, dcfg, indent=4)
+            log(f"Sorted in {code_timer() - sort_timer} seconds", "TIME")
+
+        if not_ci_build:
+            log("Redumping config", "CONFIG")
+
+            dump_timer = code_timer()
+
+            with open(DEFAULT_CONFIG_FILE, "w") as dcfg:
+                json.dump(config, dcfg, indent=4)
+
+            log(f"Dumped config in {code_timer() - dump_timer} seconds", "TIME")
 
         return code
 

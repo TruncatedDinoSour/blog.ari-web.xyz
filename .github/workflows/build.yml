@@ -27,4 +27,4 @@ jobs:
 
             - name: Build static site
               run: |
-                  python3 scripts/blog static
+                  CI_BUILD=1 python3 scripts/blog static

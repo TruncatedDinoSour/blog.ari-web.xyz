@@ -23,3 +23,32 @@ Or
 ```sh
 $ python3 -m pip install --user -r requirements.txt
 ```
+
+## Completions
+
+-   Bash
+
+```bash
+$ . completions/blog.bash
+```
+
+## Building
+
+-   Generate full-on static site
+
+```bash
+$ CI_BUILD=1 ./scripts/blog static
+```
+
+-   Only build blogs
+
+```bash
+$ CI_BUILD=1 ./scripts/blog static
+```
+
+`CI_BUILD` environment variable is optional,
+though setting it in a build/ci environment is good
+to save time on some operations that are useless
+in that context, for example sorting blogs.
+
+`CI_BUILD` can have any value.
