@@ -131,27 +131,6 @@ def log(message: str, header: str = "ERROR", code: int = EXIT_ERR) -> int:
     return code
 
 
-def generate_file_hash(filename: str):
-    hash_filename = filename + ".hash"
-
-    log(filename, "READ")
-
-    with open(filename, "rb") as file:
-        file_content = file.read()
-
-    log(hash_filename, "GENERATE")
-
-    with open(hash_filename, "w") as hash_file:
-        for hashf in hashlib.algorithms_available:
-            try:
-                print(
-                    f"{hashf} {getattr(hashlib, hashf)(file_content).hexdigest()}",
-                    file=hash_file,
-                )
-            except (TypeError, AttributeError):
-                pass
-
-
 def sanitise_title(title: str, titleset: Dict) -> str:
     _title: str = ""
 
@@ -564,12 +543,6 @@ def generate_metadata(config: Dict) -> Tuple[int, Dict]:
             },
             manifest,
         )
-
-        log(f"Hashing {manifest.name}", "HASH")
-        generate_file_hash(manifest.name)
-
-    log(f"Hashing {DEFAULT_CONFIG_FILE}", "HASH")
-    generate_file_hash(DEFAULT_CONFIG_FILE)
 
     return EXIT_OK, config
 
