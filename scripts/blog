@@ -257,7 +257,7 @@ def build(config: Dict) -> Tuple[int, Dict]:
 
     os.makedirs(config["blog-dir"], exist_ok=True)
 
-    log("Building CSS...", "INFO")
+    log("Minifying CSS...", "MINIFY")
 
     def build_css() -> None:
         saved_stdout = sys.stdout
@@ -311,7 +311,7 @@ def build(config: Dict) -> Tuple[int, Dict]:
             )
 
             if blog_meta["minimise"]:
-                log(f"Minifying {blog_name!r} HTML")
+                log(f"Minifying {blog_name!r} HTML", "MINIFY")
                 blog_html_full = html_minify(blog_html_full)
 
             blog_html.write(blog_html_full)
@@ -460,7 +460,7 @@ def edit_minimise(blog: str, config: Dict) -> int:
             f"Minimise this blog's HTML? [{minimise}] (y/n)", "y" if minimise else "n"
         )
         + "y"
-    )[0] == "y"
+    ).lower()[0] == "y"
 
     return EXIT_OK
 
