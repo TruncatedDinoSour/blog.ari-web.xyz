@@ -377,6 +377,7 @@ Title: {b64decode(blog_meta['title']).decode()!r}
 Version: {blog_meta['version']}
 Time of creation: {format_time(blog_meta['time'])}
 Keywords: {blog_meta['keywords'].replace(' ', ', ')}
+Minimise: {'Yes' if blog_meta['minimise'] else 'No'}
 """
         )
 
