@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 """Manage blogs"""
 
-import hashlib
 import json
 import os
 import random
@@ -213,6 +212,7 @@ def new_blog(config: Dict) -> Tuple[int, Dict]:
         "version": BLOG_VERSION,
         "time": 0.0,
         "keywords": "",
+        "minimise": True,
     }
 
     file: str = f"/tmp/{s_title}.md"
@@ -237,6 +237,8 @@ def new_blog(config: Dict) -> Tuple[int, Dict]:
     blog["keywords"] = html_escape(
         user_keywords + " " + " ".join(config["default-keywords"])
     )
+
+    blog["minimise"] = (iinput("Minimise blog? (Y/n)") + "y").lower()[0] == "y"
 
     blog["time"] = datetime.now().timestamp()
     config["blogs"][s_title] = blog
@@ -300,17 +302,19 @@ def build(config: Dict) -> Tuple[int, Dict]:
                 extensions=config["py-markdown-extensions"],
             )
 
-            blog_html.write(
-                html_minify(
-                    BLOG_HTML_TEMPLATE.format(
-                        title=config["page-title"],
-                        theme_type=config["colourscheme-type"],
-                        keywords=blog_meta["keywords"],
-                        blog_description=f"Blog on {blog_time} -- {blog_title}",
-                        blog=blog_base_html,
-                    )
-                )
+            blog_html_full: str = BLOG_HTML_TEMPLATE.format(
+                title=config["page-title"],
+                theme_type=config["colourscheme-type"],
+                keywords=blog_meta["keywords"],
+                blog_description=f"Blog on {blog_time} -- {blog_title}",
+                blog=blog_base_html,
             )
+
+            if blog_meta["minimise"]:
+                log(f"Minifying {blog_name!r} HTML")
+                blog_html_full = html_minify(blog_html_full)
+
+            blog_html.write(blog_html_full)
 
         log(f"Finished building blog {blog_name!r}", "BUILD")
 
@@ -447,10 +451,24 @@ def edit_content(blog: str, config: Dict) -> int:
     return EXIT_OK
 
 
+def edit_minimise(blog: str, config: Dict) -> int:
+    minimise: bool = config["blogs"][blog]["minimise"]
+
+    config["blogs"][blog]["minimise"] = (
+        iinput(
+            f"Minimise this blog's HTML? [{minimise}] (y/n)", "y" if minimise else "n"
+        )
+        + "y"
+    )[0] == "y"
+
+    return EXIT_OK
+
+
 EDIT_HOOKS: Dict = {
     "title": edit_title,
     "keywords": edit_keywords,
     "content": edit_content,
+    "minimise": edit_minimise,
 }
 
 
