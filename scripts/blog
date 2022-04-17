@@ -269,6 +269,8 @@ def build(config: Dict) -> Tuple[int, Dict]:
         sys.stdout.close()
         sys.stdout = saved_stdout
 
+        log("Done minifying CSS", "MINIFY")
+
     Thread(target=build_css, daemon=True).start()
 
     log("Building blogs...", "INFO")
@@ -313,6 +315,7 @@ def build(config: Dict) -> Tuple[int, Dict]:
             if blog_meta["minimise"]:
                 log(f"Minifying {blog_name!r} HTML", "MINIFY")
                 blog_html_full = html_minify(blog_html_full)
+                log(f"Done minifying HTML of {blog_name!r}", "MINIFY")
 
             blog_html.write(blog_html_full)
 
