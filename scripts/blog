@@ -115,7 +115,7 @@ HOME_PAGE_HTML_TEMPLATE: str = f"""<!DOCTYPE html>
 <body>
     <h1>My blogs</h1>
     <div id="info-bar" aria-hidden="true">
-        <p>last blog on: <code>{{lastest_blog_time}}</code> | \
+        <p>last blog on: <code>{{lastest_blog_time}} GMT</code> | \
 latest blog: <a href="{{latest_blog_url}}">{{latest_blog_title}}</a> | \
 <a href="{{git_url}}">git</a></p>
         <hr/>
@@ -310,7 +310,7 @@ def build(config: Dict) -> Tuple[int, Dict]:
                 title=config["page-title"],
                 theme_type=config["colourscheme-type"],
                 keywords=blog_meta["keywords"],
-                blog_description=f"Blog on {blog_time} -- {blog_title}",
+                blog_description=f"Blog on {blog_time} GMT -- {blog_title}",
                 blog=blog_base_html,
             )
 
