@@ -68,7 +68,7 @@ BLOG_VERSION: int = 1
 BLOG_MARKDOWN_TEMPLATE: str = """# %s
 
 <div id="info-bar" aria-hidden="true">
-    %s | <a href="%s">back</a> | <a href="/">home</a> | <a href="%s">git</a>
+    %s GMT | <a href="%s">back</a> | <a href="/">home</a> | <a href="%s">git</a>
 </div>
 
 <hr/>
