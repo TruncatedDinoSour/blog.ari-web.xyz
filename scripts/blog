@@ -236,10 +236,7 @@ def new_blog(config: Dict) -> Tuple[int, Dict]:
     user_keywords: str = iinput("keywords (seperated by spaces)")
     readline.add_history(user_keywords)
 
-    blog["keywords"] = html_escape(
-        user_keywords + " " + " ".join(config["default-keywords"])
-    )
-
+    blog["keywords"] = html_escape(user_keywords)
     blog["minimise"] = (iinput("Minimise blog? (Y/n)") + "y").lower()[0] == "y"
 
     blog["time"] = datetime.now().timestamp()
@@ -309,7 +306,9 @@ def build(config: Dict) -> Tuple[int, Dict]:
             blog_html_full: str = BLOG_HTML_TEMPLATE.format(
                 title=config["page-title"],
                 theme_type=config["colourscheme-type"],
-                keywords=blog_meta["keywords"],
+                keywords=blog_meta["keywords"]
+                + " "
+                + " ".join(config["default-keywords"]),
                 blog_description=f"Blog on {blog_time} GMT -- {blog_title}",
                 blog=blog_base_html,
             )
