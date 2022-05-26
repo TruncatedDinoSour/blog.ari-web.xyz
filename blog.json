@@ -122,6 +122,14 @@
             "time": 1653591701.315394,
             "keywords": "comment opinion utterances privacy github git lightweight typescript",
             "minimise": true
+        },
+        "introducing-the-ari-web-api-": {
+            "title": "SW50cm9kdWNpbmcgdGhlIGFyaS13ZWIgQVBJIQ==",
+            "content": "SnVzdCBhIGZldyBtaW51dGVzIGFnbyBJIGludHJvZHVjZWQgYW4gQVBJIGludG8KYXJpLXdlYiwgaXQncyBhIHN0YXRpYyBBUEksIHRob3VnaCBpdCdzIG5pY2UgZm9yCmZldGNoaW5nIGluZm9ybWF0aW9uIGFib3V0IHRoZSB3ZWJpdGUgaW4gSlNPTiBpZgp5b3UgZG9uJ3Qgd2FudCB0byBwYXJzZSBbc2l0ZW1hcC54bWxdKGh0dHBzOi8vd3d3LmFyaS13ZWIueHl6L3NpdGVtYXAueG1sKSA6KQoKQW55d2F5LCB0aGUgaG9tZSBwYWdlIGZvciB0aGUgQVBJIGlzOiA8aHR0cHM6Ly93d3cuYXJpLXdlYi54eXovYXBpPgppdCB3aWxsIHNob3cgeW91IHRoZSBsaXN0IG9mIGFsbCBBUElzIGF2YWlsYWJsZQoKQW4gZXhhbXBsZSBvZiBhbiBhdmFpbGFibGUgQVBJOiA8aHR0cHM6Ly93d3cuYXJpLXdlYi54eXovYXBpL3NpdGVsaXN0Lmpzb24+Cml0IHdpbGwgZ2l2ZSB5b3UgdGhlIGxpc3Qgb2Ygc2l0ZXMgb24gYXJpLXdlYiA6KQoKQW55d2F5LCBlbmpveSBpZiB5b3UgZXZlciBuZWVkIHRvIGludGVyZmFjZSB3aXRoIGFyaS13ZWIgOikKQWxzbyBpZiB5b3UgbmVlZCBhbnkgbW9yZSBBUElzIHlvdSBjYW4gbWFrZSBhbiBpc3N1ZQpvbiA8aHR0cHM6Ly93d3cuYXJpLXdlYi54eXovZ2l0PiBvciBkaXNjdXNzIGl0IG9uCjxodHRwczovL3VzZXIuYXJpLXdlYi54eXovPiA6KQoKR29vZCBieWUhCg==",
+            "version": 1,
+            "time": 1653602912.809375,
+            "keywords": "api json json-api developer domain",
+            "minimise": true
         }
     }
 }
