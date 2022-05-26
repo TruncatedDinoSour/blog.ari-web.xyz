@@ -32,6 +32,12 @@
     force = true
 
 [[redirects]]
+    from = "/c"
+    to = "https://user.ari-web.xyz/"
+    status = 301
+    force = true
+
+[[redirects]]
     from = "/netlify.toml"
     to = "https://ari-web.xyz/404.blog.xyz"
     status = 404
