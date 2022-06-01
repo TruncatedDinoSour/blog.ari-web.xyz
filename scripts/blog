@@ -132,6 +132,10 @@ def log(message: str, header: str = "ERROR", code: int = EXIT_ERR) -> int:
     return code
 
 
+def yesno(cond: bool) -> str:
+    return "Yes" if cond else "No"
+
+
 def sanitise_title(title: str, titleset: Dict) -> str:
     _title: str = ""
 
@@ -166,6 +170,16 @@ def iinput(prompt: str, default_text: str = "") -> str:
     readline.set_pre_input_hook()
 
     return user_inpt
+
+
+def yn(prompt: str, default: str = "y", current_value: str = "") -> bool:
+    return (
+        iinput(
+            f"{prompt}? ({'y/n'.replace(default.lower(), default.upper())})",
+            current_value,
+        )
+        + default
+    ).lower()[0] == "y"
 
 
 def new_config() -> None:
@@ -237,7 +251,8 @@ def new_blog(config: Dict) -> Tuple[int, Dict]:
     readline.add_history(user_keywords)
 
     blog["keywords"] = html_escape(user_keywords)
-    blog["minimise"] = (iinput("Minimise blog? (Y/n)") + "y").lower()[0] == "y"
+    blog["minimise"] = yn("Minimise blog")
+    blog["hidden"] = yn("Hide blog", "n")
 
     blog["time"] = datetime.now().timestamp()
     config["blogs"][s_title] = blog
@@ -274,14 +289,14 @@ def build(config: Dict) -> Tuple[int, Dict]:
 
     log("Building blogs...", "INFO")
 
-    def thread(blog_name: str, blog_meta: Dict):
+    def thread(blog_id: str, blog_meta: Dict):
         if blog_meta["version"] != BLOG_VERSION:
             log(
-                f"{blog_name}: unmatching version between {blog_meta['version']} and {BLOG_VERSION}",
+                f"{blog_id}: unmatching version between {blog_meta['version']} and {BLOG_VERSION}",
                 "WARNING",
             )
 
-        blog_dir: str = os.path.join(config["blog-dir"], blog_name)
+        blog_dir: str = os.path.join(config["blog-dir"], blog_id)
         os.makedirs(blog_dir, exist_ok=True)
 
         with open(os.path.join(blog_dir, "index.html"), "w") as blog_html:
@@ -314,18 +329,22 @@ def build(config: Dict) -> Tuple[int, Dict]:
             )
 
             if blog_meta["minimise"]:
-                log(f"Minifying {blog_name!r} HTML", "MINIFY")
+                log(f"Minifying {blog_id!r} HTML", "MINIFY")
                 blog_html_full = html_minify(blog_html_full)
-                log(f"Done minifying the HTML of {blog_name!r}", "MINIFY")
+                log(f"Done minifying the HTML of {blog_id!r}", "MINIFY")
 
             blog_html.write(blog_html_full)
 
-        log(f"Finished building blog {blog_name!r}", "BUILD")
+        log(f"Finished building blog {blog_id!r}", "BUILD")
 
     _tmp_threads: List = []
 
-    for blog_name, blog_meta in config["blogs"].items():
-        t: Thread = Thread(target=thread, args=(blog_name, blog_meta), daemon=True)
+    for blog_id, blog_meta in config["blogs"].items():
+        if blog_meta["hidden"]:
+            log(f"Hidden blog: {blog_id!r}", "HIDE")
+            continue
+
+        t: Thread = Thread(target=thread, args=(blog_id, blog_meta), daemon=True)
         _tmp_threads.append(t)
 
         t.start()
@@ -343,7 +362,15 @@ def build(config: Dict) -> Tuple[int, Dict]:
         blog_list = "<ul>"
 
         for blog_id, blog_meta in reversed(config["blogs"].items()):
-            blog_list += f'<li><a href="{os.path.join(config["blog-dir"], blog_id)}">{html_escape(b64decode(blog_meta["title"]).decode())}</a></li>'
+            blog_list += "<li>"
+
+            if blog_meta["hidden"]:
+                blog_list += "<i>Blog hidden by the owner</i>"
+                continue
+
+            blog_list += f'<a href="{os.path.join(config["blog-dir"], blog_id)}">{html_escape(b64decode(blog_meta["title"]).decode())}</a>'
+
+            blog_list += "</li>"
 
         blog_list += "</ul>"
 
@@ -380,9 +407,10 @@ def list_blogs(config: Dict) -> Tuple[int, Dict]:
             f"""ID: {blog_id}
 Title: {b64decode(blog_meta['title']).decode()!r}
 Version: {blog_meta['version']}
-Time of creation: {format_time(blog_meta['time'])}
+Time_of_creation: {format_time(blog_meta['time'])}
 Keywords: {blog_meta['keywords'].replace(' ', ', ')}
-Minimise: {'Yes' if blog_meta['minimise'] else 'No'}
+Minimise: {yesno(blog_meta['minimise'])}
+Hidden: {yesno(blog_meta['hidden'])}
 """
         )
 
@@ -459,13 +487,20 @@ def edit_content(blog: str, config: Dict) -> int:
 
 def edit_minimise(blog: str, config: Dict) -> int:
     minimise: bool = config["blogs"][blog]["minimise"]
+    str_minimise: str = "y" if minimise else "n"
 
-    config["blogs"][blog]["minimise"] = (
-        iinput(
-            f"Minimise this blog's HTML? [{minimise}] (y/n)", "y" if minimise else "n"
-        )
-        + "y"
-    ).lower()[0] == "y"
+    config["blogs"][blog]["minimise"] = yn(
+        "Minimise this blog's HTML", str_minimise, str_minimise
+    )
+
+    return EXIT_OK
+
+
+def edit_hidden(blog: str, config: Dict) -> int:
+    hidden: bool = config["blogs"][blog]["hidden"]
+    str_hidden: str = "y" if hidden else "n"
+
+    config["blogs"][blog]["hidden"] = yn("Hide this blog", str_hidden, str_hidden)
 
     return EXIT_OK
 
@@ -476,6 +511,7 @@ EDIT_HOOKS: Dict = {
     "keywords": edit_keywords,
     "content": edit_content,
     "minimise": edit_minimise,
+    "hidden": edit_hidden,
 }
 
 
@@ -500,7 +536,7 @@ def edit(config: Dict) -> Tuple[int, Dict]:
 
         EDIT_HOOKS[hook](blog_id, config)
     except ProcessExecutionError:
-        return log("Fzf unexpectedly exited"), config
+        return log("No blog selected"), config
 
     return EXIT_OK, config
 

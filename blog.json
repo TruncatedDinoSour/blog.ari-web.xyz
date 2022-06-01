@@ -57,7 +57,8 @@
             "version": 1,
             "time": 1646996956.328543,
             "keywords": "management linux http-redirect new",
-            "minimise": true
+            "minimise": true,
+            "hidden": false
         },
         "happy-pi-e--day": {
             "title": "SGFwcHkgcGkoZSkgZGF5",
@@ -65,7 +66,8 @@
             "version": 1,
             "time": 1647291763.684886,
             "keywords": "pi pi-day piday math einstein 3.14159 \u03c0",
-            "minimise": true
+            "minimise": true,
+            "hidden": false
         },
         "i-m-tired-of-being-the-lab-rat-": {
             "title": "SSdtIHRpcmVkIG9mIGJlaW5nIHRoZSBsYWIgcmF0Lg==",
@@ -73,7 +75,8 @@
             "version": 1,
             "time": 1650399078.538313,
             "keywords": "",
-            "minimise": true
+            "minimise": true,
+            "hidden": false
         },
         "how-to-print-coloured-text-in-c-and-c--": {
             "title": "SG93IHRvIHByaW50IGNvbG91cmVkIHRleHQgaW4gQyBhbmQgQysr",
@@ -81,7 +84,8 @@
             "version": 1,
             "time": 1652041043.26174,
             "keywords": "colour C++ C code gcc clang g++ clang++ ansi linux colors terminal",
-            "minimise": false
+            "minimise": false,
+            "hidden": false
         },
         "should-i-tell-the-truth-": {
             "title": "U2hvdWxkIEkgdGVsbCB0aGUgdHJ1dGg/",
@@ -89,7 +93,8 @@
             "version": 1,
             "time": 1652799531.935402,
             "keywords": "mental health psychiatrist psychologist",
-            "minimise": true
+            "minimise": true,
+            "hidden": false
         },
         "shutdown-of-my-tcl--tiny-core-linux--mirror": {
             "title": "U2h1dGRvd24gb2YgbXkgVENMICh0aW55IGNvcmUgbGludXgpIG1pcnJvcg==",
@@ -97,7 +102,8 @@
             "version": 1,
             "time": 1653077097.618588,
             "keywords": "tinycore tcl tiny-core-linux foss open source mirror",
-            "minimise": true
+            "minimise": true,
+            "hidden": false
         },
         "is-assembly-bloated-": {
             "title": "SXMgYXNzZW1ibHkgYmxvYXRlZD8=",
@@ -105,7 +111,8 @@
             "version": 1,
             "time": 1653146701.325321,
             "keywords": "nasm assembly bloat C programming elf elf64 binary python github",
-            "minimise": true
+            "minimise": true,
+            "hidden": false
         },
         "my-gentoo-linux-setup": {
             "title": "TXkgZ2VudG9vIGxpbnV4IHNldHVw",
@@ -113,7 +120,8 @@
             "version": 1,
             "time": 1653498902.254038,
             "keywords": "dotfiles linux gentoo-linux gnu gnu-linux theme clang C++ developer dev vim vi",
-            "minimise": true
+            "minimise": true,
+            "hidden": false
         },
         "user-opinion-and-comments-site-is-now-up---": {
             "title": "VXNlciBvcGluaW9uIGFuZCBjb21tZW50cyBzaXRlIGlzIG5vdyB1cCA6KQ==",
@@ -121,7 +129,8 @@
             "version": 1,
             "time": 1653591701.315394,
             "keywords": "comment opinion utterances privacy github git lightweight typescript",
-            "minimise": true
+            "minimise": true,
+            "hidden": false
         },
         "introducing-the-ari-web-api-": {
             "title": "SW50cm9kdWNpbmcgdGhlIGFyaS13ZWIgQVBJIQ==",
@@ -129,7 +138,8 @@
             "version": 1,
             "time": 1653602912.809375,
             "keywords": "api json json-api developer domain",
-            "minimise": true
+            "minimise": true,
+            "hidden": false
         },
         "being-mentally-ill-is-a-pain-in-the-ass": {
             "title": "QmVpbmcgbWVudGFsbHkgaWxsIGlzIGEgcGFpbiBpbiB0aGUgYXNz",
@@ -137,7 +147,8 @@
             "version": 1,
             "time": 1653662984.808034,
             "keywords": "mental psychology exhausting",
-            "minimise": true
+            "minimise": true,
+            "hidden": false
         },
         "happy--almost--pride-month---": {
             "title": "SGFwcHkgKGFsbW9zdCkgcHJpZGUgbW9udGggOik=",
@@ -145,7 +156,8 @@
             "version": 1,
             "time": 1653913182.303729,
             "keywords": "gay lgbt lgbt-pride pride-month june pride",
-            "minimise": true
+            "minimise": true,
+            "hidden": false
         },
         "wtf-is-going-on-and-why-is-my-site-blowing-up": {
             "title": "V3RmIGlzIGdvaW5nIG9uIGFuZCB3aHkgaXMgbXkgc2l0ZSBibG93aW5nIHVw",
@@ -153,7 +165,8 @@
             "version": 1,
             "time": 1653927309.556282,
             "keywords": "excited goal netlify happy stats",
-            "minimise": true
+            "minimise": true,
+            "hidden": false
         },
         "pride-month-just-started-and-i-m-already-in-pain": {
             "title": "UHJpZGUgbW9udGgganVzdCBzdGFydGVkIGFuZCBJJ20gYWxyZWFkeSBpbiBwYWlu",
@@ -161,7 +174,8 @@
             "version": 1,
             "time": 1654079876.56532,
             "keywords": "pain pride lgbt mother stupid",
-            "minimise": true
+            "minimise": true,
+            "hidden": false
         },
         "i-got-outted-by-my-classmate--on-pride-month--fun": {
             "title": "SSBnb3Qgb3V0dGVkIGJ5IG15IGNsYXNzbWF0ZSwgb24gcHJpZGUgbW9udGgsIGZ1bg==",
@@ -169,7 +183,8 @@
             "version": 1,
             "time": 1654084744.300839,
             "keywords": "gay lgbt trans transgender out outted bitch classmate class school",
-            "minimise": true
+            "minimise": true,
+            "hidden": false
         }
     }
 }

@@ -54,3 +54,11 @@ to save time on some operations that are useless
 in that context, for example sorting blogs.
 
 `CI_BUILD` can have any value.
+
+## The API and hidden blogs
+
+Some blogs might be hidden for a day or two if
+I'm working on it or just need to hide it to
+not show some stuff on the main page, though
+nobody is stopping you from using the static API,
+it's located at [/blog.json](https://blog.ari-web.xyz/blog.json)
