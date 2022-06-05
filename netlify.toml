@@ -53,6 +53,9 @@
     skip_processing = false
 
 # Processing
+[build.processing]
+    skip_processing = false
+
 [build.processing.css]
     bundle = true
     minify = true
