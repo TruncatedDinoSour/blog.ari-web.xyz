@@ -541,8 +541,8 @@ def edit(config: Dict) -> Tuple[int, Dict]:
     return EXIT_OK, config
 
 
-def gen_new_config(config: Dict) -> Tuple[int, Dict]:
-    """Make default config"""
+def gen_def_config(config: Dict) -> Tuple[int, Dict]:
+    """Generate default config"""
 
     if os.path.exists(DEFAULT_CONFIG_FILE):
         if iinput("Do you want to overwite config? (y/n)").lower()[0] != "y":
@@ -632,10 +632,10 @@ SUBCOMMANDS: Dict = {
     "help": dummy,
     "new": new_blog,
     "build": build,
-    "list": list_blogs,
+    "ls": list_blogs,
     "rm": remove_blog,
     "edit": edit,
-    "new-config": gen_new_config,
+    "defcfg": gen_def_config,
     "clean": clean,
     "metadata": generate_metadata,
     "static": generate_static_full,
