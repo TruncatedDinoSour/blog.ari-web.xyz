@@ -49,9 +49,6 @@
     status = 404
     force = false
 
-[build.processing]
-    skip_processing = false
-
 # Processing
 [build.processing]
     skip_processing = false
