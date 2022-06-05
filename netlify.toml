@@ -49,6 +49,21 @@
     status = 404
     force = false
 
+[build.processing]
+    skip_processing = false
+
+# Preprocessing
+[build.processing.css]
+    bundle = true
+    minify = true
+
+[build.processing.html]
+    pretty_urls = true
+
+[build.processing.images]
+    compress = true
+# --------------
+
 [[headers]]
     for = "/*"
 
