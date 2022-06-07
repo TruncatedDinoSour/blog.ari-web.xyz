@@ -230,6 +230,15 @@
             "keywords": "day weird friend odd hot summer coffee",
             "minimise": true,
             "hidden": false
+        },
+        "stop-caring-about-the-looks": {
+            "title": "U3RvcCBjYXJpbmcgYWJvdXQgdGhlIGxvb2tz",
+            "content": "TG9vaywKCj4gU3BlYWtpbmcgb2Ygc29mdHdhcmU6CgpBIGxvdCBvZiBwZW9wbGUgc2VlbSB0byBwdXQgbG9va3MgYmVmb3JlIGZlYXR1cmVzLApvbmUgb2YgdGhlIGZlYXR1cmVzIHNob3VsZCBiZSBjdXN0b21pc2F0aW9uIG9mIHRoZSBsb29rcwpzbyBpZiBpdCBkb2VzIGhhdmUgdGhhdCB3aHkgc2hvdWxkIHlvdSBjYXJlIGFib3V0CnRoZSBsb29rcz8gWW91IHdvbid0IGxvb2sgaW50byB5b3VyIGFwcGxpY2F0aW9uIGFuZCBzYXkKIkhtbSwgSSBsaWtlIHRoaXMgY29sb3VyLCBteSBmYXZvdXJpdGUsICM2OTY5NjkiLCB5b3UncmUKZ29pbmcgdG8gYmUgdXNpbmcgaXQgYW5kIGlmIHRoZSBsb29rcyBpcyBib3RoZXJpbmcgeW91LCB5b3UKY2FuIGFsd2F5cyBjaGFuZ2UgaXQKCj4gU3BlYWtpbmcgb2YgaGFyZHdhcmU6CgpPa2F5LCBsZXQncyB0YWtlIHBob25lIHNoZWxscyBmb3IgZXhhbXBsZSwgSSBtZWFuIEkgZnVsbHkKdW5kZXJzdGFuZCB0aGF0LCBidXQgZm9yIG1lIGF0IGxlYXN0LCBpZiBJIGRvbid0IGxpa2UgaXQKSSBjYW4ganVzdCBnZXQgYSBjYXNlLCBjdXN0b21pc2UgaXQgbXlzZWxmIGFuZC9vciBqdXN0CnJlcGxhY2UgaXQsIEknbSB0aGUgdHlwZSBvZiBwZXJzb24gdG8gRElZIGV2ZXJ5dGhpbmcgYW5kCnRoYXQgd291bGQgYmUgYW5vdGhlciBnb29kIGxlYXJuaW5nIGV4cGllcmllbmNlLCBidXQgaWcKaWYgeW91IHJlYWxseSBjYXJlIHRoYXQgbXVjaCBhYm91dCBsb29rcyBvZiBoYXJkd2FyZSBhbmQgaXQncwpoYXJkIHRvIHJlcGxhY2UgSSBndWVzcyBpdCBtYWtlcyBtb3JlIHNlbnNlPwoKQW55d2F5LCB0aGFua3MgZm9yIGxpc3RlbmluZyB0byBteSByYW1ibGluZyA6KQpTZWUgeW91IGluIHRoZSBuZXh0IGJsb2cgcHJvYmFibHkK",
+            "version": 1,
+            "time": 1654625863.634941,
+            "keywords": "looks ui gui software hardware phone looking apperance",
+            "minimise": true,
+            "hidden": false
         }
     }
 }
