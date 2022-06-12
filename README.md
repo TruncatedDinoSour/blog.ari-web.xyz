@@ -39,21 +39,21 @@ $ . completions/blog.bash
 -   Generate full-on static site
 
 ```bash
-$ CI_BUILD=1 ./scripts/blog static
+$ CI=1 ./scripts/blog static
 ```
 
 -   Only build blogs
 
 ```bash
-$ CI_BUILD=1 ./scripts/blog static
+$ CI=1 ./scripts/blog static
 ```
 
-`CI_BUILD` environment variable is optional,
-though setting it in a build/ci environment is good
+`CI` environment variable is optional,
+though setting it in a build/CI environment is good
 to save time on some operations that are useless
 in that context, for example sorting blogs.
 
-`CI_BUILD` can have any value.
+`CI` can have any value.
 
 ## The API and hidden blogs
 

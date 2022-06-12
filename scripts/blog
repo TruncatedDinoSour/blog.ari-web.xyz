@@ -688,7 +688,7 @@ def main() -> int:
             "TIME",
         )
 
-        not_ci_build = not os.getenv("CI_BUILD")
+        not_ci_build = not os.getenv("CI")
 
         if config["blogs"] and not_ci_build:
             log("Sorting blogs by creation time...", "CLEANUP")
