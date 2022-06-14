@@ -67,17 +67,19 @@ BLOG_VERSION: int = 1
 
 BLOG_MARKDOWN_TEMPLATE: str = """# %s
 
-<div id="info-bar" aria-hidden="true">
-    %s GMT | <a href="%s">back</a> | <a href="/">home</a> | <a href="%s">git</a>
-</div>
+<nav id="info-bar" aria-hidden="true">
+    <time>%s</time> GMT | <a href="%s">back</a> | <a href="/">home</a> | <a href="%s">git</a>
+</nav>
 
 <hr/>
 
-<div id="blog-content">
+<article id="blog-content">
+<main>
 
 %s
 
-</div>"""
+</main>
+</article>"""
 
 HTML_HEADER: str = """<head>
     <meta charset="UTF-8">
@@ -114,15 +116,15 @@ HOME_PAGE_HTML_TEMPLATE: str = f"""<!DOCTYPE html>
 </head>
 <body>
     <h1>My blogs</h1>
-    <div id="info-bar" aria-hidden="true">
-        <p>last blog on: <code>{{lastest_blog_time}} GMT</code> | \
+    <nav id="info-bar" aria-hidden="true">
+        <p>last blog on: <time>{{lastest_blog_time}}</time> GMT | \
 latest blog: <a href="{{latest_blog_url}}">{{latest_blog_title}}</a> | \
 <a href="{{git_url}}">git</a></p>
         <hr/>
-    </div>
-    <div>
+    </nav>
+    <main>
 {{content}}
-    </div>
+    </main>
 </body>
 </html>"""
 
