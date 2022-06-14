@@ -50,6 +50,8 @@
     ],
     "theme-colour": "#f9f6e8",
     "background-colour": "#262220",
+    "full-name": "Ari Archer",
+    "locale": "en_GB",
     "blogs": {
         "new-blog-management-system-": {
             "title": "TmV3IGJsb2cgbWFuYWdlbWVudCBzeXN0ZW0h",

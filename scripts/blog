@@ -59,6 +59,8 @@ DEFAULT_CONFIG: Dict = {
     "meta-icons": [{"src": "/favicon.ico", "sizes": "128x128", "type": "image/png"}],
     "theme-colour": "#f9f6e8",
     "background-colour": "#262220",
+    "full-name": "Ari Archer",
+    "locale": "en_GB",
     "blogs": {},
 }
 DEFAULT_CONFIG_FILE: str = "blog.json"
@@ -67,52 +69,57 @@ BLOG_VERSION: int = 1
 
 BLOG_MARKDOWN_TEMPLATE: str = """# %s
 
-<nav id="info-bar" aria-hidden="true">
-    <time>%s</time> GMT | <a href="%s">back</a> | <a href="/">home</a> | <a href="%s">git</a>
-</nav>
+<header>
+    <nav id="info-bar" aria-hidden="true">
+        <time>%s</time> GMT | <a href="%s">back</a> | <a href="/">home</a> \
+| <a href="%s">git</a>
+        <hr/>
+    </nav>
+</header>
 
-<hr/>
-
-<article id="blog-content">
 <main>
 
 %s
 
-</main>
-</article>"""
+</main>"""
 
-HTML_HEADER: str = """<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{title}</title>
+HTML_HEADER: str = f"""<head>
+    <meta charset="UTF-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>{{title}}</title>
 
-    <meta property="og:type" content="website">
+    <meta property="og:locale" content="{{locale}}"/>
 
-    <meta name="color-scheme" content="{theme_type}">
-
-    <meta name="keywords" content="{keywords}">
+    <meta name="color-scheme" content="{{theme_type}}"/>
+    <meta name="author" content="{{author}}"/>
+    <meta name="keywords" content="{{keywords}}"/>
     <meta name="robots" content="follow"/>
+    <meta name="generator" \
+content="Ari-web blog generator version {BLOG_VERSION}"/>
+    <meta name="color-scheme" content="{{title}}"/>
 
     <link rel="stylesheet" href="/content/styles.min.css"/>"""
 
 BLOG_HTML_TEMPLATE: str = f"""<!DOCTYPE html>
 <html lang="en">
 {HTML_HEADER}
-    <meta name="description" content="{{blog_description}}">
+    <meta name="description" content="{{blog_description}}"/>
+    <meta property="og:type" content="article"/>
 </head>
 <body>
-    <div>
-{{blog}}
-    </div>
+    <article id="blog-content">
+        {{blog}}
+    </article>
 </body>
 </html>"""
 
 HOME_PAGE_HTML_TEMPLATE: str = f"""<!DOCTYPE html>
 <html lang="en">
 {HTML_HEADER}
-    <meta name="description" content="{{home_page_description}}" />
-    <link rel="manifest" href="/manifest.json" />
+    <meta name="description" content="{{home_page_description}}"/>
+    <meta property="og:type" content="website"/>
+    <link rel="manifest" href="/manifest.json"/>
 </head>
 <body>
     <h1>My blogs</h1>
@@ -123,7 +130,7 @@ latest blog: <a href="{{latest_blog_url}}">{{latest_blog_title}}</a> | \
         <hr/>
     </nav>
     <main>
-{{content}}
+        {{content}}
     </main>
 </body>
 </html>"""
@@ -294,7 +301,8 @@ def build(config: Dict) -> Tuple[int, Dict]:
     def thread(blog_id: str, blog_meta: Dict):
         if blog_meta["version"] != BLOG_VERSION:
             log(
-                f"{blog_id}: unmatching version between {blog_meta['version']} and {BLOG_VERSION}",
+                f"{blog_id}: unmatching version between \
+{blog_meta['version']} and {BLOG_VERSION}",
                 "WARNING",
             )
 
@@ -323,11 +331,12 @@ def build(config: Dict) -> Tuple[int, Dict]:
             blog_html_full: str = BLOG_HTML_TEMPLATE.format(
                 title=config["page-title"],
                 theme_type=config["colourscheme-type"],
-                keywords=blog_meta["keywords"]
-                + " "
-                + " ".join(config["default-keywords"]),
+                keywords=blog_meta["keywords"].replace(" ", ", ")
+                + ", ".join(config["default-keywords"]),
                 blog_description=f"Blog on {blog_time} GMT -- {blog_title}",
                 blog=blog_base_html,
+                author=config["full-name"],
+                locale=config["locale"],
             )
 
             if blog_meta["minimise"]:
@@ -381,7 +390,7 @@ def build(config: Dict) -> Tuple[int, Dict]:
                 HOME_PAGE_HTML_TEMPLATE.format(
                     title=config["page-title"],
                     theme_type=config["colourscheme-type"],
-                    keywords=config["home-keywords"],
+                    keywords=", ".join(config["home-keywords"]),
                     home_page_description=config["page-description"],
                     lastest_blog_time=lastest_blog_time,
                     latest_blog_url=os.path.join(config["blog-dir"], latest_blog_id),
@@ -391,6 +400,8 @@ def build(config: Dict) -> Tuple[int, Dict]:
                     + "...",
                     git_url=config["git-url"],
                     content=blog_list,
+                    author=config["full-name"],
+                    locale=config["locale"],
                 )
             )
         )
@@ -407,12 +418,12 @@ def list_blogs(config: Dict) -> Tuple[int, Dict]:
     for blog_id, blog_meta in config["blogs"].items():
         print(
             f"""ID: {blog_id}
-Title: {b64decode(blog_meta['title']).decode()!r}
-Version: {blog_meta['version']}
-Time_of_creation: {format_time(blog_meta['time'])}
-Keywords: {blog_meta['keywords'].replace(' ', ', ')}
-Minimise: {yesno(blog_meta['minimise'])}
-Hidden: {yesno(blog_meta['hidden'])}
+Title: {b64decode(blog_meta["title"]).decode()!r}
+Version: {blog_meta["version"]}
+Time_of_creation: {format_time(blog_meta["time"])}
+Keywords: {blog_meta['keywords'].replace(" ", ", ")}
+Minimise: {yesno(blog_meta["minimise"])}
+Hidden: {yesno(blog_meta["hidden"])}
 """
         )
 
