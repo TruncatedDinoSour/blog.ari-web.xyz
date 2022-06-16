@@ -61,6 +61,7 @@ DEFAULT_CONFIG: Dict = {
     "background-colour": "#262220",
     "full-name": "Ari Archer",
     "locale": "en_GB",
+    "home-page-header": "My blogs",
     "blogs": {},
 }
 DEFAULT_CONFIG_FILE: str = "blog.json"
@@ -122,7 +123,7 @@ HOME_PAGE_HTML_TEMPLATE: str = f"""<!DOCTYPE html>
     <link rel="manifest" href="/manifest.json"/>
 </head>
 <body>
-    <h1>My blogs</h1>
+    <h1>{{page_header}}</h1>
     <nav id="info-bar" aria-hidden="true">
         <p>last blog on: <time>{{lastest_blog_time}}</time> GMT | \
 latest blog: <a href="{{latest_blog_url}}">{{latest_blog_title}}</a> | \
@@ -402,6 +403,7 @@ def build(config: Dict) -> Tuple[int, Dict]:
                     content=blog_list,
                     author=config["full-name"],
                     locale=config["locale"],
+                    page_header=config["home-page-header"],
                 )
             )
         )
