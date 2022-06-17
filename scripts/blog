@@ -95,7 +95,8 @@ HTML_HEADER: str = f"""<head>
     <meta name="color-scheme" content="{{theme_type}}"/>
     <meta name="author" content="{{author}}"/>
     <meta name="keywords" content="{{keywords}}"/>
-    <meta name="robots" content="follow"/>
+    <meta name="robots" content="follow, index, max-snippet:-1, \
+max-video-preview:-1, max-image-preview:large"/>
     <meta name="generator" \
 content="Ari-web blog generator version {BLOG_VERSION}"/>
     <meta name="color-scheme" content="{{title}}"/>
