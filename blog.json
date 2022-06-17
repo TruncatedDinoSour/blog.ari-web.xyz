@@ -25,7 +25,9 @@
         "opinion",
         "article",
         "ari-web",
-        "ari"
+        "ari",
+        "minimalism",
+        "lightweight"
     ],
     "page-title": "Ari::web -> Blog",
     "page-description": "My blog page",
@@ -38,7 +40,9 @@
         "ari-archer",
         "foss",
         "free",
-        "linux"
+        "linux",
+        "minimalism",
+        "lightweight"
     ],
     "base-homepage": "https://ari-web.xyz/",
     "meta-icons": [
