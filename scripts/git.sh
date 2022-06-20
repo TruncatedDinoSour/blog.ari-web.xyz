@@ -3,7 +3,7 @@
 set -xe
 
 main() {
-    python3 scripts/blog clean || true
+    python3 scripts/blog clean
 
     git add -A
     git commit -sam "update @ $(date)"
