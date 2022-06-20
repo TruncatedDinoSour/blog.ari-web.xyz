@@ -334,6 +334,7 @@ def build(config: Dict) -> Tuple[int, Dict]:
                 title=config["page-title"],
                 theme_type=config["colourscheme-type"],
                 keywords=blog_meta["keywords"].replace(" ", ", ")
+                + ", "
                 + ", ".join(config["default-keywords"]),
                 blog_description=f"Blog on {blog_time} GMT -- {blog_title}",
                 blog=blog_base_html,
@@ -392,7 +393,9 @@ def build(config: Dict) -> Tuple[int, Dict]:
                 HOME_PAGE_HTML_TEMPLATE.format(
                     title=config["page-title"],
                     theme_type=config["colourscheme-type"],
-                    keywords=", ".join(config["home-keywords"]),
+                    keywords=", ".join(config["home-keywords"])
+                    + ", "
+                    + ", ".join(config["default-keywords"]),
                     home_page_description=config["page-description"],
                     lastest_blog_time=lastest_blog_time,
                     latest_blog_url=os.path.join(config["blog-dir"], latest_blog_id),
