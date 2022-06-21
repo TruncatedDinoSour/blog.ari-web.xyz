@@ -16,7 +16,7 @@ from html import escape as html_escape
 from shutil import rmtree
 from threading import Thread
 from timeit import default_timer as code_timer
-from typing import Dict, List, Set, Tuple
+from typing import Dict, List, Optional, Set, Tuple
 from warnings import filterwarnings as filter_warnings
 
 from css_html_js_minify import html_minify  # type: ignore
@@ -274,7 +274,15 @@ def new_blog(config: Dict) -> Tuple[int, Dict]:
 def build(config: Dict) -> Tuple[int, Dict]:
     """Build, minimise and generate site"""
 
-    if len(config["blogs"]) < 1:
+    latest_blog_id: Optional[str] = next(
+        filter(
+            lambda bid: bid if not config["blogs"][bid]["hidden"] else None,
+            tuple(config["blogs"].keys())[::-1],
+        ),
+        None,
+    )
+
+    if not config["blogs"] or latest_blog_id is None:
         return log("Cannot build no blogs"), config
 
     if os.path.isdir(config["blog-dir"]):
@@ -369,7 +377,6 @@ def build(config: Dict) -> Tuple[int, Dict]:
     log("Building blog index...", "INFO")
 
     with open("index.html", "w") as index:
-        latest_blog_id: str = tuple(config["blogs"].keys())[-1]
         lastest_blog: Dict = config["blogs"][latest_blog_id]
         lastest_blog_time: str = format_time(lastest_blog["time"])
 
