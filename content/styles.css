@@ -18,7 +18,10 @@
     box-sizing: border-box;
 
     word-wrap: break-word;
-    word-break: break-all;
+    /*
+     * Removed to users asking me to:
+     * word-break: break-all;
+     * */
 
     scroll-behavior: smooth;
 }
