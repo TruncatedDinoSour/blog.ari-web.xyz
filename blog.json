@@ -354,6 +354,15 @@
             "keywords": "mental health depression medicine doctors family abuse eating",
             "minimise": true,
             "hidden": false
+        },
+        "abot--ari-bot--bot-on-collabvm": {
+            "title": "QWJvdCAoYXJpLWJvdCkgYm90IG9uIENvbGxhYlZN",
+            "content": "QWJvdCBpcyBhIGJvdCBjcmVhdGVkIGJ5IG1lIGJlY2F1c2Ugd2h5IG5vdCwKdGhlIHNvdXJjZSBjb2RlOiA8aHR0cHM6Ly9hcmktd2ViLnh5ei9naC9hYm90PgoKUHJlZml4IGlzIGp1c3QgYSBtZW50aW9uIG9mIGl0LCBmb3IgZXhhbXBsZToKYEBhcmktYm90IGRpZWAKCkNvbW1hbmRzOgoKLSBgaGlgIC0tIFNheXMgaGVsbG8gYmFjayB0byB0aGUgdXNlcgotIGBsb2cgPG1lfHVzZXI+IDxpbnxvdXQ+IDxhdXRoIGtleT5gIC0tIExvZ3MgYSB1c2VyIChvciB5b3UpIGluIG9yIG91dCwgbmVlZHMgYW4gYXV0aCBrZXkKLSBgZ2V0a2V5YCAtLSBHZXRzIHRoZSBhdXRoIGtleSBhbmQgcHJpbnRzIHNlcnZlcnNpZGUKLSBgd2hvYW1pYCAtLSBQcmludHMgeW91ciB1c2VybmFtZQotIGBkaWVgIC0tIE1ha2VzIHRoZSBib3QgZXhpdAotIGBzYXZlY2ZnYCAtLSBTYXZlcyB0aGUgY29uZmlnCi0gYG5vdGUgPG5hbWU+IDxjb250ZW50Li4uPmAgLS0gTWFrZSBhIG5vdGUKLSBgZ2V0IDxuYW1lPmAgLS0gUHJpbnQgYSBub3RlCi0gYGRlbCA8bmFtZT5gIC0tIERlbGV0ZSBhIG5vdGUK",
+            "version": 1,
+            "time": 1657249216.563755,
+            "keywords": "collabvm computernewb cvm bot python",
+            "minimise": true,
+            "hidden": false
         }
     }
 }
