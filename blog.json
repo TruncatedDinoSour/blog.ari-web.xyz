@@ -390,6 +390,15 @@
             "keywords": "",
             "minimise": true,
             "hidden": false
+        },
+        "i-m-leaving-collabvm": {
+            "title": "SSdtIGxlYXZpbmcgQ29sbGFiVk0=",
+            "content": "WWUsIHRoYXQncyBhYm91dCBpdCwgSSdtIGxlYXZpbmcgdGhlIENvbGxhYlZNIGNvbW11bml0eSBmb3IgZ29vZAoKSSdtIHRoZSBtb3N0IGFubm95aW5nIHBlcnNvbiB0aGVyZSwgSSBjYW4ndCB3aXRoIG15c2VsZiBvbiB0aGVyZSBsb2wsCkknbSBnb2luZyB0byBrZWVwIHRoZSBzdHVmZiBJIG1hZGUgZm9yIENvbGxhYlZNIHVwLCBidXQgSSB3b24ndCBiZQpwYXJ0aWNpcGF0aW5nIGluIHRoZSBjb21tdW5pdHkgYXQgYWxsCgpJJ20gc29ycnksIGJ1dCBDb2xsYWJWTSBpcyBub3QgZm9yIG1lIDopLCBJJ20gdG9vIG11Y2ggb2Ygd2hhdCBDb2xsYWJWTQp1c2VycyBjYWxsIGEgInNwZXJnIiBpbW8sIEkgdGhpbmsgaXQncyBiZXN0IGlmIEkganVzdCBsZWF2ZSBhbmQKbm90IGJvdGhlciBwZW9wbGUgb24gdGhlcmUK",
+            "version": 1,
+            "time": 1659477340.20285,
+            "keywords": "collabvm cvm computernewb",
+            "minimise": true,
+            "hidden": false
         }
     }
 }
