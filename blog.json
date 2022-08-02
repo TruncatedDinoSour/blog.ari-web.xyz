@@ -381,6 +381,15 @@
             "keywords": "rust rustlang modern modernism software software-modernism bloated bloat llvm algorithms programming code coding",
             "minimise": true,
             "hidden": false
+        },
+        "alcoholics": {
+            "title": "QWxjb2hvbGljcw==",
+            "content": "TXkgbW90aGVyIGlzIHN1Y2ggYSBiaXRjaCB3aGVuIHNoZSBkb2Vzbid0IGRyaW5rLApzaGUncyBub3cgYnVsbHlpbmcgbWUgZm9yIG15IG1lbnRhbCBoZWFsdGggbG1hbywKc2hlIGhhcyBiZWVuIHNjcmVhbWluZyBhdCBldmVyeW9uZSBhYm91dCBldmVyeXRoaW5nIHRoaXMgd2hvbGUgZGF5LAp3aHkgZGlkIEkgY29tZSBiYWNrIGhvbWUgZnJvbSBteSBncmFuZG1hLApzaGUncyBsaWtlIG15IGFjdHVhbCBtb3RoZXIsIG15IG1vdGhlciBpcyBqdXN0IGEgcGVyc29uCndobyBnYXZlIGJpcnRoIHRvIG1lCg==",
+            "version": 1,
+            "time": 1659458689.64372,
+            "keywords": "",
+            "minimise": true,
+            "hidden": false
         }
     }
 }
