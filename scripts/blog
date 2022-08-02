@@ -70,8 +70,8 @@ BLOG_VERSION: int = 1
 
 BLOG_MARKDOWN_TEMPLATE: str = """# %s
 
-<header>
-    <nav id="info-bar" aria-hidden="true">
+<header role="group">
+    <nav id="info-bar" aria-hidden="true" role="menubar">
         <time>%s</time> GMT | <a href="%s">back</a> | <a href="/">home</a> \
 | <a href="%s">git</a>
         <hr/>
@@ -101,7 +101,14 @@ max-video-preview:-1, max-image-preview:large"/>
 content="Ari-web blog generator version {BLOG_VERSION}"/>
     <meta name="color-scheme" content="{{title}}"/>
 
-    <link rel="stylesheet" href="/content/styles.min.css"/>"""
+    <link
+        rel="stylesheet"
+        href="/content/styles.min.css"
+        referrerpolicy="no-referrer"
+        type="text/css"
+        hreflang="en"
+    />
+"""
 
 BLOG_HTML_TEMPLATE: str = f"""<!DOCTYPE html>
 <html lang="en">
@@ -121,7 +128,13 @@ HOME_PAGE_HTML_TEMPLATE: str = f"""<!DOCTYPE html>
 {HTML_HEADER}
     <meta name="description" content="{{home_page_description}}"/>
     <meta property="og:type" content="website"/>
-    <link rel="manifest" href="/manifest.json"/>
+    <link
+        rel="manifest"
+        href="/manifest.json"
+        referrerpolicy="no-referrer"
+        type="application/json"
+        hreflang="en"
+    />
 </head>
 <body>
     <h1>{{page_header}}</h1>
