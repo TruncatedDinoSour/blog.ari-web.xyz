@@ -138,7 +138,7 @@ HOME_PAGE_HTML_TEMPLATE: str = f"""<!DOCTYPE html>
 </head>
 <body>
     <h1>{{page_header}}</h1>
-    <nav id="info-bar" aria-hidden="true">
+    <nav id="info-bar" aria-hidden="true" role="menubar">
         <p>last blog on: <time>{{lastest_blog_time}}</time> GMT | \
 latest blog: <a href="{{latest_blog_url}}">{{latest_blog_title}}</a> | \
 <a href="{{git_url}}">git</a></p>
