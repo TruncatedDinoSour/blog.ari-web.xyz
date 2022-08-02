@@ -70,7 +70,7 @@ BLOG_VERSION: int = 1
 
 BLOG_MARKDOWN_TEMPLATE: str = """# %s
 
-<header role="group">
+<header role="group" aria-hidden="true">
     <nav id="info-bar" aria-hidden="true" role="menubar">
         <time>%s</time> GMT | <a href="%s">back</a> | <a href="/">home</a> \
 | <a href="%s">git</a>
