@@ -120,6 +120,21 @@ BLOG_HTML_TEMPLATE: str = f"""<!DOCTYPE html>
     <article id="blog-content">
         {{blog}}
     </article>
+    <script src="https://giscus.app/client.js"
+        data-repo="user-take/blog.ari-web.xyz"
+        data-repo-id="R_kgDOHzHLWw"
+        data-category="General"
+        data-category-id="DIC_kwDOHzHLW84CQu6E"
+        data-mapping="pathname"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="0"
+        data-input-position="bottom"
+        data-theme="dark"
+        data-lang="en"
+        crossorigin="anonymous"
+        async>
+    </script>
 </body>
 </html>"""
 
