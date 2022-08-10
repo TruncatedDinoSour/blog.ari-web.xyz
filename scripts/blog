@@ -121,7 +121,7 @@ BLOG_HTML_TEMPLATE: str = f"""<!DOCTYPE html>
         {{blog}}
     </article>
     <script src="https://giscus.app/client.js"
-        data-repo="user-take/blog.ari-web.xyz"
+        data-repo="TruncatedDinosour/blog.ari-web.xyz"
         data-repo-id="R_kgDOHzHLWw"
         data-category="General"
         data-category-id="DIC_kwDOHzHLW84CQu6E"
