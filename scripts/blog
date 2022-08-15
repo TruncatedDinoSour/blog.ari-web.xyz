@@ -62,6 +62,7 @@ DEFAULT_CONFIG: Dict = {
     "full-name": "Ari Archer",
     "locale": "en_GB",
     "home-page-header": "My blogs",
+    "comment-url": "/c",
     "blogs": {},
 }
 DEFAULT_CONFIG_FILE: str = "blog.json"
@@ -73,7 +74,7 @@ BLOG_MARKDOWN_TEMPLATE: str = """# %s
 <header role="group" aria-hidden="true">
     <nav id="info-bar" aria-hidden="true" role="menubar">
         <time>%s</time> GMT | <a href="%s">back</a> | <a href="/">home</a> \
-| <a href="%s">git</a>
+| <a href="%s">git</a> | <a href="%s">comment</a>
         <hr/>
     </nav>
 </header>
@@ -344,6 +345,7 @@ def build(config: Dict) -> Tuple[int, Dict]:
                     blog_time,
                     config["base-homepage"],
                     config["git-url"],
+                    config["comment-url"],
                     markdown(b64decode(blog_meta["content"]).decode())
                     .replace("<h1>", "<h2>")
                     .replace("<h1/>", "<h2/>"),
