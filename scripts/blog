@@ -754,7 +754,7 @@ def main() -> int:
         dump_timer = code_timer()
 
         with open(DEFAULT_CONFIG_FILE, "w") as dcfg:
-            json.dump(config, dcfg, indent=(4 if NOT_CI_BUILD else 0))
+            json.dump(config, dcfg, indent=(4 if NOT_CI_BUILD else None))
 
         log(f"Dumped config in {code_timer() - dump_timer} seconds", "TIME")
 
