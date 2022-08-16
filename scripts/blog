@@ -318,7 +318,7 @@ def build(config: Dict) -> Tuple[int, Dict]:
 
         log("Done minifying CSS", "MINIFY")
 
-    Thread(target=build_css).start()
+    Thread(target=build_css, daemon=True).start()
 
     log("Building blogs...", "INFO")
 
@@ -381,7 +381,7 @@ def build(config: Dict) -> Tuple[int, Dict]:
             log(f"Hidden blog: {blog_id!r}", "HIDE")
             continue
 
-        t: Thread = Thread(target=thread, args=(blog_id, blog_meta))
+        t: Thread = Thread(target=thread, args=(blog_id, blog_meta), daemon=True)
         t.start()
 
         _tmp_threads.append(t)
