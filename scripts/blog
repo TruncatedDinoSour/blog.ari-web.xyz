@@ -5,10 +5,8 @@
 import json
 import os
 import random
-import readline
 import string
 import sys
-from atexit import register as fn_register
 from base64 import b64decode, b64encode
 from datetime import datetime
 from glob import iglob
@@ -24,6 +22,12 @@ from css_html_js_minify import process_single_css_file
 from markdown import markdown  # type: ignore
 from plumbum.commands.processes import ProcessExecutionError  # type: ignore
 from pyfzf import FzfPrompt  # type: ignore
+
+NOT_CI_BUILD: bool = not os.getenv("CI")
+
+if NOT_CI_BUILD:
+    import readline
+    from atexit import register as fn_register
 
 EXIT_OK: int = 0
 EXIT_ERR: int = 1
@@ -695,21 +699,23 @@ def usage(code: int = EXIT_ERR, config: Dict = None) -> int:
 def main() -> int:
     """Entry/main function"""
 
-    if not os.path.isfile(HISTORY_FILE):
-        open(HISTORY_FILE, "w").close()
+    if NOT_CI_BUILD:
+        if not os.path.isfile(HISTORY_FILE):
+            open(HISTORY_FILE, "w").close()
 
-    readline.parse_and_bind("tab: complete")
+        readline.parse_and_bind("tab: complete")
 
-    fn_register(readline.write_history_file, HISTORY_FILE)
-    fn_register(readline.read_history_file, HISTORY_FILE)
+        fn_register(readline.write_history_file, HISTORY_FILE)
+        fn_register(readline.read_history_file, HISTORY_FILE)
 
-    readline.read_history_file(HISTORY_FILE)
-    readline.set_history_length(5000)
+        readline.read_history_file(HISTORY_FILE)
+        readline.set_history_length(5000)
 
-    readline.set_auto_history(False)
+        readline.set_auto_history(False)
 
     if not os.path.isfile(DEFAULT_CONFIG_FILE):
         new_config()
+        log(f"PLease configure {DEFAULT_CONFIG_FILE!r}")
         return EXIT_ERR
 
     if len(sys.argv) != 2:
@@ -729,9 +735,7 @@ def main() -> int:
             "TIME",
         )
 
-        not_ci_build = not os.getenv("CI")
-
-        if config["blogs"] and not_ci_build:
+        if config["blogs"] and NOT_CI_BUILD:
             log("Sorting blogs by creation time...", "CLEANUP")
 
             sort_timer = code_timer()
@@ -745,15 +749,14 @@ def main() -> int:
 
             log(f"Sorted in {code_timer() - sort_timer} seconds", "TIME")
 
-        if not_ci_build:
-            log("Redumping config", "CONFIG")
+        log("Redumping config", "CONFIG")
 
-            dump_timer = code_timer()
+        dump_timer = code_timer()
 
-            with open(DEFAULT_CONFIG_FILE, "w") as dcfg:
-                json.dump(config, dcfg, indent=4)
+        with open(DEFAULT_CONFIG_FILE, "w") as dcfg:
+            json.dump(config, dcfg, indent=(4 if NOT_CI_BUILD else 0))
 
-            log(f"Dumped config in {code_timer() - dump_timer} seconds", "TIME")
+        log(f"Dumped config in {code_timer() - dump_timer} seconds", "TIME")
 
         return code
 
