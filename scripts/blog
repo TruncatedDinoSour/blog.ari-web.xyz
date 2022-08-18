@@ -350,11 +350,13 @@ def build(config: Dict) -> Tuple[int, Dict]:
                     config["base-homepage"],
                     config["git-url"],
                     config["comment-url"],
-                    markdown(b64decode(blog_meta["content"]).decode())
+                    markdown(
+                        b64decode(blog_meta["content"]).decode(),
+                        extensions=config["py-markdown-extensions"],
+                    )
                     .replace("<h1>", "<h2>")
                     .replace("<h1/>", "<h2/>"),
-                ),
-                extensions=config["py-markdown-extensions"],
+                )
             )
 
             blog_html_full: str = BLOG_HTML_TEMPLATE.format(
