@@ -5,4 +5,5 @@ plumbum
 pyfzf
 typing
 pymdown-extensions
+ujson
 

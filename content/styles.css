@@ -63,8 +63,15 @@ a {
     text-shadow: 0px 0px 6px white;
 }
 
-code {
-    white-space: pre-wrap !important;
+pre, pre * {
+    background-color: #181818;
+}
+
+pre {
+    padding: 1em;
+    word-wrap: initial;
+    overflow-y: scroll;
+    border-radius: 4px;
 }
 
 #info-bar {

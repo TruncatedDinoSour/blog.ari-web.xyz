@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 """Manage blogs"""
 
-import json
 import os
 import random
 import string
@@ -17,6 +16,7 @@ from timeit import default_timer as code_timer
 from typing import Dict, List, Optional, Set, Tuple
 from warnings import filterwarnings as filter_warnings
 
+import ujson  # type: ignore
 from css_html_js_minify import html_minify  # type: ignore
 from css_html_js_minify import process_single_css_file
 from markdown import markdown  # type: ignore
@@ -215,7 +215,7 @@ def new_config() -> None:
     log("Making new config...", "INFO")
 
     with open(DEFAULT_CONFIG_FILE, "w") as cfg:
-        json.dump(DEFAULT_CONFIG, cfg, indent=4)
+        ujson.dump(DEFAULT_CONFIG, cfg, indent=4)
 
 
 def pick_blog(config: Dict) -> str:
@@ -257,7 +257,6 @@ def new_blog(config: Dict) -> Tuple[int, Dict]:
         "version": BLOG_VERSION,
         "time": 0.0,
         "keywords": "",
-        "minimise": True,
     }
 
     file: str = f"/tmp/{s_title}.md"
@@ -280,7 +279,6 @@ def new_blog(config: Dict) -> Tuple[int, Dict]:
     readline.add_history(user_keywords)
 
     blog["keywords"] = html_escape(user_keywords)
-    blog["minimise"] = yn("Minimise blog")
     blog["hidden"] = yn("Hide blog", "n")
 
     blog["time"] = datetime.now().timestamp()
@@ -371,10 +369,9 @@ def build(config: Dict) -> Tuple[int, Dict]:
                 locale=config["locale"],
             )
 
-            if blog_meta["minimise"]:
-                log(f"Minifying {blog_id!r} HTML", "MINIFY")
-                blog_html_full = html_minify(blog_html_full)
-                log(f"Done minifying the HTML of {blog_id!r}", "MINIFY")
+            log(f"Minifying {blog_id!r} HTML", "MINIFY")
+            blog_html_full = html_minify(blog_html_full)
+            log(f"Done minifying the HTML of {blog_id!r}", "MINIFY")
 
             blog_html.write(blog_html_full)
 
@@ -456,7 +453,6 @@ Title: {b64decode(blog_meta["title"]).decode()!r}
 Version: {blog_meta["version"]}
 Time_of_creation: {format_time(blog_meta["time"])}
 Keywords: {blog_meta['keywords'].replace(" ", ", ")}
-Minimise: {yesno(blog_meta["minimise"])}
 Hidden: {yesno(blog_meta["hidden"])}
 """
         )
@@ -532,17 +528,6 @@ def edit_content(blog: str, config: Dict) -> int:
     return EXIT_OK
 
 
-def edit_minimise(blog: str, config: Dict) -> int:
-    minimise: bool = config["blogs"][blog]["minimise"]
-    str_minimise: str = "y" if minimise else "n"
-
-    config["blogs"][blog]["minimise"] = yn(
-        "Minimise this blog's HTML", str_minimise, str_minimise
-    )
-
-    return EXIT_OK
-
-
 def edit_hidden(blog: str, config: Dict) -> int:
     hidden: bool = config["blogs"][blog]["hidden"]
     str_hidden: str = "y" if hidden else "n"
@@ -557,7 +542,6 @@ EDIT_HOOKS: Dict = {
     "title": edit_title,
     "keywords": edit_keywords,
     "content": edit_content,
-    "minimise": edit_minimise,
     "hidden": edit_hidden,
 }
 
@@ -598,7 +582,7 @@ def gen_def_config(config: Dict) -> Tuple[int, Dict]:
     new_config()
 
     with open(DEFAULT_CONFIG_FILE, "r") as cfg:
-        config = json.load(cfg)
+        config = ujson.load(cfg)
 
     return EXIT_OK, config
 
@@ -637,7 +621,7 @@ def generate_metadata(config: Dict) -> Tuple[int, Dict]:
 
     with open("manifest.json", "w") as manifest:
         log(f"Generating {manifest.name}...", "GENERATE")
-        json.dump(
+        ujson.dump(
             {
                 "$schema": "https://json.schemastore.org/web-manifest-combined.json",
                 "short_name": config["short-name"],
@@ -730,7 +714,7 @@ def main() -> int:
     with open(DEFAULT_CONFIG_FILE, "r") as lcfg:
         cmd_time_init = code_timer()
 
-        code, config = SUBCOMMANDS[sys.argv[1]](config=json.load(lcfg))
+        code, config = SUBCOMMANDS[sys.argv[1]](config=ujson.load(lcfg))
 
         log(
             f"Finished in {code_timer() - cmd_time_init} seconds with code {code}",
@@ -756,7 +740,7 @@ def main() -> int:
         dump_timer = code_timer()
 
         with open(DEFAULT_CONFIG_FILE, "w") as dcfg:
-            json.dump(config, dcfg, indent=(4 if NOT_CI_BUILD else None))
+            ujson.dump(config, dcfg, indent=(4 if NOT_CI_BUILD else None))
 
         log(f"Dumped config in {code_timer() - dump_timer} seconds", "TIME")
 
