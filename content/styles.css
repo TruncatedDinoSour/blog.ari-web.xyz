@@ -64,13 +64,11 @@ a {
 }
 
 pre, pre * {
-    background-color: #181818;
+    background-color: #1f1b1a;
 }
 
 pre {
     padding: 1em;
-    word-wrap: initial;
-    overflow-y: scroll;
     border-radius: 4px;
 }
 
