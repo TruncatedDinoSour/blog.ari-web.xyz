@@ -2,13 +2,19 @@
 
 :root {
     color-scheme: dark;
+
+    --clr-bg: #262220;
+    --clr-fg: #f9f6e8;
+
+    --clr-code-bg: #1f1b1a;
+    --clr-code-fg: #f0f3e6;
 }
 
 *,
 *::before,
 *::after {
-    background-color: #262220;
-    color: #f9f6e8;
+    background-color: var(--clr-bg);
+    color: var(--clr-fg);
     font-family: Hack, hack, monospace;
 
     scrollbar-width: none;
@@ -58,18 +64,31 @@ li {
     margin: 0.5em;
 }
 
+pre,
+pre *,
+code {
+    color: var(--clr-code-fg);
+}
+
 a {
     text-decoration: none;
     text-shadow: 0px 0px 6px white;
 }
 
-pre, pre * {
-    background-color: #1f1b1a;
+pre,
+pre * {
+    background-color: var(--clr-code-bg);
 }
 
 pre {
     padding: 1em;
     border-radius: 4px;
+}
+
+code:not(pre code) {
+    background-color: var(--clr-code-bg);
+    border-radius: 2px;
+    padding: 0.2em;
 }
 
 #info-bar {
@@ -95,5 +114,22 @@ pre {
         transition-duration: 0.01ms !important;
 
         scroll-behavior: auto !important;
+    }
+}
+
+@media (prefers-contrast: more) {
+    :root {
+        --clr-bg: black;
+        --clr-fg: white;
+
+        --clr-code-bg: #181818;
+        --clr-code-fg: whitesmoke;
+    }
+
+    a {
+        text-shadow: none;
+
+        -webkit-text-decoration: underline dotted;
+        text-decoration: underline dotted;
     }
 }
