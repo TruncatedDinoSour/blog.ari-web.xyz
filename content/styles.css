@@ -37,10 +37,6 @@
     scroll-behavior: smooth;
 }
 
-html::-webkit-scrollbar {
-    display: none;
-}
-
 ::-webkit-scrollbar,
 ::-webkit-scrollbar-thumb {
     height: var(--scrollbar-height);
@@ -52,6 +48,11 @@ html::-webkit-scrollbar {
 
 ::-webkit-scrollbar-thumb {
     background-color: var(--clr-code-bg-dark);
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+    display: none !important;
 }
 
 /*
