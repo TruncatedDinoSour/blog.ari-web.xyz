@@ -36,6 +36,9 @@
     display: none;
 }
 
+/*
+ * Disabled because I want code blocks to scroll
+ *
 code,
 code *,
 pre,
@@ -45,6 +48,8 @@ pre * {
     white-space: -pre-wrap;
     white-space: -o-pre-wrap;
 }
+ *
+ */
 
 body {
     margin: auto;
@@ -64,12 +69,6 @@ li {
     margin: 0.5em;
 }
 
-pre,
-pre *,
-code {
-    color: var(--clr-code-fg);
-}
-
 a {
     text-decoration: none;
     text-shadow: 0px 0px 6px white;
@@ -78,6 +77,20 @@ a {
 pre,
 pre * {
     background-color: var(--clr-code-bg);
+}
+
+pre,
+pre *,
+code {
+    color: var(--clr-code-fg);
+}
+
+pre,
+pre code {
+    overflow-y: scroll !important;
+
+    scrollbar-width: initial;
+    -ms-overflow-style: initial;
 }
 
 pre {
