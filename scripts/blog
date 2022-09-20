@@ -104,7 +104,7 @@ HTML_HEADER: str = f"""<head>
 max-video-preview:-1, max-image-preview:large"/>
     <meta name="generator" \
 content="Ari-web blog generator version {BLOG_VERSION}"/>
-    <meta name="color-scheme" content="{{title}}"/>
+    <meta name="title" content="{{title}}"/>
 
     <link
         rel="stylesheet"
