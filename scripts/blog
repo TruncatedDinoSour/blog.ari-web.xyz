@@ -10,7 +10,9 @@ from base64 import b64decode, b64encode
 from datetime import datetime
 from glob import iglob
 from html import escape as html_escape
+from shutil import copy as copy_file
 from shutil import rmtree
+from tempfile import gettempdir
 from threading import Thread
 from timeit import default_timer as code_timer
 from typing import Dict, List, Optional, Set, Tuple
@@ -165,6 +167,19 @@ def yesno(cond: bool) -> str:
     return "Yes" if cond else "No"
 
 
+def tmp_path(path: str) -> str:
+    return os.path.join(gettempdir(), path)
+
+
+def editor(config: Dict, file: str) -> None:
+    tmp_editcfg: str = tmp_path(".editorconfig")
+
+    if os.path.islink(tmp_editcfg):
+        copy_file(".editorconfig", tmp_editcfg)
+
+    os.system(config["editor-command"] % file)
+
+
 def sanitise_title(title: str, titleset: Dict) -> str:
     _title: str = ""
 
@@ -259,10 +274,10 @@ def new_blog(config: Dict) -> Tuple[int, Dict]:
         "keywords": "",
     }
 
-    file: str = f"/tmp/{s_title}.md"
+    file: str = tmp_path(f"{s_title}.md")
 
     open(file, "w").close()
-    os.system(config["editor-command"] % file)
+    editor(config, file)
 
     if not os.path.isfile(file):
         return log(f"{file!r} does not exist"), config
@@ -509,12 +524,12 @@ def edit_keywords(blog: str, config: Dict) -> int:
 
 
 def edit_content(blog: str, config: Dict) -> int:
-    file: str = f"/tmp/{blog}.md"
+    file: str = tmp_path(f"{blog}.md")
 
     with open(file, "w") as blog_md:
         blog_md.write(b64decode(config["blogs"][blog]["content"]).decode())
 
-    os.system(config["editor-command"] % (file))
+    editor(config, file)
 
     with open(file, "r") as blog_md_new:
         content: str = blog_md_new.read()
