@@ -173,11 +173,7 @@ def tmp_path(path: str) -> str:
 
 
 def editor(config: Dict, file: str) -> None:
-    tmp_editcfg: str = tmp_path(".editorconfig")
-
-    if os.path.islink(tmp_editcfg):
-        copy_file(".editorconfig", tmp_editcfg)
-
+    copy_file(".editorconfig", tmp_path(".editorconfig"))
     os.system(config["editor-command"] % file)
 
 
