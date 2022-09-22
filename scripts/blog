@@ -607,7 +607,7 @@ def clean(config: Dict) -> Tuple[int, Dict]:
         config["blog-dir"],
         "index.html",
         "content/*.min.*",
-        "*.hash",
+        "blog_json_hash.txt",
         "manifest.json",
     }
 
@@ -649,7 +649,7 @@ def generate_metadata(config: Dict) -> Tuple[int, Dict]:
         )
 
     with open(DEFAULT_CONFIG_FILE, "rb") as blog_api_file:
-        log(f"Generating hash for {DEFAULT_CONFIG_FILE!r}")
+        log(f"Generating hash for {DEFAULT_CONFIG_FILE!r}", "HASH")
 
         with open(
             f"{DEFAULT_CONFIG_FILE.replace('.', '_')}_hash.txt", "w"
