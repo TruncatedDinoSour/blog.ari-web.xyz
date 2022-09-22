@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 """Manage blogs"""
 
+import hashlib
 import os
 import random
 import string
@@ -650,6 +651,14 @@ def generate_metadata(config: Dict) -> Tuple[int, Dict]:
             },
             manifest,
         )
+
+    with open(DEFAULT_CONFIG_FILE, "rb") as blog_api_file:
+        log(f"Generating hash for {DEFAULT_CONFIG_FILE!r}")
+
+        with open(
+            f"{DEFAULT_CONFIG_FILE.replace('.', '_')}_hash.txt", "w"
+        ) as blog_api_hash:
+            blog_api_hash.write(hashlib.sha256(blog_api_file.read()).hexdigest())
 
     return EXIT_OK, config
 
