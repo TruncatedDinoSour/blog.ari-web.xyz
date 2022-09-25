@@ -442,6 +442,14 @@
             "time": 1664069535.771847,
             "keywords": "minification javascript css development server server-site open-source foss",
             "hidden": false
+        },
+        "the--www--subdomain-is-no-longer-the-default": {
+            "title": "VGhlICd3d3cnIHN1YmRvbWFpbiBpcyBubyBsb25nZXIgdGhlIGRlZmF1bHQ=",
+            "content": "T2theSwgZmlyc3QsIG15IGFwb2xvZ2llcyBmb3IgbWFraW5nIHNvIG1hbnkgYXJpLXdlYiByZWxhdGVkCnRvcGljcyByZWNlbnRseSwgYXJpLXdlYiBpcyBnb2luZyB0aHJvdWdoIGEgbG90IG9mIGltcG9ydGFudApjaGFuZ2VzIHJlY2VudGx5IGFuZCBJIGhhdmUgdG8gdXBkYXRlIHBlb3BsZSBzb21laG93CgpBbnl3YXlzLCBkdWUgdG8gbmV0bGlmeSBoYW5kbGluZyB0aGUgcm9vdCBsZXZlbCByZWRpcmVjdCB3ZWlyZGx5CnJlY2VudGx5IGFzIHNob3duIGhlcmU6CgotIDxodHRwczovL2Fuc3dlcnMubmV0bGlmeS5jb20vdC9icm9rZW4taHN0cy1vbi1uZXRsaWZ5LXJvb3QtbGV2ZWwtZG9tYWluLzc2MTkwLzI+Ci0gPGh0dHBzOi8vYW5zd2Vycy5uZXRsaWZ5LmNvbS90L3JhbmRvbS1yZWRpcmVjdC1iZWhhdmlvdXItYW5kLWhzdHMtcHJlbG9hZC1lcnJvci1odHRwLXNob3VsZC1pbW1lZGlhdGVseS1yZWRpcmVjdC10by1odHRwcy81MzY5OS8xMz4KCk15IEhTVFMgd2FzIHF1aXRlIG1lc3NlZCB1cCwgYnV0IHRoZW4gSSB0aG91Z2h0LCAnd2h5IG5vdCBqdXN0CmRlcHJlY2F0ZSBpdCcsIHNvIEkgZGlkLCBpdCBzaG91bGQgbm90IGNhdXNlIG11Y2ggYnJlYWthZ2UKYXMgPGh0dHBzOi8vd3d3LmFyaS13ZWIueHl6Lz4gaXMgc3RpbGwgdmFsaWQsIGp1c3QgcmVkaXJlY3RzIHRvCjxodHRwczovL2FyaS13ZWIueHl6Lz4KCk5ldGxpZnkgc2hvdWxkIGZpeCB0aGlzLCBidXQgSSBjYW4ndCBkbyBtdWNoIGFib3V0IGl0LCBhbHRob3VnaApJIHRoaW5rIEkgbGlrZSBpdCwgc28gSSB0aGluayBpdCdzIGRlcHJlY2F0ZWQgZm9yZXZlciA6KQoKVGhhbmtzIGZvciBwdXR0aW5nIHVwIHdpdGggbXkgYXJpLXdlYiB1cGRhdGVzIHNoaXQsIGFzIG9mIG5vdywKY3lhIDpECg==",
+            "version": 1,
+            "time": 1664072489.997986,
+            "keywords": "ari-web-updates update hsts netlify www subdomain dns http https",
+            "hidden": false
         }
     }
 }
