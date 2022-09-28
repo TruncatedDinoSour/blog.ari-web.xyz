@@ -99,7 +99,6 @@ HTML_HEADER: str = f"""<head>
     <title>{{title}}</title>
 
     <meta property="og:locale" content="{{locale}}"/>
-    <meta name="og:title" content="{{title}}"/>
 
     <meta name="color-scheme" content="{{theme_type}}"/>
     <meta name="author" content="{{author}}"/>
@@ -108,7 +107,6 @@ HTML_HEADER: str = f"""<head>
 max-video-preview:-1, max-image-preview:large"/>
     <meta name="generator" \
 content="Ari-web blog generator version {BLOG_VERSION}"/>
-    <meta name="title" content="{{title}}"/>
 
     <link
         rel="stylesheet"
