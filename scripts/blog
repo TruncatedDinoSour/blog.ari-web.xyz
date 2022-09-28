@@ -99,6 +99,7 @@ HTML_HEADER: str = f"""<head>
     <title>{{title}}</title>
 
     <meta property="og:locale" content="{{locale}}"/>
+    <meta name="og:title" content="{{title}}"/>
 
     <meta name="color-scheme" content="{{theme_type}}"/>
     <meta name="author" content="{{author}}"/>
@@ -107,6 +108,7 @@ HTML_HEADER: str = f"""<head>
 max-video-preview:-1, max-image-preview:large"/>
     <meta name="generator" \
 content="Ari-web blog generator version {BLOG_VERSION}"/>
+    <meta name="title" content="{{title}}"/>
 
     <link
         rel="stylesheet"
@@ -121,8 +123,6 @@ BLOG_HTML_TEMPLATE: str = f"""<!DOCTYPE html>
 <html lang="en">
 {HTML_HEADER}
     <meta name="description" content="{{blog_description}}"/>
-    <meta name="title" content="{{title}} | {{blog_description}}"/>
-
     <meta property="og:type" content="article"/>
 </head>
 <body>
@@ -136,9 +136,8 @@ HOME_PAGE_HTML_TEMPLATE: str = f"""<!DOCTYPE html>
 <html lang="en">
 {HTML_HEADER}
     <meta name="description" content="{{home_page_description}}"/>
-    <meta name="title" content="{{title}} | {{home_page_description}}"/>
-
     <meta property="og:type" content="website"/>
+
     <link
         rel="manifest"
         href="/manifest.json"
