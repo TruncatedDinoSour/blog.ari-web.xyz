@@ -5,4 +5,5 @@ index.html
 .blog_history
 venv/
 /backups/
+.ccls-cache/
 
