@@ -10,6 +10,8 @@
     --clr-code-fg: #f0f3e6;
     --clr-code-bg-dark: #181414;
 
+    --clr-link: #cdc4c4; /* #9e9b9b; */
+
     --scrollbar-height: 6px; /* TODO: Firefox */
 }
 
@@ -35,6 +37,8 @@
      * */
 
     scroll-behavior: smooth;
+
+    outline-offset: 3px;
 }
 
 ::-webkit-scrollbar,
@@ -55,9 +59,7 @@ body::-webkit-scrollbar {
     display: none !important;
 }
 
-/*
- * Removed because I want code blocks to scroll
- *
+/* Removed because I want code blocks to scroll
 code,
 code *,
 pre,
@@ -67,8 +69,7 @@ pre * {
     white-space: -pre-wrap;
     white-space: -o-pre-wrap;
 }
- *
- */
+*/
 
 body {
     margin: auto;
@@ -90,8 +91,28 @@ li {
 
 a {
     text-decoration: none;
-    text-shadow: 0px 0px 4px white;
+    color: var(--clr-link);
+    font-style: italic;
 }
+
+a:focus,
+a:hover {
+    text-decoration: underline;
+}
+
+/*
+a:not(li > a)::before {
+    content: "[";
+    font-style: bold;
+    color: #c9c3c3;
+}
+
+a:not(li > a)::after {
+    content: "]";
+    font-style: bold;
+    color: #c9c3c3;
+}
+*/
 
 pre,
 pre * {
@@ -171,9 +192,9 @@ code:not(pre code) {
         -ms-overflow-style: initial !important;
     }
 
-    a {
-        text-shadow: none !important;
-
+    a,
+    a:focus,
+    a:hover {
         -webkit-text-decoration: underline dotted !important;
         text-decoration: underline dotted !important;
     }
