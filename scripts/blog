@@ -80,22 +80,24 @@ BLOG_MARKDOWN_TEMPLATE: str = """<header role="group">
     <h1 role="heading" aria-level="1">%s</h1>
 
     <nav id="info-bar" role="menubar">
-        <a aria-label="jump to the main content" href="#main">main</a>
+        <a role="menuitem" aria-label="jump to the main content" href="#main">
+            main
+        </a>
         <span role="seperator" aria-hidden="true">|</span>
 
-        <span role="time"><time>%s</time> GMT</span>
+        <span role="menuitem" role="time"><time>%s</time> GMT</span>
         <span role="seperator" aria-hidden="true">|</span>
 
-        <a aria-hidden="true" href="%s">back</a>
+        <a role="menuitem" aria-hidden="true" href="%s">back</a>
         <span role="seperator" aria-hidden="true">|</span>
 
-        <a href="/">home</a>
+        <a role="menuitem" href="/">home</a>
         <span role="seperator" aria-hidden="true">|</span>
 
-        <a href="%s">git</a>
+        <a role="menuitem" href="%s">git</a>
         <span role="seperator" aria-hidden="true">|</span>
 
-        <a href="%s">comment</a>
+        <a role="menuitem" href="%s">comment</a>
 
         <hr aria-hidden="true" role="seperator" />
     </nav>
@@ -169,24 +171,30 @@ HOME_PAGE_HTML_TEMPLATE: str = f"""<!DOCTYPE html>
 
         <nav id="info-bar" role="menubar">
             <p role="navigation">
-                <a aria-label="jump to the main content" href="#main">main</a>
+                <a
+                    role="menuitem"
+                    aria-label="jump to the main content"
+                    href="#main"
+                >
+                    main
+                </a>
 
                 <span aria-hidden="true" role="seperator">|</span>
 
-                <span role="time">
+                <span role="menuitem" role="time">
                     latest update: <time>{{lastest_blog_time}}</time> GMT
                 </span>
 
                 <span aria-hidden="true" role="seperator">|</span>
 
-                <span>
+                <span role="menuitem">
                     latest blog: \
                     <a href="{{latest_blog_url}}">{{latest_blog_title}}</a>
-                </span>
+                </span role="menuitem">
 
                 <span aria-hidden="true" role="seperator">|</span>
 
-                <a href="{{git_url}}">git</a>
+                <a role="menuitem" href="{{git_url}}">git</a>
             </p>
 
             <hr aria-hidden="true" role="seperator" />
