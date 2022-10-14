@@ -365,7 +365,8 @@ def build(config: Dict) -> Tuple[int, Dict]:
                         extensions=config["py-markdown-extensions"],
                     )
                     .replace("<h1>", "<h2>")
-                    .replace("<h1/>", "<h2/>"),
+                    .replace("<h1/>", "<h2/>")
+                    .replace("<pre>", '<pre role="code" tabindex="0">'),
                 )
             )
 
