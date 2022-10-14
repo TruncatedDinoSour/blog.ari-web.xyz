@@ -460,10 +460,10 @@ def build(config: Dict) -> Tuple[int, Dict]:
         lastest_blog: Dict = config["blogs"][latest_blog_id]
         lastest_blog_time: str = format_time(lastest_blog["time"])
 
-        blog_list = "<ul>"
+        blog_list = '<ul aria-label="latest blogs">'
 
         for blog_id, blog_meta in reversed(config["blogs"].items()):
-            blog_list += '<li aria-label="latest blogs">'
+            blog_list += "<li>"
 
             if blog_meta["hidden"]:
                 blog_list += '<i aria-label="hidden blog">Blog hidden by the owner</i>'
