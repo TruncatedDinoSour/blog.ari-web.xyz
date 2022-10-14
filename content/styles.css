@@ -138,7 +138,8 @@ pre {
     border-radius: 4px;
 }
 
-code:not(pre code) {
+code:not(pre code),
+time {
     background-color: var(--clr-code-bg);
     border-radius: 2px;
     padding: 0.2em;
