@@ -85,7 +85,7 @@ BLOG_MARKDOWN_TEMPLATE: str = """<header role="group">
         </a>
         <span role="seperator" aria-hidden="true">|</span>
 
-        <span role="menuitem" role="time"><time>%s</time> GMT</span>
+        <span role="menuitem"><time>%s</time> GMT</span>
         <span role="seperator" aria-hidden="true">|</span>
 
         <a role="menuitem" aria-hidden="true" href="%s">back</a>
@@ -169,19 +169,17 @@ HOME_PAGE_HTML_TEMPLATE: str = f"""<!DOCTYPE html>
     <header>
         <h1 role="heading" aria-level="1">{{page_header}}</h1>
 
-        <nav id="info-bar" role="menubar">
-            <p role="navigation">
+        <nav id="info-bar" role="navigation">
+            <p role="menubar">
                 <a
                     role="menuitem"
                     aria-label="jump to the main content"
                     href="#main"
-                >
-                    main
-                </a>
+                >main</a>
 
                 <span aria-hidden="true" role="seperator">|</span>
 
-                <span role="menuitem" role="time">
+                <span role="menuitem">
                     latest update: <time>{{lastest_blog_time}}</time> GMT
                 </span>
 
@@ -190,7 +188,7 @@ HOME_PAGE_HTML_TEMPLATE: str = f"""<!DOCTYPE html>
                 <span role="menuitem">
                     latest blog: \
                     <a href="{{latest_blog_url}}">{{latest_blog_title}}</a>
-                </span role="menuitem">
+                </span>
 
                 <span aria-hidden="true" role="seperator">|</span>
 
