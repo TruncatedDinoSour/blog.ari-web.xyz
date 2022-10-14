@@ -80,9 +80,8 @@ BLOG_MARKDOWN_TEMPLATE: str = """<header role="group">
     <h1 role="heading" aria-level="1">%s</h1>
 
     <nav id="info-bar" role="menubar">
-        <a role="menuitem" aria-label="jump to the main content" href="#main">
-            main
-        </a>
+        <a role="menuitem" aria-label="jump to the main content" href="#main">\
+main</a>
         <span role="seperator" aria-hidden="true">|</span>
 
         <span role="menuitem"><time>%s</time> GMT</span>
