@@ -16,7 +16,7 @@ from shutil import rmtree
 from tempfile import gettempdir
 from threading import Thread
 from timeit import default_timer as code_timer
-from typing import Dict, List, Optional, Set, Tuple
+from typing import Callable, Dict, List, Optional, Set, Tuple
 from warnings import filterwarnings as filter_warnings
 
 import ujson  # type: ignore
@@ -145,7 +145,9 @@ BLOG_HTML_TEMPLATE: str = f"""<!DOCTYPE html>
 </head>
 <body>
     <article id="blog-content">
-        {{blog}}
+
+{{blog}}
+
     </article>
 </body>
 </html>"""
@@ -212,7 +214,9 @@ HOME_PAGE_HTML_TEMPLATE: str = f"""<!DOCTYPE html>
 
 
 def log(message: str, header: str = "ERROR", code: int = EXIT_ERR) -> int:
-    sys.stderr.write(f"{header}: {message}\n")
+    if not (not NOT_CI_BUILD and header != "ERROR"):
+        sys.stderr.write(f"{header}: {message}\n")
+
     return code
 
 
@@ -376,8 +380,28 @@ def build(config: Dict) -> Tuple[int, Dict]:
         saved_stdout = sys.stdout
         sys.stdout = open(os.devnull, "w")
 
+        css_threads: List[Thread] = []
+
+        def _thread(t: Callable) -> None:
+            css_threads.append(Thread(target=t, daemon=True))
+            css_threads[-1].start()
+
         if os.path.isfile("content/styles.css"):
-            process_single_css_file("content/styles.css")
+            log("Minifying main styles", "MINIFY")
+            _thread(lambda: process_single_css_file("content/styles.css"))
+
+        if os.path.isdir("content/fonts"):
+            log("Minifying fonts...", "MINIFY")
+
+            for font in iglob("content/fonts/*.css"):
+                if font.endswith(".min.css"):
+                    continue
+
+                log(f"Minifying font file: {font}", "MINIFY")
+                _thread(lambda: process_single_css_file(font))
+
+        for t in css_threads:
+            t.join()
 
         sys.stdout.close()
         sys.stdout = saved_stdout
