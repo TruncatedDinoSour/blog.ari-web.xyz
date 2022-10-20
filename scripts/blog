@@ -81,16 +81,16 @@ BLOG_MARKDOWN_TEMPLATE: str = """<header role="group">
 
     <nav id="info-bar" role="menubar">
         <a role="menuitem" aria-label="jump to the main content" href="#main">\
-main</a>
+skip</a>
         <span role="seperator" aria-hidden="true">|</span>
 
         <span role="menuitem"><time>%s</time> GMT</span>
         <span role="seperator" aria-hidden="true">|</span>
 
-        <a role="menuitem" aria-hidden="true" href="%s">back</a>
+        <a role="menuitem" href="/">home</a>
         <span role="seperator" aria-hidden="true">|</span>
 
-        <a role="menuitem" href="/">home</a>
+        <a role="menuitem" aria-hidden="true" href="%s">website</a>
         <span role="seperator" aria-hidden="true">|</span>
 
         <a role="menuitem" href="%s">git</a>
@@ -174,7 +174,7 @@ HOME_PAGE_HTML_TEMPLATE: str = f"""<!DOCTYPE html>
                     role="menuitem"
                     aria-label="jump to the main content"
                     href="#main"
-                >main</a>
+                >skip</a>
 
                 <span aria-hidden="true" role="seperator">|</span>
 

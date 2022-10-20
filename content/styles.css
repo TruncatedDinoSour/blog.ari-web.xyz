@@ -6,6 +6,11 @@
     --clr-bg: #262220;
     --clr-fg: #f9f6e8;
 
+    --clr-blockquote-fg: #e6e0c8;
+    --clr-blockquote-bg: #ede9d3;
+
+    --blockquote-width: 2px;
+
     --clr-code-bg: #1f1b1a;
     --clr-code-fg: #f0f3e6;
     --clr-code-bg-dark: #181414;
@@ -153,6 +158,28 @@ time {
     padding: 0.3em;
 }
 
+blockquote {
+    margin: 10px 0;
+    overflow: hidden;
+    padding: 0 0 0 20px;
+    font-weight: 100;
+    position: relative;
+}
+
+blockquote:before {
+    content: "";
+    border-left: var(--blockquote-width) solid var(--clr-blockquote-bg); /* Thx cel */
+    position: absolute;
+    bottom: 14px;
+    top: 13px;
+    left: 0;
+}
+
+blockquote,
+blockquote * {
+    color: var(--clr-blockquote-fg);
+}
+
 @media (prefers-reduced-motion: reduce) {
     *,
     *::before,
@@ -176,8 +203,13 @@ time {
         --clr-bg: black;
         --clr-fg: white;
 
+        --clr-blockquote-fg: whitesmoke;
+        --clr-blockquote-bg: gray;
+
         --clr-code-bg: #181818;
         --clr-code-fg: whitesmoke;
+
+        --blockquote-width: 4px;
 
         --scrollbar-height: 12px; /* TODO: Firefox */
     }
