@@ -90,13 +90,13 @@ skip</a>
         <a role="menuitem" href="/">home</a>
         <span role="seperator" aria-hidden="true">|</span>
 
-        <a role="menuitem" aria-hidden="true" href="%s">website</a>
+        <a role="menuitem" href="%s">comment</a>
+        <span role="seperator" aria-hidden="true">|</span>
+
+        <a role="menuitem" href="%s">website</a>
         <span role="seperator" aria-hidden="true">|</span>
 
         <a role="menuitem" href="%s">git</a>
-        <span role="seperator" aria-hidden="true">|</span>
-
-        <a role="menuitem" href="%s">comment</a>
 
         <hr aria-hidden="true" role="seperator" />
     </nav>
@@ -409,9 +409,9 @@ def build(config: Dict) -> Tuple[int, Dict]:
                 % (
                     blog_title,
                     blog_time,
+                    config["comment-url"],
                     config["base-homepage"],
                     config["git-url"],
-                    config["comment-url"],
                     markdown(
                         b64decode(blog_meta["content"]).decode(),
                         extensions=config["py-markdown-extensions"],
