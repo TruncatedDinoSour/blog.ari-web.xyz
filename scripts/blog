@@ -102,7 +102,7 @@ skip</a>
     </nav>
 </header>
 
-<main id="main">
+<article id="main">
 
 <!-- Main blog content: Begin -->
 
@@ -110,7 +110,7 @@ skip</a>
 
 <!-- Main blog content: End -->
 
-</main>"""
+</article>"""
 
 HTML_HEADER: str = f"""<head>
     <meta charset="UTF-8"/>
@@ -144,11 +144,11 @@ BLOG_HTML_TEMPLATE: str = f"""<!DOCTYPE html>
     <meta property="og:type" content="article"/>
 </head>
 <body>
-    <article id="blog-content">
+    <main id="blog-content">
 
 {{blog}}
 
-    </article>
+    </main>
 </body>
 </html>"""
 
