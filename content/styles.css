@@ -43,7 +43,7 @@
 
     scroll-behavior: smooth;
 
-    outline-offset: 3px;
+    outline-offset: 4px;
 }
 
 ::-webkit-scrollbar,
@@ -180,9 +180,31 @@ blockquote * {
     color: var(--clr-blockquote-fg);
 }
 
-a[data-pl] {
-    margin-right: 0.3em;
-    float: left !important;
+*[data-pl] {
+    padding-top: 0.06em;
+    padding-bottom: 0.06em;
+}
+
+*[data-pl] * {
+    display: inline;
+    font-size: inherit !important;
+}
+
+*[data-pl] a {
+    padding-right: 0.3em;
+    opacity: 0.3;
+    transition: opacity 0.1s ease-in-out;
+}
+
+*[data-pl]:hover a,
+*[data-pl]:focus a {
+    opacity: 1;
+}
+
+@media only screen and (max-width: 1360px) {
+    *[data-pl] a {
+        opacity: 1;
+    }
 }
 
 @media (prefers-reduced-motion: reduce) {

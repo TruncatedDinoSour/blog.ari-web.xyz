@@ -16,7 +16,7 @@ from shutil import rmtree
 from tempfile import gettempdir
 from threading import Thread
 from timeit import default_timer as code_timer
-from typing import Callable, Dict, Iterable, List, Set, Tuple
+from typing import Callable, Dict, Iterable, List, Set, Tuple, Union
 from warnings import filterwarnings as filter_warnings
 
 import ujson  # type: ignore
@@ -249,27 +249,51 @@ def truncate_str(string: str, length: int) -> str:
 
 class AddHeaderLinks(Treeprocessor):
     def run(self, root):
-        self.ids: List[str] = []
+        ids: List[str] = []
+        heading_sizes_em: Dict[str, Union[float, int]] = {
+            "h1": 1.52,
+            "h2": 1.32,
+            "h3": 1.15,
+            "h4": 1,
+            "h5": 0.87,
+            "h6": 0.76,
+        }
+        all_headings: Tuple[str] = tuple(f"h{hl}" for hl in range(2, 7))
 
-        for h_level in range(2, 7):
-            for h in root.findall(f"h{h_level}"):
-                gen_id: str = sanitise_title(h.text, self.ids)
-                self.ids.append(gen_id)
+        for idx, elem in enumerate(root):
+            if elem.tag not in all_headings:
+                continue
 
-                link = h.makeelement(
-                    "a",
-                    {
-                        "href": f"#{gen_id}",
-                        "data-pl": "",
-                        "aria-hidden": "true",
-                        "focusable": "false",
-                        "tabindex": "-1",
-                    },
-                )
-                link.text = "#"
+            gen_id: str = sanitise_title(elem.text, ids)
+            ids.append(gen_id)
 
-                h.append(link)
-                h.set("id", gen_id)
+            heading_parent = elem.makeelement(
+                "div",
+                {
+                    "data-pl": "",
+                    "style": f"font-size:{heading_sizes_em[elem.tag] + 0.1}em",
+                },
+            )
+
+            heading = heading_parent.makeelement(elem.tag, {"id": gen_id})
+            link = heading.makeelement(
+                "a",
+                {
+                    "href": f"#{gen_id}",
+                    "aria-hidden": "true",
+                    "focusable": "false",
+                    "tabindex": "-1",
+                },
+            )
+
+            link.text = "#"
+            heading_parent.append(link)
+
+            heading.text = elem.text
+            heading_parent.append(heading)
+
+            root.remove(elem)
+            root.insert(idx, heading_parent)
 
 
 class AddHeaderLinksExt(Extension):
