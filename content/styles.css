@@ -193,6 +193,8 @@ blockquote * {
 *[data-pl] a {
     padding-right: 0.3em;
     opacity: 0.3;
+    -webkit-transition: opacity 0.1s ease-in-out;
+    -o-transition: opacity 0.1s ease-in-out;
     transition: opacity 0.1s ease-in-out;
 }
 
@@ -201,7 +203,7 @@ blockquote * {
     opacity: 1;
 }
 
-@media only screen and (max-width: 500px) {
+@media only screen and (max-width: 600px) {
     *[data-pl] a {
         opacity: 1;
     }
@@ -257,5 +259,9 @@ blockquote * {
     a:hover {
         -webkit-text-decoration: underline dotted !important;
         text-decoration: underline dotted !important;
+    }
+
+    *[data-pl] a {
+        opacity: 1;
     }
 }
