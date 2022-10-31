@@ -201,7 +201,7 @@ blockquote * {
     opacity: 1;
 }
 
-@media only screen and (max-width: 1360px) {
+@media only screen and (max-width: 500px) {
     *[data-pl] a {
         opacity: 1;
     }
