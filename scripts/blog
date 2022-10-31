@@ -16,13 +16,15 @@ from shutil import rmtree
 from tempfile import gettempdir
 from threading import Thread
 from timeit import default_timer as code_timer
-from typing import Callable, Dict, List, Optional, Set, Tuple
+from typing import Callable, Dict, Iterable, List, Set, Tuple
 from warnings import filterwarnings as filter_warnings
 
 import ujson  # type: ignore
 from css_html_js_minify import html_minify  # type: ignore
 from css_html_js_minify import process_single_css_file
 from markdown import markdown  # type: ignore
+from markdown.extensions import Extension  # type: ignore
+from markdown.treeprocessors import Treeprocessor  # type: ignore
 from plumbum.commands.processes import ProcessExecutionError  # type: ignore
 from pyfzf import FzfPrompt  # type: ignore
 
@@ -213,15 +215,74 @@ HOME_PAGE_HTML_TEMPLATE: str = f"""<!DOCTYPE html>
 </html>"""
 
 
+def sanitise_title(title: str, titleset: Iterable, _nosep: bool = False) -> str:
+    _title: str = ""
+
+    for char in title:
+        _title += (
+            char
+            if char not in string.whitespace + string.punctuation
+            else "-"
+            if _title and _title[-1] != "-"
+            else ""
+        )
+
+    _title = _title.lower().rstrip("-")
+
+    return (
+        _title
+        if _title not in titleset and _title.strip()
+        else sanitise_title(
+            _title + ("" if _nosep else "-") + random.choice(string.digits),
+            titleset,
+            True,
+        )
+    )
+
+
+def truncate_str(string: str, length: int) -> str:
+    if len(string) <= length:
+        return string
+
+    return string[:length] + "..."
+
+
+class AddHeaderLinks(Treeprocessor):
+    def run(self, root):
+        self.ids: List[str] = []
+
+        for h_level in range(2, 7):
+            for h in root.findall(f"h{h_level}"):
+                gen_id: str = sanitise_title(h.text, self.ids)
+                self.ids.append(gen_id)
+
+                link = h.makeelement(
+                    "a",
+                    {
+                        "href": f"#{gen_id}",
+                        "data-pl": "",
+                        "aria-hidden": "true",
+                        "focusable": "false",
+                        "tabindex": "-1",
+                    },
+                )
+                link.text = "#"
+
+                h.append(link)
+                h.set("id", gen_id)
+
+
+class AddHeaderLinksExt(Extension):
+    def extendMarkdown(self, md, key: str = "add_header_links", index: int = int(1e8)):
+        md.registerExtension(self)
+        md.treeprocessors.register(AddHeaderLinks(md.parser), key, index)
+
+
 def log(message: str, header: str = "ERROR", code: int = EXIT_ERR) -> int:
     if not (not NOT_CI_BUILD and header != "ERROR"):
         sys.stderr.write(f"{header}: {message}\n")
 
     return code
-
-
-def yesno(cond: bool) -> str:
-    return "Yes" if cond else "No"
 
 
 def tmp_path(path: str) -> str:
@@ -231,21 +292,6 @@ def tmp_path(path: str) -> str:
 def editor(config: Dict, file: str) -> None:
     copy_file(".editorconfig", tmp_path(".editorconfig"))
     os.system(config["editor-command"] % file)
-
-
-def sanitise_title(title: str, titleset: Dict) -> str:
-    _title: str = ""
-
-    for char in title:
-        _title += char if char not in string.whitespace + string.punctuation else "-"
-
-    _title = _title.lower()
-
-    return (
-        _title
-        if _title not in titleset and _title.strip()
-        else sanitise_title(_title + random.choice(string.digits), titleset)
-    )
 
 
 def format_time(timestamp: float) -> str:
@@ -347,7 +393,6 @@ def new_blog(config: Dict) -> Tuple[int, Dict]:
     readline.add_history(user_keywords)
 
     blog["keywords"] = html_escape(user_keywords)
-    blog["hidden"] = yn("Hide blog", "n")
 
     blog["time"] = datetime.now().timestamp()
     config["blogs"][s_title] = blog
@@ -355,60 +400,57 @@ def new_blog(config: Dict) -> Tuple[int, Dict]:
     return EXIT_OK, config
 
 
+def build_css(config: Dict) -> Tuple[int, Dict]:
+    """Minify (build) the CSS"""
+
+    log("Minifying CSS...", "MINIFY")
+
+    saved_stdout = sys.stdout
+    sys.stdout = open(os.devnull, "w")
+
+    css_threads: List[Thread] = []
+
+    def _thread(t: Callable) -> None:
+        css_threads.append(Thread(target=t, daemon=True))
+        css_threads[-1].start()
+
+    if os.path.isfile("content/styles.css"):
+        log("Minifying main styles", "MINIFY")
+        _thread(lambda: process_single_css_file("content/styles.css"))
+
+    if os.path.isdir("content/fonts"):
+        log("Minifying fonts...", "MINIFY")
+
+        for font in iglob("content/fonts/*.css"):
+            if font.endswith(".min.css"):
+                continue
+
+            log(f"Minifying font file: {font}", "MINIFY")
+            _thread(lambda: process_single_css_file(font))
+
+    for t in css_threads:
+        t.join()
+
+    sys.stdout.close()
+    sys.stdout = saved_stdout
+
+    log("Done minifying CSS", "MINIFY")
+
+    return EXIT_OK, config
+
+
 def build(config: Dict) -> Tuple[int, Dict]:
     """Build, minimise and generate site"""
 
-    latest_blog_id: Optional[str] = next(
-        filter(
-            lambda bid: bid if not config["blogs"][bid]["hidden"] else None,
-            tuple(config["blogs"].keys())[::-1],
-        ),
-        None,
-    )
+    if not config["blogs"]:
+        return log("No blogs to build"), config
 
-    if not config["blogs"] or latest_blog_id is None:
-        return log("Cannot build no blogs"), config
+    latest_blog_id: str = tuple(config["blogs"].keys())[-1]
 
     if os.path.isdir(config["blog-dir"]):
         rmtree(config["blog-dir"])
 
     os.makedirs(config["blog-dir"], exist_ok=True)
-
-    log("Minifying CSS...", "MINIFY")
-
-    def build_css() -> None:
-        saved_stdout = sys.stdout
-        sys.stdout = open(os.devnull, "w")
-
-        css_threads: List[Thread] = []
-
-        def _thread(t: Callable) -> None:
-            css_threads.append(Thread(target=t, daemon=True))
-            css_threads[-1].start()
-
-        if os.path.isfile("content/styles.css"):
-            log("Minifying main styles", "MINIFY")
-            _thread(lambda: process_single_css_file("content/styles.css"))
-
-        if os.path.isdir("content/fonts"):
-            log("Minifying fonts...", "MINIFY")
-
-            for font in iglob("content/fonts/*.css"):
-                if font.endswith(".min.css"):
-                    continue
-
-                log(f"Minifying font file: {font}", "MINIFY")
-                _thread(lambda: process_single_css_file(font))
-
-        for t in css_threads:
-            t.join()
-
-        sys.stdout.close()
-        sys.stdout = saved_stdout
-
-        log("Done minifying CSS", "MINIFY")
-
-    Thread(target=build_css, daemon=True).start()
 
     log("Building blogs...", "INFO")
 
@@ -438,12 +480,16 @@ def build(config: Dict) -> Tuple[int, Dict]:
                     config["git-url"],
                     markdown(
                         b64decode(blog_meta["content"]).decode(),
-                        extensions=config["py-markdown-extensions"],
+                        extensions=[
+                            *config["py-markdown-extensions"],
+                            AddHeaderLinksExt(),
+                        ],
                     )
                     .replace("<h1>", "<h2>")
                     .replace("<h1/>", "<h2/>")
+                    .replace("<pre>", '<pre focusable="true" role="code" tabindex="0">')
                     .replace(
-                        "<pre>", '<pre focusable="true" role="code" tabindex="0">'
+                        "<blockquote>", '<blockquote focusable="true" tabindex="0">'
                     ),
                 )
             )
@@ -471,10 +517,6 @@ def build(config: Dict) -> Tuple[int, Dict]:
     _tmp_threads: List[Thread] = []
 
     for blog_id, blog_meta in config["blogs"].items():
-        if blog_meta["hidden"]:
-            log(f"Hidden blog: {blog_id!r}", "HIDE")
-            continue
-
         t: Thread = Thread(target=thread, args=(blog_id, blog_meta), daemon=True)
         t.start()
 
@@ -489,20 +531,12 @@ def build(config: Dict) -> Tuple[int, Dict]:
         lastest_blog: Dict = config["blogs"][latest_blog_id]
         lastest_blog_time: str = format_time(lastest_blog["time"])
 
-        blog_list = '<ul aria-label="latest blogs">'
+        blog_list = '<ol reversed="true" aria-label="latest blogs">'
 
         for blog_id, blog_meta in reversed(config["blogs"].items()):
-            blog_list += "<li>"
+            blog_list += f'<li><a href="{os.path.join(config["blog-dir"], blog_id)}">{html_escape(b64decode(blog_meta["title"]).decode())}</a></li>'
 
-            if blog_meta["hidden"]:
-                blog_list += '<i aria-label="hidden blog">Blog hidden by the owner</i>'
-                continue
-
-            blog_list += f'<a href="{os.path.join(config["blog-dir"], blog_id)}">{html_escape(b64decode(blog_meta["title"]).decode())}</a>'
-
-            blog_list += "</li>"
-
-        blog_list += "</ul>"
+        blog_list += "</ol>"
 
         index.write(
             html_minify(
@@ -515,10 +549,9 @@ def build(config: Dict) -> Tuple[int, Dict]:
                     home_page_description=config["page-description"],
                     lastest_blog_time=lastest_blog_time,
                     latest_blog_url=os.path.join(config["blog-dir"], latest_blog_id),
-                    latest_blog_title=b64decode(
-                        html_escape(lastest_blog["title"])
-                    ).decode()[:20]
-                    + "...",
+                    latest_blog_title=truncate_str(
+                        b64decode(html_escape(lastest_blog["title"])).decode(), 20
+                    ),
                     git_url=config["git-url"],
                     content=blog_list,
                     author=config["full-name"],
@@ -544,7 +577,6 @@ Title: {b64decode(blog_meta["title"]).decode()!r}
 Version: {blog_meta["version"]}
 Time_of_creation: {format_time(blog_meta["time"])}
 Keywords: {blog_meta['keywords'].replace(" ", ", ")}
-Hidden: {yesno(blog_meta["hidden"])}
 """
         )
 
@@ -578,12 +610,16 @@ def edit_title(blog: str, config: Dict) -> int:
     if not new_title.strip():
         return log("New title cannot be empty")
 
-    old_blog: dict = config["blogs"][blog].copy()
-    old_blog["title"] = b64encode(new_title.encode()).decode()
-    del config["blogs"][blog]
+    # Made it not change the slug
 
-    config["blogs"][sanitise_title(new_title, config["blogs"])] = old_blog
-    del old_blog
+    # old_blog: dict = config["blogs"][blog].copy()
+    # old_blog["title"] = b64encode(new_title.encode()).decode()
+    # del config["blogs"][blog]
+
+    # config["blogs"][sanitise_title(new_title, config["blogs"])] = old_blog
+    # del old_blog
+
+    config["blogs"][blog]["title"] = b64encode(new_title.encode()).decode()
 
     return EXIT_OK
 
@@ -619,21 +655,11 @@ def edit_content(blog: str, config: Dict) -> int:
     return EXIT_OK
 
 
-def edit_hidden(blog: str, config: Dict) -> int:
-    hidden: bool = config["blogs"][blog]["hidden"]
-    str_hidden: str = "y" if hidden else "n"
-
-    config["blogs"][blog]["hidden"] = yn("Hide this blog", str_hidden, str_hidden)
-
-    return EXIT_OK
-
-
 EDIT_HOOKS: Dict = {
     "quit": lambda *_: EXIT_OK,
     "title": edit_title,
     "keywords": edit_keywords,
     "content": edit_content,
-    "hidden": edit_hidden,
 }
 
 
@@ -743,6 +769,7 @@ def generate_static_full(config: Dict) -> Tuple[int, Dict]:
 
     BUILD_CFG: Dict = {
         "Cleaning up": clean,
+        "Building CSS": build_css,
         "Building static site": build,
         "Generating metatata": generate_metadata,
     }
@@ -769,6 +796,7 @@ SUBCOMMANDS: Dict = {
     "clean": clean,
     "metadata": generate_metadata,
     "static": generate_static_full,
+    "css": build_css,
 }
 
 

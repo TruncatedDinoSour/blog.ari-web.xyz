@@ -180,6 +180,11 @@ blockquote * {
     color: var(--clr-blockquote-fg);
 }
 
+a[data-pl] {
+    margin-right: 0.3em;
+    float: left !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
     *,
     *::before,

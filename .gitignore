@@ -7,4 +7,5 @@ venv/
 /backups/
 .ccls-cache/
 /blog_json_hash.txt
+/manifest.json
 
