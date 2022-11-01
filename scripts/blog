@@ -271,7 +271,7 @@ class AddHeaderLinks(Treeprocessor):
                 "div",
                 {
                     "data-pl": "",
-                    "style": f"font-size:{heading_sizes_em[elem.tag] + 0.1}em",
+                    "style": f"font-size:{(heading_sizes_em[elem.tag] + 0.1):.2f}em",
                 },
             )
 
