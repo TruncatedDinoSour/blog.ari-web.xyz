@@ -737,6 +737,7 @@ def clean(config: Dict) -> Tuple[int, Dict]:
         "content/*.min.*",
         "blog_json_hash.txt",
         "manifest.json",
+        "content/fonts/*.min.*",
     }
 
     def remove(file: str) -> None:
