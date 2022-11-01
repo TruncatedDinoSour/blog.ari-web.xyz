@@ -143,6 +143,7 @@ BLOG_HTML_TEMPLATE: str = f"""<!DOCTYPE html>
 <html lang="en">
 {HTML_HEADER}
     <meta name="description" content="{{blog_description}}"/>
+    <meta name="title" content="{{title}} -> {{blog_title}}"/>
     <meta property="og:type" content="article"/>
 </head>
 <body>
@@ -522,6 +523,7 @@ def build(config: Dict) -> Tuple[int, Dict]:
                 + ", "
                 + ", ".join(config["default-keywords"]),
                 blog_description=f"Blog on {blog_time} GMT -- {blog_title}",
+                blog_title=blog_title,
                 blog=blog_base_html,
                 author=config["full-name"],
                 locale=config["locale"],
