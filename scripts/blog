@@ -258,10 +258,9 @@ class AddHeaderLinks(Treeprocessor):
             "h5": 0.87,
             "h6": 0.76,
         }
-        all_headings: Tuple[str] = tuple(f"h{hl}" for hl in range(2, 7))
 
         for idx, elem in enumerate(root):
-            if elem.tag not in all_headings:
+            if elem.tag not in heading_sizes_em:
                 continue
 
             gen_id: str = sanitise_title(elem.text, ids)
@@ -509,8 +508,6 @@ def build(config: Dict) -> Tuple[int, Dict]:
                             AddHeaderLinksExt(),
                         ],
                     )
-                    .replace("<h1>", "<h2>")
-                    .replace("<h1/>", "<h2/>")
                     .replace("<pre>", '<pre focusable="true" role="code" tabindex="0">')
                     .replace(
                         "<blockquote>", '<blockquote focusable="true" tabindex="0">'
