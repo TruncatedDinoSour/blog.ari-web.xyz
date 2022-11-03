@@ -84,7 +84,7 @@ body {
     text-rendering: optimizeSpeed;
 }
 
-header > h1 {
+h1 {
     text-align: center;
     margin: 1em;
     font-size: 2em;

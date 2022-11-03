@@ -7,6 +7,7 @@ import os
 import random
 import string
 import sys
+import xml.etree.ElementTree as etree
 from base64 import b64decode, b64encode
 from datetime import datetime
 from glob import iglob
@@ -16,7 +17,7 @@ from shutil import rmtree
 from tempfile import gettempdir
 from threading import Thread
 from timeit import default_timer as code_timer
-from typing import Callable, Dict, Iterable, List, Set, Tuple, Union
+from typing import Any, Callable, Dict, Iterable, List, Set, Tuple, Union
 from warnings import filterwarnings as filter_warnings
 
 import ujson  # type: ignore
@@ -24,6 +25,7 @@ from css_html_js_minify import html_minify  # type: ignore
 from css_html_js_minify import process_single_css_file
 from markdown import markdown  # type: ignore
 from markdown.extensions import Extension  # type: ignore
+from markdown.inlinepatterns import InlineProcessor  # type: ignore
 from markdown.treeprocessors import Treeprocessor  # type: ignore
 from plumbum.commands.processes import ProcessExecutionError  # type: ignore
 from pyfzf import FzfPrompt  # type: ignore
@@ -248,19 +250,26 @@ def truncate_str(string: str, length: int) -> str:
     return string[:length] + "..."
 
 
-class AddHeaderLinks(Treeprocessor):
-    def run(self, root):
+class BetterHeaders(Treeprocessor):
+    """Better headers
+
+    - Downsizes headers from h1 -> h2
+    - Adds header links"""
+
+    def run(self, root) -> None:
         ids: List[str] = []
-        heading_sizes_em: Dict[str, Union[float, int]] = {
-            "h1": 1.52,
+        heading_sizes_em: Dict[str, float] = {
             "h2": 1.32,
             "h3": 1.15,
-            "h4": 1,
+            "h4": 1.0,
             "h5": 0.87,
             "h6": 0.76,
         }
 
         for idx, elem in enumerate(root):
+            if elem.tag == "h1":
+                elem.tag = "h2"
+
             if elem.tag not in heading_sizes_em:
                 continue
 
@@ -271,7 +280,12 @@ class AddHeaderLinks(Treeprocessor):
                 "div",
                 {
                     "data-pl": "",
-                    "style": f"font-size:{(heading_sizes_em[elem.tag] + 0.1):.2f}em",
+                    "style": f"font-size:{(heading_sizes_em[elem.tag] + 0.1):.2f}".strip(
+                        "0"
+                    ).rstrip(
+                        "."
+                    )
+                    + "em",
                 },
             )
 
@@ -296,10 +310,26 @@ class AddHeaderLinks(Treeprocessor):
             root.insert(idx, heading_parent)
 
 
-class AddHeaderLinksExt(Extension):
+class AddIDLinks(InlineProcessor):
+    """Add support for <#ID> links"""
+
+    def handleMatch(self, match, data: str) -> tuple[etree.Element, Any, Any]:
+        link: etree.Element = etree.Element("a")
+
+        link.text = match.group(1) or "#"
+        link.set("href", link.text)
+
+        return link, match.start(0), match.end(0)
+
+
+class AriMarkdownExts(Extension):
+    """Ari-web markdown extensions"""
+
     def extendMarkdown(self, md, key: str = "add_header_links", index: int = int(1e8)):
         md.registerExtension(self)
-        md.treeprocessors.register(AddHeaderLinks(md.parser), key, index)
+
+        md.treeprocessors.register(BetterHeaders(md.parser), key, index)
+        md.inlinePatterns.register(AddIDLinks(r"<(#.*)>", "a"), key, index)
 
 
 def log(message: str, header: str = "ERROR", code: int = EXIT_ERR) -> int:
@@ -506,7 +536,7 @@ def build(config: Dict) -> Tuple[int, Dict]:
                         b64decode(blog_meta["content"]).decode(),
                         extensions=[
                             *config["py-markdown-extensions"],
-                            AddHeaderLinksExt(),
+                            AriMarkdownExts(),
                         ],
                     )
                     .replace("<pre>", '<pre focusable="true" role="code" tabindex="0">')
