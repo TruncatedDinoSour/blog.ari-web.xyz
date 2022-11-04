@@ -313,7 +313,7 @@ class BetterHeaders(Treeprocessor):
 class AddIDLinks(InlineProcessor):
     """Add support for <#ID> links"""
 
-    def handleMatch(self, match, data: str) -> tuple[etree.Element, Any, Any]:
+    def handleMatch(self, match, data: str) -> Tuple[etree.Element, Any, Any]:
         link: etree.Element = etree.Element("a")
 
         link.text = match.group(1) or "#"
