@@ -232,18 +232,20 @@ blockquote * {
 
 @media (prefers-contrast: more) {
     :root {
-        --clr-bg: black;
-        --clr-fg: white;
+        --clr-bg: #000000;
+        --clr-fg: #ffffff;
 
-        --clr-blockquote-fg: whitesmoke;
-        --clr-blockquote-bg: gray;
+        --clr-blockquote-fg: #ededed;
+        --clr-blockquote-bg: #868e91;
 
-        --clr-code-bg: #181818;
-        --clr-code-fg: whitesmoke;
+        --clr-code-bg: #090909;
+        --clr-code-fg: #f0f0f0;
+
+        --clr-link: #a9c4d1;
 
         --blockquote-width: 4px;
 
-        --scrollbar-height: 12px; /* TODO: Firefox */
+        --scrollbar-height: initial; /* TODO: Firefox */
     }
 
     html::-webkit-scrollbar {
@@ -255,13 +257,6 @@ blockquote * {
     *::after {
         scrollbar-width: initial !important;
         -ms-overflow-style: initial !important;
-    }
-
-    a,
-    a:focus,
-    a:hover {
-        -webkit-text-decoration: underline dotted !important;
-        text-decoration: underline dotted !important;
     }
 
     *[data-pl] > a {
