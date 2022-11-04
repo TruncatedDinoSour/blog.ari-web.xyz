@@ -1,5 +1,5 @@
 [build]
-    command = "python3 ./scripts/blog static"
+    command = "ls -lah && python3 ./scripts/blog static"
 
 [[redirects]]
     from = "/git/*"
