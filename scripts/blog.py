@@ -326,7 +326,7 @@ class AddIDLinks(InlineProcessor):
     """Add support for <#ID> links"""
 
     def handleMatch(  # pyright: ignore
-        self, match: RegexMatch[str], *_
+        self, match: RegexMatch, *_  # pyright: ignore
     ) -> Tuple[etree.Element, Any, Any]:
         link: etree.Element = etree.Element("a")
 
