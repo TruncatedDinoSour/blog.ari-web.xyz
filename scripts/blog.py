@@ -9,20 +9,23 @@ import string
 import sys
 import xml.etree.ElementTree as etree
 from base64 import b64decode, b64encode
+from collections.abc import Callable, Iterable
 from datetime import datetime
 from glob import iglob
 from html import escape as html_escape
+from re import Match as RegexMatch
 from shutil import copy as copy_file
 from shutil import rmtree
 from tempfile import gettempdir
 from threading import Thread
 from timeit import default_timer as code_timer
-from typing import Any, Callable, Dict, Iterable, List, Set, Tuple, Union
+from typing import Any, Dict, List, Optional, Set, Tuple
 from warnings import filterwarnings as filter_warnings
 
 import ujson  # type: ignore
 from css_html_js_minify import html_minify  # type: ignore
-from css_html_js_minify import process_single_css_file
+from css_html_js_minify import process_single_css_file  # type: ignore
+from markdown import core as markdown_core  # type: ignore
 from markdown import markdown  # type: ignore
 from markdown.extensions import Extension  # type: ignore
 from markdown.inlinepatterns import InlineProcessor  # type: ignore
@@ -39,7 +42,7 @@ if NOT_CI_BUILD:
 EXIT_OK: int = 0
 EXIT_ERR: int = 1
 
-DEFAULT_CONFIG: Dict = {
+DEFAULT_CONFIG: Dict[str, Any] = {
     "editor-command": f"{os.environ.get('EDITOR', 'vim')} -- %s",
     "blog-dir": "b",
     "git-url": "/git",
@@ -220,7 +223,7 @@ HOME_PAGE_HTML_TEMPLATE: str = f"""<!DOCTYPE html>
 </html>"""
 
 
-def sanitise_title(title: str, titleset: Iterable, _nosep: bool = False) -> str:
+def sanitise_title(title: str, titleset: Iterable[str], _nosep: bool = False) -> str:
     _title: str = ""
 
     for char in title:
@@ -258,7 +261,7 @@ class BetterHeaders(Treeprocessor):
     - Downsizes headers from h1 -> h2
     - Adds header links"""
 
-    def run(self, root) -> None:
+    def run(self, root: etree.Element) -> None:
         ids: List[str] = []
         heading_sizes_em: Dict[str, float] = {
             "h2": 1.32,
@@ -275,10 +278,13 @@ class BetterHeaders(Treeprocessor):
             if elem.tag not in heading_sizes_em:
                 continue
 
+            if elem.text is None:
+                elem.text = ""
+
             gen_id: str = sanitise_title(elem.text, ids)
             ids.append(gen_id)
 
-            heading_parent = elem.makeelement(
+            heading_parent: etree.Element = elem.makeelement(
                 "div",
                 {
                     "data-pl": "",
@@ -291,8 +297,10 @@ class BetterHeaders(Treeprocessor):
                 },
             )
 
-            heading = heading_parent.makeelement(elem.tag, {"id": gen_id})
-            link = heading.makeelement(
+            heading: etree.Element = heading_parent.makeelement(
+                elem.tag, {"id": gen_id}
+            )
+            link: etree.Element = heading.makeelement(
                 "a",
                 {
                     "href": f"#{gen_id}",
@@ -303,11 +311,14 @@ class BetterHeaders(Treeprocessor):
             )
 
             link.text = "#"
-            heading_parent.append(link)
-
             heading.text = elem.text
-            heading_parent.append(heading)
 
+            heading_parent.extend(
+                (
+                    link,
+                    heading,
+                )
+            )
             root.remove(elem)
             root.insert(idx, heading_parent)
 
@@ -315,11 +326,13 @@ class BetterHeaders(Treeprocessor):
 class AddIDLinks(InlineProcessor):
     """Add support for <#ID> links"""
 
-    def handleMatch(self, match, data: str) -> Tuple[etree.Element, Any, Any]:
+    def handleMatch(  # pyright: ignore
+        self, match: RegexMatch[str], *_
+    ) -> Tuple[etree.Element, Any, Any]:
         link: etree.Element = etree.Element("a")
 
         link.text = match.group(1) or "#"
-        link.set("href", link.text)
+        link.set("href", link.text or "#")
 
         return link, match.start(0), match.end(0)
 
@@ -327,11 +340,20 @@ class AddIDLinks(InlineProcessor):
 class AriMarkdownExts(Extension):
     """Ari-web markdown extensions"""
 
-    def extendMarkdown(self, md, key: str = "add_header_links", index: int = int(1e8)):
+    def extendMarkdown(
+        self,
+        md: markdown_core.Markdown,
+        key: str = "add_header_links",
+        index: int = int(1e8),
+    ):
         md.registerExtension(self)
 
-        md.treeprocessors.register(BetterHeaders(md.parser), key, index)
-        md.inlinePatterns.register(AddIDLinks(r"<(#.*)>", "a"), key, index)
+        md.treeprocessors.register(
+            BetterHeaders(md.parser), key, index  # pyright: ignore
+        )
+        md.inlinePatterns.register(
+            AddIDLinks(r"<(#.*)>", "a"), key, index  # pyright: ignore
+        )
 
 
 def log(message: str, header: str = "ERROR", code: int = EXIT_ERR) -> int:
@@ -345,7 +367,7 @@ def tmp_path(path: str) -> str:
     return os.path.join(gettempdir(), path)
 
 
-def editor(config: Dict, file: str) -> None:
+def editor(config: Dict[str, Any], file: str) -> None:
     copy_file(".editorconfig", tmp_path(".editorconfig"))
     os.system(config["editor-command"] % file)
 
@@ -388,18 +410,18 @@ def new_config() -> None:
         ujson.dump(DEFAULT_CONFIG, cfg, indent=4)
 
 
-def pick_blog(config: Dict) -> str:
+def pick_blog(config: Dict[str, Any]) -> str:
     try:
         blog_id: str = (
             FzfPrompt()
-            .prompt(
+            .prompt(  # pyright: ignore
                 map(
-                    lambda key: f"{key} | {b64decode(config['blogs'][key]['title']).decode()!r}",
+                    lambda key: f"{key} | {b64decode(config['blogs'][key]['title']).decode()!r}",  # pyright: ignore
                     tuple(config["blogs"].keys())[::-1],
                 ),
                 "--prompt='Pick blog: '",
             )[0]
-            .split()[0]
+            .split()[0]  # pyright: ignore
         )
     except ProcessExecutionError:
         log("Fzf process exited unexpectedly")
@@ -412,7 +434,7 @@ def pick_blog(config: Dict) -> str:
     return blog_id
 
 
-def new_blog(config: Dict) -> Tuple[int, Dict]:
+def new_blog(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
     """Make a new blog"""
 
     if title := iinput("blog title"):
@@ -420,8 +442,10 @@ def new_blog(config: Dict) -> Tuple[int, Dict]:
 
         us_title: str = title
         s_title: str = sanitise_title(us_title, config["blogs"])
+    else:
+        raise RuntimeError("Unreachable")
 
-    blog = {
+    blog: Dict[str, Any] = {
         "title": b64encode(us_title.encode()).decode(),
         "content": "",
         "version": BLOG_VERSION,
@@ -456,7 +480,7 @@ def new_blog(config: Dict) -> Tuple[int, Dict]:
     return EXIT_OK, config
 
 
-def build_css(config: Dict) -> Tuple[int, Dict]:
+def build_css(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
     """Minify (build) the CSS"""
 
     log("Minifying CSS...", "MINIFY")
@@ -466,13 +490,15 @@ def build_css(config: Dict) -> Tuple[int, Dict]:
 
     css_threads: List[Thread] = []
 
-    def _thread(t: Callable) -> None:
+    def _thread(t: Callable[..., Any]) -> None:
         css_threads.append(Thread(target=t, daemon=True))
         css_threads[-1].start()
 
     if os.path.isfile("content/styles.css"):
         log("Minifying main styles", "MINIFY")
-        _thread(lambda: process_single_css_file("content/styles.css"))
+        _thread(
+            lambda: process_single_css_file("content/styles.css")  # pyright: ignore
+        )
 
     if os.path.isdir("content/fonts"):
         log("Minifying fonts...", "MINIFY")
@@ -482,7 +508,7 @@ def build_css(config: Dict) -> Tuple[int, Dict]:
                 continue
 
             log(f"Minifying font file: {font}", "MINIFY")
-            _thread(lambda: process_single_css_file(font))
+            _thread(lambda: process_single_css_file(font))  # pyright: ignore
 
     for t in css_threads:
         t.join()
@@ -495,7 +521,7 @@ def build_css(config: Dict) -> Tuple[int, Dict]:
     return EXIT_OK, config
 
 
-def build(config: Dict) -> Tuple[int, Dict]:
+def build(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
     """Build, minimise and generate site"""
 
     if not config["blogs"]:
@@ -510,7 +536,7 @@ def build(config: Dict) -> Tuple[int, Dict]:
 
     log("Building blogs...", "INFO")
 
-    def thread(blog_id: str, blog_meta: Dict):
+    def thread(blog_id: str, blog_meta: Dict[str, Any]):
         if blog_meta["version"] != BLOG_VERSION:
             log(
                 f"{blog_id}: unmatching version between \
@@ -583,7 +609,7 @@ def build(config: Dict) -> Tuple[int, Dict]:
     log("Building blog index...", "INFO")
 
     with open("index.html", "w") as index:
-        lastest_blog: Dict = config["blogs"][latest_blog_id]
+        lastest_blog: Dict[str, Any] = config["blogs"][latest_blog_id]
         lastest_blog_time: str = format_time(lastest_blog["time"])
 
         blog_list = '<ol reversed="true" aria-label="latest blogs">'
@@ -619,7 +645,7 @@ def build(config: Dict) -> Tuple[int, Dict]:
     return EXIT_OK, config
 
 
-def list_blogs(config: Dict) -> Tuple[int, Dict]:
+def list_blogs(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
     """List blogs"""
 
     if not config["blogs"]:
@@ -638,7 +664,7 @@ Keywords: {blog_meta['keywords'].replace(" ", ", ")}
     return EXIT_OK, config
 
 
-def remove_blog(config: Dict) -> Tuple[int, Dict]:
+def remove_blog(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
     """Remove a blog page"""
 
     if not config["blogs"]:
@@ -653,11 +679,13 @@ def remove_blog(config: Dict) -> Tuple[int, Dict]:
     return EXIT_OK, config
 
 
-def dummy() -> None:
+def dummy(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
     """Print help/usage information"""
 
+    return EXIT_OK, config
 
-def edit_title(blog: str, config: Dict) -> int:
+
+def edit_title(blog: str, config: Dict[str, Any]) -> int:
     new_title: str = iinput(
         "edit title", b64decode(config["blogs"][blog]["title"]).decode()
     )
@@ -679,7 +707,7 @@ def edit_title(blog: str, config: Dict) -> int:
     return EXIT_OK
 
 
-def edit_keywords(blog: str, config: Dict) -> int:
+def edit_keywords(blog: str, config: Dict[str, Any]) -> int:
     new_keywords: str = iinput("edit keywords", config["blogs"][blog]["keywords"])
 
     if not new_keywords.strip():
@@ -690,7 +718,7 @@ def edit_keywords(blog: str, config: Dict) -> int:
     return EXIT_OK
 
 
-def edit_content(blog: str, config: Dict) -> int:
+def edit_content(blog: str, config: Dict[str, Any]) -> int:
     file: str = tmp_path(f"{blog}.md")
 
     with open(file, "w") as blog_md:
@@ -710,15 +738,15 @@ def edit_content(blog: str, config: Dict) -> int:
     return EXIT_OK
 
 
-EDIT_HOOKS: Dict = {
-    "quit": lambda *_: EXIT_OK,
+EDIT_HOOKS: Dict[str, Callable[[str, Dict[str, Any]], int]] = {
+    "quit": lambda *_: EXIT_OK,  # pyright: ignore
     "title": edit_title,
     "keywords": edit_keywords,
     "content": edit_content,
 }
 
 
-def edit(config: Dict) -> Tuple[int, Dict]:
+def edit(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
     """Edit a blog"""
 
     if not config["blogs"]:
@@ -730,9 +758,9 @@ def edit(config: Dict) -> Tuple[int, Dict]:
         return EXIT_ERR, config
 
     try:
-        hook: str = FzfPrompt().prompt(EDIT_HOOKS.keys(), "--prompt='What to edit: '")[
-            0
-        ]
+        hook: str = FzfPrompt().prompt(  # pyright: ignore
+            EDIT_HOOKS.keys(), "--prompt='What to edit: '"
+        )[0]
 
         if hook not in EDIT_HOOKS:
             return log(f"Hook {hook!r} does not exist"), config
@@ -744,7 +772,7 @@ def edit(config: Dict) -> Tuple[int, Dict]:
     return EXIT_OK, config
 
 
-def gen_def_config(config: Dict) -> Tuple[int, Dict]:
+def gen_def_config(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
     """Generate default config"""
 
     if os.path.exists(DEFAULT_CONFIG_FILE):
@@ -759,7 +787,7 @@ def gen_def_config(config: Dict) -> Tuple[int, Dict]:
     return EXIT_OK, config
 
 
-def clean(config: Dict) -> Tuple[int, Dict]:
+def clean(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
     """Clean up current directory"""
 
     TRASH: Set[str] = {
@@ -789,7 +817,7 @@ def clean(config: Dict) -> Tuple[int, Dict]:
     return EXIT_OK, config
 
 
-def generate_metadata(config: Dict) -> Tuple[int, Dict]:
+def generate_metadata(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
     """Generate metadata"""
 
     with open("manifest.json", "w") as manifest:
@@ -820,10 +848,10 @@ def generate_metadata(config: Dict) -> Tuple[int, Dict]:
     return EXIT_OK, config
 
 
-def generate_static_full(config: Dict) -> Tuple[int, Dict]:
+def generate_static_full(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
     """Generate full static site"""
 
-    BUILD_CFG: Dict = {
+    BUILD_CFG: Dict[str, Callable[[Dict[str, Any]], Tuple[int, Dict[str, Any]]]] = {
         "Cleaning up": clean,
         "Building CSS": build_css,
         "Building static site": build,
@@ -841,7 +869,7 @@ def generate_static_full(config: Dict) -> Tuple[int, Dict]:
     return EXIT_OK, config
 
 
-SUBCOMMANDS: Dict = {
+SUBCOMMANDS: Dict[str, Callable[[Dict[str, Any]], Tuple[int, Dict[str, Any]]]] = {
     "help": dummy,
     "new": new_blog,
     "build": build,
@@ -856,7 +884,7 @@ SUBCOMMANDS: Dict = {
 }
 
 
-def usage(code: int = EXIT_ERR, config: Dict = None) -> int:
+def usage(code: int = EXIT_ERR, _: Optional[Dict[str, Any]] = None) -> int:
     sys.stderr.write(f"Usage: {sys.argv[0]} <subcommand>\n")
 
     for subcommand, func in SUBCOMMANDS.items():
@@ -897,7 +925,10 @@ def main() -> int:
     with open(DEFAULT_CONFIG_FILE, "r") as lcfg:
         cmd_time_init = code_timer()
 
-        code, config = SUBCOMMANDS[sys.argv[1]](config=ujson.load(lcfg))
+        code: int
+        config: Dict[str, Any]
+
+        code, config = SUBCOMMANDS[sys.argv[1]](ujson.load(lcfg))
 
         log(
             f"Finished in {code_timer() - cmd_time_init} seconds with code {code}",
@@ -927,9 +958,7 @@ def main() -> int:
 
         log(f"Dumped config in {code_timer() - dump_timer} seconds", "TIME")
 
-        return code
-
-    return EXIT_OK
+    return code
 
 
 if __name__ == "__main__":

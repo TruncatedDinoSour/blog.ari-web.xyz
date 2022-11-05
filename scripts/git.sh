@@ -3,7 +3,7 @@
 set -xe
 
 main() {
-    python3 scripts/blog clean
+    python3 scripts/blog.py clean
 
     git diff >/tmp/ari-web-blog.diff
 
