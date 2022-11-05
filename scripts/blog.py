@@ -9,7 +9,6 @@ import string
 import sys
 import xml.etree.ElementTree as etree
 from base64 import b64decode, b64encode
-from collections.abc import Callable, Iterable
 from datetime import datetime
 from glob import iglob
 from html import escape as html_escape
@@ -19,7 +18,7 @@ from shutil import rmtree
 from tempfile import gettempdir
 from threading import Thread
 from timeit import default_timer as code_timer
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Callable, Dict, Iterable, List, Optional, Set, Tuple
 from warnings import filterwarnings as filter_warnings
 
 import ujson  # type: ignore
