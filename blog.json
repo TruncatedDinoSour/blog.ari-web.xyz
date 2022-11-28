@@ -492,6 +492,13 @@
             "version": 1,
             "time": 1668730459.803783,
             "keywords": "qemu benchmark statistics baz baz-plugin github git developer bash gnu gpl licensing foss open-source foss minimalism speed optimisation python oh-my-bash ease gpl3 linux flexibility productivity plugin"
+        },
+        "advent-of-code-2022": {
+            "title": "QWR2ZW50IG9mIGNvZGUgMjAyMg==",
+            "content": "QW9DIDIwMjIgaXMgaW4gYXJvdW5kIDYwIGhvdXJzLCBob3BlIHRvIHNlZSB5b3UgdGhlcmUgOikKCjxodHRwczovL2FkdmVudG9mY29kZS5jb20vPgo=",
+            "version": 1,
+            "time": 1669652321.968314,
+            "keywords": "aoc advent-of-code adventofcode code programming advent of code"
         }
     }
 }
