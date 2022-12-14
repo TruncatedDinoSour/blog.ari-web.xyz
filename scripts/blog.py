@@ -372,7 +372,7 @@ def editor(config: Dict[str, Any], file: str) -> None:
 
 
 def format_time(timestamp: float) -> str:
-    return datetime.fromtimestamp(timestamp).strftime("%Y-%m-%d %H:%M:%S")
+    return str(datetime.fromtimestamp(timestamp))
 
 
 def iinput(prompt: str, default_text: str = "") -> str:
