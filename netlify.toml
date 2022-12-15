@@ -2,6 +2,12 @@
     command = "python3 ./scripts/blog.py static"
 
 [[redirects]]
+    from = "/*"
+    to = "https://ari-web.xyz/404.blog.xyz"
+    status = 404
+    force = false
+
+[[redirects]]
     from = "/git/*"
     to = "https://ari-web.xyz/gh/blog.ari-web.xyz/:splat"
     status = 301
@@ -42,12 +48,6 @@
     to = "https://ari-web.xyz/404.blog.xyz"
     status = 404
     force = true
-
-[[redirects]]
-    from = "/*"
-    to = "https://ari-web.xyz/404.blog.xyz"
-    status = 404
-    force = false
 
 # Processing
 [build.processing]
