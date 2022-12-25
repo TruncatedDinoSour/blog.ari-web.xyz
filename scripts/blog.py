@@ -248,10 +248,7 @@ def sanitise_title(title: str, titleset: Iterable[str], _nosep: bool = False) ->
 
 
 def truncate_str(string: str, length: int) -> str:
-    if len(string) <= length:
-        return string
-
-    return string[:length] + "..."
+    return string if len(string) <= length else (string[:length] + "...")
 
 
 class BetterHeaders(Treeprocessor):
