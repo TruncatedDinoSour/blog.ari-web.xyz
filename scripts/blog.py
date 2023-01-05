@@ -961,4 +961,4 @@ if __name__ == "__main__":
     assert main.__annotations__.get("return") is int, "main() should return an integer"
 
     filter_warnings("error", category=Warning)
-    sys.exit(main())
+    raise SystemExit(main())
