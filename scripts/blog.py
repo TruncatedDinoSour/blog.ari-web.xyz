@@ -9,6 +9,7 @@ import string
 import sys
 import xml.etree.ElementTree as etree
 from base64 import b64decode, b64encode
+from collections.abc import Collection
 from datetime import datetime
 from glob import iglob
 from html import escape as html_escape
@@ -18,7 +19,7 @@ from shutil import rmtree
 from tempfile import gettempdir
 from threading import Thread
 from timeit import default_timer as code_timer
-from typing import Any, Callable, Dict, Iterable, List, Optional, Set, Tuple
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 from warnings import filterwarnings as filter_warnings
 
 import ujson  # type: ignore
@@ -81,6 +82,35 @@ DEFAULT_CONFIG: Dict[str, Any] = {
 DEFAULT_CONFIG_FILE: str = "blog.json"
 HISTORY_FILE: str = ".blog_history"
 BLOG_VERSION: int = 1
+CONTEXT_WORDS: Tuple[str, ...] = (
+    "the",
+    "a",
+    "about",
+    "etc",
+    "on",
+    "at",
+    "in",
+    "by",
+    "its",
+    "i",
+    "to",
+    "my",
+    "of",
+    "between",
+    "because",
+    "of",
+    "or",
+    "how",
+    "to",
+    "begin",
+    "is",
+    "this",
+    "person",
+    "important",
+    "homework",
+    "and",
+    "cause",
+)
 
 BLOG_MARKDOWN_TEMPLATE: str = """<header role="group">
     <h1 role="heading" aria-level="1">%s</h1>
@@ -222,7 +252,20 @@ HOME_PAGE_HTML_TEMPLATE: str = f"""<!DOCTYPE html>
 </html>"""
 
 
-def sanitise_title(title: str, titleset: Iterable[str], _nosep: bool = False) -> str:
+def remove_basic_punct(s: str) -> str:
+    return "".join(c for c in s if c not in "'\"()[]{}:;.,?!=#")
+
+
+def sanitise_title(
+    title: str, titleset: Collection[str], /, nosep: bool = False
+) -> str:
+    title = " ".join(
+        [
+            w
+            for w in remove_basic_punct(title).lower().split()
+            if w not in CONTEXT_WORDS
+        ][:8]
+    )
     _title: str = ""
 
     for char in title:
@@ -234,13 +277,13 @@ def sanitise_title(title: str, titleset: Iterable[str], _nosep: bool = False) ->
             else ""
         )
 
-    _title = _title.lower().rstrip("-")
+    _title = _title.rstrip("-")
 
     return (
         _title
         if _title not in titleset and _title.strip()
         else sanitise_title(
-            _title + ("" if _nosep else "-") + random.choice(string.digits),
+            _title + ("" if nosep else "-") + random.choice(string.digits),
             titleset,
             True,
         )
@@ -439,7 +482,7 @@ def new_blog(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
         us_title: str = title
         s_title: str = sanitise_title(us_title, config["blogs"])
     else:
-        raise RuntimeError("Unreachable")
+        return EXIT_ERR, config
 
     blog: Dict[str, Any] = {
         "title": b64encode(us_title.encode()).decode(),
