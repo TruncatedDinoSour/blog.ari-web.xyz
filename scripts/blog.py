@@ -18,7 +18,7 @@ from shutil import rmtree
 from tempfile import gettempdir
 from threading import Thread
 from timeit import default_timer as code_timer
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Collection
+from typing import Any, Callable, Collection, Dict, List, Optional, Set, Tuple
 from warnings import filterwarnings as filter_warnings
 
 import ujson  # type: ignore
@@ -255,7 +255,9 @@ def remove_basic_punct(s: str) -> str:
     return "".join(c for c in s if c not in "'\"()[]{}:;.,?!=#")
 
 
-def sanitise_title(title: str, titleset: Collection[str], /, nosep: bool = False) -> str:
+def sanitise_title(
+    title: str, titleset: Collection[str], /, nosep: bool = False
+) -> str:
     title = " ".join(
         [
             w
@@ -474,7 +476,7 @@ def new_blog(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
     """Make a new blog"""
 
     if title := iinput("blog title"):
-        readline.add_history(title)
+        readline.add_history((title := title[0].upper() + title[1:]))
 
         us_title: str = title
         s_title: str = sanitise_title(us_title, config["blogs"])
