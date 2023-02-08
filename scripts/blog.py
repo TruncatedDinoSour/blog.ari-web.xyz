@@ -109,6 +109,7 @@ CONTEXT_WORDS: Tuple[str, ...] = (
     "homework",
     "and",
     "cause",
+    "how",
 )
 
 BLOG_MARKDOWN_TEMPLATE: str = """<header role="group">
@@ -889,8 +890,8 @@ def generate_metadata(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
 def generate_static_full(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
     """Generate full static site"""
 
+    # "Cleaning up": clean,
     BUILD_CFG: Dict[str, Callable[[Dict[str, Any]], Tuple[int, Dict[str, Any]]]] = {
-        "Cleaning up": clean,
         "Building CSS": build_css,
         "Building static site": build,
         "Generating metatata": generate_metadata,
