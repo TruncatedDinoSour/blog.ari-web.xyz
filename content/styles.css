@@ -203,11 +203,18 @@ blockquote * {
 
 *[data-pl]:hover > a,
 *[data-pl]:focus > a {
+    opacity: 0.6;
+}
+
+*[data-pl] > a:hover,
+*[data-pl] > a:focus {
     opacity: 1;
 }
 
 @media only screen and (max-width: 1200px) {
-    *[data-pl] > a {
+    *[data-pl] > a,
+    *[data-pl]:hover > a,
+    *[data-pl]:focus > a {
         opacity: 1;
     }
 }

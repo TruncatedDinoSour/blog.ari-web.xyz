@@ -1,5 +1,5 @@
 [build]
-    command = "python3 ./scripts/blog.py static"
+    command = "python3 ./scripts/blog.py static && rm -rf ./scripts/ ./completions/"
 
 [[redirects]]
     from = "/git/*"

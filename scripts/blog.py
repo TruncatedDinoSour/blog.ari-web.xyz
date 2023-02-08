@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Manage blogs"""
+"""manage blogs"""
 
 import hashlib
 import os
@@ -18,7 +18,8 @@ from shutil import rmtree
 from tempfile import gettempdir
 from threading import Thread
 from timeit import default_timer as code_timer
-from typing import Any, Callable, Collection, Dict, List, Optional, Set, Tuple
+from typing import (Any, Callable, Collection, Dict, List, Optional, Set,
+                    Tuple, Union)
 from warnings import filterwarnings as filter_warnings
 
 import ujson  # type: ignore
@@ -31,6 +32,8 @@ from markdown.inlinepatterns import InlineProcessor  # type: ignore
 from markdown.treeprocessors import Treeprocessor  # type: ignore
 from plumbum.commands.processes import ProcessExecutionError  # type: ignore
 from pyfzf import FzfPrompt  # type: ignore
+
+__version__: int = 1
 
 NOT_CI_BUILD: bool = not os.getenv("CI")
 
@@ -64,9 +67,9 @@ DEFAULT_CONFIG: Dict[str, Any] = {
     ],
     "default-keywords": ["website", "blog", "opinion", "article", "ari-web", "ari"],
     "page-title": "Ari::web -> Blog",
-    "page-description": "My blog page",
+    "page-description": "my blog page",
     "colourscheme-type": "dark",
-    "short-name": "Ari's blogs",
+    "short-name": "aris blogs",
     "home-keywords": ["ari", "ari-web", "blog", "ari-archer", "foss", "free", "linux"],
     "base-homepage": "https://ari-web.xyz/",
     "meta-icons": [{"src": "/favicon.ico", "sizes": "128x128", "type": "image/png"}],
@@ -74,13 +77,12 @@ DEFAULT_CONFIG: Dict[str, Any] = {
     "background-colour": "#262220",
     "full-name": "Ari Archer",
     "locale": "en_GB",
-    "home-page-header": "My blogs",
+    "home-page-header": "my blogs",
     "comment-url": "/c",
     "blogs": {},
 }
 DEFAULT_CONFIG_FILE: str = "blog.json"
 HISTORY_FILE: str = ".blog_history"
-BLOG_VERSION: int = 1
 CONTEXT_WORDS: Tuple[str, ...] = (
     "the",
     "a",
@@ -110,6 +112,7 @@ CONTEXT_WORDS: Tuple[str, ...] = (
     "and",
     "cause",
     "how",
+    "what",
 )
 
 BLOG_MARKDOWN_TEMPLATE: str = """<header role="group">
@@ -140,11 +143,11 @@ skip</a>
 
 <article id="main">
 
-<!-- Main blog content: Begin -->
+<!-- main blog post content : begin -->
 
 %s
 
-<!-- Main blog content: End -->
+<!-- main blog post content : end -->
 
 </article>"""
 
@@ -161,7 +164,7 @@ HTML_HEADER: str = f"""<head>
     <meta name="robots" content="follow, index, max-snippet:-1, \
 max-video-preview:-1, max-image-preview:large"/>
     <meta name="generator" \
-content="Ari-web blog generator version {BLOG_VERSION}"/>
+content="ari-web blog generator version {__version__}"/>
 
     <link
         rel="stylesheet"
@@ -220,13 +223,13 @@ HOME_PAGE_HTML_TEMPLATE: str = f"""<!DOCTYPE html>
                 <span aria-hidden="true" role="seperator">|</span>
 
                 <span role="menuitem">
-                    latest update: <time>{{lastest_blog_time}}</time> GMT
+                    last posted : <time>{{lastest_blog_time}}</time> GMT
                 </span>
 
                 <span aria-hidden="true" role="seperator">|</span>
 
                 <span role="menuitem">
-                    latest blog: \
+                    latest post : \
                     <a href="{{latest_blog_url}}">{{latest_blog_title}}</a>
                 </span>
 
@@ -241,11 +244,11 @@ HOME_PAGE_HTML_TEMPLATE: str = f"""<!DOCTYPE html>
 
     <main id="main">
 
-<!-- Main home page content: Begin -->
+<!-- main home page content : begin -->
 
 {{content}}
 
-<!-- Main home page content: End -->
+<!-- main home page content : end -->
 
     </main>
 </body>
@@ -257,15 +260,22 @@ def remove_basic_punct(s: str) -> str:
 
 
 def sanitise_title(
-    title: str, titleset: Collection[str], /, nosep: bool = False
+    title: str, titleset: Collection[str], *, nosep: bool = False, generic: bool = True
 ) -> str:
-    title = " ".join(
-        [
-            w
-            for w in remove_basic_punct(title).lower().split()
-            if w not in CONTEXT_WORDS
-        ][:8]
-    )
+
+    title = title.lower().strip()
+    words: list[str] = []
+
+    if generic:
+        for w in remove_basic_punct(title).split():
+            if w not in CONTEXT_WORDS:
+                words.append(w)
+            elif len(words) >= 8:
+                break
+
+    if words:
+        title = " ".join(words)
+
     _title: str = ""
 
     for char in title:
@@ -277,7 +287,7 @@ def sanitise_title(
             else ""
         )
 
-    _title = _title.rstrip("-")
+    _title = _title.strip("-")
 
     return (
         _title
@@ -285,20 +295,21 @@ def sanitise_title(
         else sanitise_title(
             _title + ("" if nosep else "-") + random.choice(string.digits),
             titleset,
-            True,
+            nosep=True,
+            generic=generic,
         )
     )
 
 
 def truncate_str(string: str, length: int) -> str:
-    return string if len(string) <= length else (string[:length] + "...")
+    return string if len(string) <= length else (string[:length] + " ...")
 
 
 class BetterHeaders(Treeprocessor):
-    """Better headers
+    """better headers
 
-    - Downsizes headers from h1 -> h2
-    - Adds header links"""
+    - downsizes headers from h1 -> h2
+    - adds header links"""
 
     def run(self, root: etree.Element) -> None:
         ids: List[str] = []
@@ -320,7 +331,7 @@ class BetterHeaders(Treeprocessor):
             if elem.text is None:
                 elem.text = ""
 
-            gen_id: str = sanitise_title(elem.text, ids)
+            gen_id: str = sanitise_title(elem.text, ids, generic=False)
             ids.append(gen_id)
 
             heading_parent: etree.Element = elem.makeelement(
@@ -362,42 +373,48 @@ class BetterHeaders(Treeprocessor):
             root.insert(idx, heading_parent)
 
 
-class AddIDLinks(InlineProcessor):
-    """Add support for <#ID> links"""
+class TitleLinks(InlineProcessor):
+    """add support for <#:title> links"""
 
     def handleMatch(  # pyright: ignore
         self, match: RegexMatch, *_  # pyright: ignore
-    ) -> Tuple[etree.Element, Any, Any]:
+    ) -> Union[Tuple[etree.Element, Any, Any], Tuple[None, ...]]:
+        text: str = match.group(1)  # type: ignore
+
+        if not text:
+            return (None,) * 3
+
         link: etree.Element = etree.Element("a")
 
-        link.text = match.group(1) or "#"
-        link.set("href", link.text or "#")
+        link.text = f"# {text}"
+        link.set("href", f"#{sanitise_title(text, [], generic=False)}")  # type: ignore
 
         return link, match.start(0), match.end(0)
 
 
 class AriMarkdownExts(Extension):
-    """Ari-web markdown extensions"""
+    """ari-web markdown extensions"""
 
     def extendMarkdown(
         self,
         md: markdown_core.Markdown,
         key: str = "add_header_links",
         index: int = int(1e8),
-    ):
+    ) -> None:
         md.registerExtension(self)
 
         md.treeprocessors.register(
             BetterHeaders(md.parser), key, index  # pyright: ignore
         )
+
         md.inlinePatterns.register(
-            AddIDLinks(r"<(#.*)>", "a"), key, index  # pyright: ignore
+            TitleLinks(r"<#:(.*)>", "a"), key, index  # pyright: ignore
         )
 
 
 def log(message: str, header: str = "ERROR", code: int = EXIT_ERR) -> int:
     if not (not NOT_CI_BUILD and header != "ERROR"):
-        sys.stderr.write(f"{header}: {message}\n")
+        sys.stderr.write(f"{header} : {message}\n")
 
     return code
 
@@ -443,7 +460,7 @@ def yn(prompt: str, default: str = "y", current_value: str = "") -> bool:
 
 
 def new_config() -> None:
-    log("Making new config...", "INFO")
+    log("making new config ...", "INFO")
 
     with open(DEFAULT_CONFIG_FILE, "w") as cfg:
         ujson.dump(DEFAULT_CONFIG, cfg, indent=4)
@@ -458,25 +475,25 @@ def pick_blog(config: Dict[str, Any]) -> str:
                     lambda key: f"{key} | {b64decode(config['blogs'][key]['title']).decode()!r}",  # pyright: ignore
                     tuple(config["blogs"].keys())[::-1],
                 ),
-                "--prompt='Pick blog: '",
+                "--prompt='pick a post : '",
             )[0]
             .split()[0]  # pyright: ignore
         )
     except ProcessExecutionError:
-        log("Fzf process exited unexpectedly")
+        log("fzf process exited unexpectedly")
         return ""
 
     if blog_id not in config["blogs"]:
-        log(f"Blog {blog_id!r} does not exist")
+        log(f"blog post {blog_id!r} does not exist")
         return ""
 
     return blog_id
 
 
 def new_blog(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
-    """Make a new blog"""
+    """make a new blog"""
 
-    if title := iinput("blog title"):
+    if title := iinput("blog post title"):
         readline.add_history((title := title[0].upper() + title[1:]))
 
         us_title: str = title
@@ -487,7 +504,6 @@ def new_blog(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
     blog: Dict[str, Any] = {
         "title": b64encode(us_title.encode()).decode(),
         "content": "",
-        "version": BLOG_VERSION,
         "time": 0.0,
         "keywords": "",
     }
@@ -506,9 +522,9 @@ def new_blog(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
     os.remove(file)
 
     if not blog["content"].strip():  # type: ignore
-        return log("Blog cannot be empty"), config
+        return log("blog post cannot be empty"), config
 
-    user_keywords: str = iinput("keywords (seperated by spaces)")
+    user_keywords: str = iinput("keywords ( seperated by spaces )")
     readline.add_history(user_keywords)
 
     blog["keywords"] = html_escape(user_keywords)
@@ -520,9 +536,9 @@ def new_blog(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
 
 
 def build_css(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
-    """Minify (build) the CSS"""
+    """minify ( build ) the CSS"""
 
-    log("Minifying CSS...", "MINIFY")
+    log("minifying CSS ...", "MINIFY")
 
     saved_stdout = sys.stdout
     sys.stdout = open(os.devnull, "w")
@@ -534,19 +550,19 @@ def build_css(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
         css_threads[-1].start()
 
     if os.path.isfile("content/styles.css"):
-        log("Minifying main styles", "MINIFY")
+        log("minifying main styles", "MINIFY")
         _thread(
             lambda: process_single_css_file("content/styles.css")  # pyright: ignore
         )
 
     if os.path.isdir("content/fonts"):
-        log("Minifying fonts...", "MINIFY")
+        log("minifying fonts ...", "MINIFY")
 
         for font in iglob("content/fonts/*.css"):
             if font.endswith(".min.css"):
                 continue
 
-            log(f"Minifying font file: {font}", "MINIFY")
+            log(f"minifying font file -- {font}", "MINIFY")
             _thread(lambda: process_single_css_file(font))  # pyright: ignore
 
     for t in css_threads:
@@ -555,16 +571,16 @@ def build_css(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
     sys.stdout.close()
     sys.stdout = saved_stdout
 
-    log("Done minifying CSS", "MINIFY")
+    log("done minifying CSS", "MINIFY")
 
     return EXIT_OK, config
 
 
 def build(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
-    """Build, minimise and generate site"""
+    """build, minimise and generate site"""
 
     if not config["blogs"]:
-        return log("No blogs to build"), config
+        return log("no blogs to build"), config
 
     latest_blog_id: str = tuple(config["blogs"].keys())[-1]
 
@@ -573,16 +589,9 @@ def build(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
 
     os.makedirs(config["blog-dir"], exist_ok=True)
 
-    log("Building blogs...", "INFO")
+    log("building blogs ...", "INFO")
 
     def thread(blog_id: str, blog_meta: Dict[str, Any]):
-        if blog_meta["version"] != BLOG_VERSION:
-            log(
-                f"{blog_id}: unmatching version between \
-{blog_meta['version']} and {BLOG_VERSION}",
-                "WARNING",
-            )
-
         blog_dir: str = os.path.join(config["blog-dir"], blog_id)
         os.makedirs(blog_dir, exist_ok=True)
 
@@ -619,20 +628,20 @@ def build(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
                 keywords=blog_meta["keywords"].replace(" ", ", ")
                 + ", "
                 + ", ".join(config["default-keywords"]),
-                blog_description=f"Blog on {blog_time} GMT -- {blog_title}",
+                blog_description=f"blog post on {blog_time} GMT -- {blog_title}",
                 blog_title=blog_title,
                 blog=blog_base_html,
                 author=config["full-name"],
                 locale=config["locale"],
             )
 
-            log(f"Minifying {blog_id!r} HTML", "MINIFY")
+            log(f"minifying {blog_id!r} HTML", "MINIFY")
             blog_html_full = html_minify(blog_html_full)
-            log(f"Done minifying the HTML of {blog_id!r}", "MINIFY")
+            log(f"done minifying the HTML of {blog_id!r}", "MINIFY")
 
             blog_html.write(blog_html_full)
 
-        log(f"Finished building blog {blog_id!r}", "BUILD")
+        log(f"finished building blog post {blog_id!r}", "BUILD")
 
     _tmp_threads: List[Thread] = []
 
@@ -645,7 +654,7 @@ def build(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
     for awaiting_thread in _tmp_threads:
         awaiting_thread.join()
 
-    log("Building blog index...", "INFO")
+    log("building blog post index ...", "INFO")
 
     with open("index.html", "w") as index:
         lastest_blog: Dict[str, Any] = config["blogs"][latest_blog_id]
@@ -685,18 +694,17 @@ def build(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
 
 
 def list_blogs(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
-    """List blogs"""
+    """list blogs"""
 
     if not config["blogs"]:
-        return log("No blogs to list"), config
+        return log("no blogs to list"), config
 
     for blog_id, blog_meta in config["blogs"].items():
         print(
-            f"""ID: {blog_id}
-Title: {b64decode(blog_meta["title"]).decode()!r}
-Version: {blog_meta["version"]}
-Time_of_creation: {format_time(blog_meta["time"])}
-Keywords: {blog_meta['keywords'].replace(" ", ", ")}
+            f"""ID : {blog_id}
+title : {b64decode(blog_meta["title"]).decode()!r}
+time_of_creation : {format_time(blog_meta["time"])}
+keywords : {blog_meta['keywords'].replace(" ", ", ")}
 """
         )
 
@@ -704,10 +712,10 @@ Keywords: {blog_meta['keywords'].replace(" ", ", ")}
 
 
 def remove_blog(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
-    """Remove a blog page"""
+    """remove a blog post"""
 
     if not config["blogs"]:
-        return log("No blogs to remove"), config
+        return log("no blogs to remove"), config
 
     blog_id: str = pick_blog(config)
 
@@ -719,7 +727,7 @@ def remove_blog(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
 
 
 def dummy(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
-    """Print help/usage information"""
+    """print help / usage information"""
 
     return EXIT_OK, config
 
@@ -730,7 +738,7 @@ def edit_title(blog: str, config: Dict[str, Any]) -> int:
     )
 
     if not new_title.strip():
-        return log("New title cannot be empty")
+        return log("new title cannot be empty")
 
     # Made it not change the slug
 
@@ -750,7 +758,7 @@ def edit_keywords(blog: str, config: Dict[str, Any]) -> int:
     new_keywords: str = iinput("edit keywords", config["blogs"][blog]["keywords"])
 
     if not new_keywords.strip():
-        return log("Keywords cannot be empty")
+        return log("keywords cannot be empty")
 
     config["blogs"][blog]["keywords"] = new_keywords
 
@@ -770,7 +778,7 @@ def edit_content(blog: str, config: Dict[str, Any]) -> int:
 
         if not content.strip():
             blog_md_new.close()
-            return log("Content of a blog cannot be empty")
+            return log("content of a blog post cannot be empty")
 
         config["blogs"][blog]["content"] = b64encode(content.encode()).decode()
 
@@ -786,10 +794,10 @@ EDIT_HOOKS: Dict[str, Callable[[str, Dict[str, Any]], int]] = {
 
 
 def edit(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
-    """Edit a blog"""
+    """edit a blog"""
 
     if not config["blogs"]:
-        return log("No blogs to edit"), config
+        return log("no blogs to edit"), config
 
     blog_id: str = pick_blog(config)
 
@@ -798,25 +806,25 @@ def edit(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
 
     try:
         hook: str = FzfPrompt().prompt(  # pyright: ignore
-            EDIT_HOOKS.keys(), "--prompt='What to edit: '"
+            EDIT_HOOKS.keys(), "--prompt='what to edit : '"
         )[0]
 
         if hook not in EDIT_HOOKS:
-            return log(f"Hook {hook!r} does not exist"), config
+            return log(f"hook {hook!r} does not exist"), config
 
         EDIT_HOOKS[hook](blog_id, config)
     except ProcessExecutionError:
-        return log("No blog selected"), config
+        return log("no blog post selected"), config
 
     return EXIT_OK, config
 
 
 def gen_def_config(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
-    """Generate default config"""
+    """generate default config"""
 
     if os.path.exists(DEFAULT_CONFIG_FILE):
-        if iinput("Do you want to overwite config? (y/n)").lower()[0] != "y":
-            return log("Not overwritting config", "INFO", EXIT_OK), config
+        if iinput("do you want to overwite config ? ( y / n )").lower()[0] != "y":
+            return log("not overwritting config", "INFO", EXIT_OK), config
 
     new_config()
 
@@ -827,7 +835,7 @@ def gen_def_config(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
 
 
 def clean(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
-    """Clean up current directory"""
+    """clean up current directory"""
 
     TRASH: Set[str] = {
         HISTORY_FILE,
@@ -840,7 +848,7 @@ def clean(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
     }
 
     def remove(file: str) -> None:
-        log(f"Removing {file!r}", "REMOVE")
+        log(f"removing {file!r}", "REMOVE")
 
         try:
             os.remove(file)
@@ -857,10 +865,10 @@ def clean(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
 
 
 def generate_metadata(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
-    """Generate metadata"""
+    """generate metadata"""
 
     with open("manifest.json", "w") as manifest:
-        log(f"Generating {manifest.name}...", "GENERATE")
+        log(f"generating {manifest.name} ...", "GENERATE")
         ujson.dump(
             {
                 "$schema": "https://json.schemastore.org/web-manifest-combined.json",
@@ -877,7 +885,7 @@ def generate_metadata(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
         )
 
     with open(DEFAULT_CONFIG_FILE, "rb") as blog_api_file:
-        log(f"Generating hash for {DEFAULT_CONFIG_FILE!r}", "HASH")
+        log(f"generating hash for {DEFAULT_CONFIG_FILE!r}", "HASH")
 
         with open(
             f"{DEFAULT_CONFIG_FILE.replace('.', '_')}_hash.txt", "w"
@@ -888,21 +896,21 @@ def generate_metadata(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
 
 
 def generate_static_full(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
-    """Generate full static site"""
+    """generate full static site"""
 
     BUILD_CFG: Dict[str, Callable[[Dict[str, Any]], Tuple[int, Dict[str, Any]]]] = {
-        "Cleaning up": clean,
-        "Building CSS": build_css,
-        "Building static site": build,
-        "Generating metatata": generate_metadata,
+        "cleaning up": clean,
+        "building CSS": build_css,
+        "building static site": build,
+        "generating metatata": generate_metadata,
     }
 
     for logger_msg, function in BUILD_CFG.items():
-        log(f"{logger_msg}...", "STATIC")
+        log(f"{logger_msg} ...", "STATIC")
         code, config = function(config)
 
         if code != EXIT_OK:
-            log("Failed to generate static site")
+            log("failed to generate static site")
             return EXIT_ERR, config
 
     return EXIT_OK, config
@@ -924,7 +932,7 @@ SUBCOMMANDS: Dict[str, Callable[[Dict[str, Any]], Tuple[int, Dict[str, Any]]]] =
 
 
 def usage(code: int = EXIT_ERR, _: Optional[Dict[str, Any]] = None) -> int:
-    sys.stderr.write(f"Usage: {sys.argv[0]} <subcommand>\n")
+    sys.stderr.write(f"usage : {sys.argv[0]} <subcommand>\n")
 
     for subcommand, func in SUBCOMMANDS.items():
         sys.stderr.write(f"  {subcommand:20s}{func.__doc__ or ''}\n")
@@ -933,7 +941,7 @@ def usage(code: int = EXIT_ERR, _: Optional[Dict[str, Any]] = None) -> int:
 
 
 def main() -> int:
-    """Entry/main function"""
+    """entry / main function"""
 
     if NOT_CI_BUILD:
         if not os.path.isfile(HISTORY_FILE):
@@ -951,7 +959,7 @@ def main() -> int:
 
     if not os.path.isfile(DEFAULT_CONFIG_FILE):
         new_config()
-        log(f"PLease configure {DEFAULT_CONFIG_FILE!r}")
+        log(f"please configure {DEFAULT_CONFIG_FILE!r}")
         return EXIT_ERR
 
     if len(sys.argv) != 2:
@@ -970,12 +978,12 @@ def main() -> int:
         code, config = SUBCOMMANDS[sys.argv[1]](ujson.load(lcfg))
 
         log(
-            f"Finished in {code_timer() - cmd_time_init} seconds with code {code}",
+            f"finished in {code_timer() - cmd_time_init} seconds with code {code}",
             "TIME",
         )
 
         if config["blogs"] and NOT_CI_BUILD:
-            log("Sorting blogs by creation time...", "CLEANUP")
+            log("Sorting blogs by creation time ...", "CLEANUP")
 
             sort_timer = code_timer()
 
@@ -986,16 +994,16 @@ def main() -> int:
                 )
             )
 
-            log(f"Sorted in {code_timer() - sort_timer} seconds", "TIME")
+            log(f"sorted in {code_timer() - sort_timer} seconds", "TIME")
 
-        log("Redumping config", "CONFIG")
+        log("redumping config", "CONFIG")
 
         dump_timer = code_timer()
 
         with open(DEFAULT_CONFIG_FILE, "w") as dcfg:
             ujson.dump(config, dcfg, indent=(4 if NOT_CI_BUILD else 0))
 
-        log(f"Dumped config in {code_timer() - dump_timer} seconds", "TIME")
+        log(f"dumped config in {code_timer() - dump_timer} seconds", "TIME")
 
     return code
 
