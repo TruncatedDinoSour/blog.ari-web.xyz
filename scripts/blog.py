@@ -113,6 +113,7 @@ CONTEXT_WORDS: Tuple[str, ...] = (
     "cause",
     "how",
     "what",
+    "for",
 )
 
 BLOG_MARKDOWN_TEMPLATE: str = """<header role="group">
