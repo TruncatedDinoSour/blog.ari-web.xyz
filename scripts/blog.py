@@ -78,6 +78,7 @@ DEFAULT_CONFIG: Dict[str, Any] = {
     "locale": "en_GB",
     "home-page-header": "my blogs",
     "comment-url": "/c",
+    "recents": 16,
     "blogs": {},
 }
 DEFAULT_CONFIG_FILE: str = "blog.json"
@@ -880,7 +881,19 @@ def generate_metadata(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
 
     with open("recents.json", "w") as blog_recents:
         log(f"generating {blog_recents.name!r}", "GENERATE")
-        ujson.dump(dict(tuple(config["blogs"].items())[-5:]), blog_recents)
+
+        recents: Dict[str, Any] = {}
+
+        for rid, recent in tuple(config["blogs"].items())[-(config["recents"]) :]:
+            r: Dict[str, Any] = recent.copy()
+            content: List[str] = r["content"].strip()[:196][::-1].split(maxsplit=1)
+
+            r["content"] = content[len(content) > 1][::-1]
+            del r["keywords"]
+
+            recents[rid] = r
+
+        ujson.dump(recents, blog_recents)
 
     for hashable in (DEFAULT_CONFIG_FILE, blog_recents.name):
         with open(hashable, "rb") as api_file:
