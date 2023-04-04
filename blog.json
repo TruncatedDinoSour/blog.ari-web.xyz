@@ -535,7 +535,7 @@
         },
         "ari-web-blog-api-change": {
             "title": "Ari-web blog API change",
-            "content": "hello world\n\n[the blog api](\/blog.json) has changed, now i dont use base64 to encode, it was useless, i noticed\nnobody uses the api basically, but i want it to be available, so just notifying yall\nof the change, the reason i just changed it with no prior warning is because\nnobody uses it lol\n\nalso, a new api created -- [recents.json](\/recents.json) which has the most recent 5 blog posts as the\n`blog.json` api is extremely large lol, it also has [recents_json_hash.json](\/recents_json_hash.json)\n\nanyway, have fun i guess :)\n",
+            "content": "hello world\n\n[the blog api](\/blog.json) has changed, now i dont use base64 to encode, it was useless, i noticed\nnobody uses the api basically, but i want it to be available, so just notifying yall\nof the change, the reason i just changed it with no prior warning is because\nnobody uses it lol\n\nalso, a new api created -- [recents.json](\/recents.json) which has the most recent 5 blog posts as the\n`blog.json` api is extremely large lol, it also has [recents_json_hash.txt](\/recents_json_hash.txt)\n\nanyway, have fun i guess :)\n",
             "time": 1680636542.575466,
             "keywords": "ari-web blog api change"
         }
