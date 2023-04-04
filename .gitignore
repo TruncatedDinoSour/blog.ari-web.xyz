@@ -8,4 +8,5 @@ venv/
 .ccls-cache/
 /blog_json_hash.txt
 /manifest.json
-
+/recents_json_hash.txt
+/recents.json

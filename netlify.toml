@@ -94,6 +94,20 @@
         Access-Control-Allow-Methods = "GET"
 
 [[headers]]
+    for = "/recents_json_hash.txt"
+
+    [headers.values]
+        Access-Control-Allow-Origin = "*"
+        Access-Control-Allow-Methods = "GET"
+
+[[headers]]
+    for = "/recents.json"
+
+    [headers.values]
+        Access-Control-Allow-Origin = "*"
+        Access-Control-Allow-Methods = "GET"
+
+[[headers]]
     for = "/*"
 
     [headers.values]

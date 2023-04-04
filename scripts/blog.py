@@ -8,7 +8,6 @@ import random
 import string
 import sys
 import xml.etree.ElementTree as etree
-from base64 import b64decode, b64encode
 from datetime import datetime
 from glob import iglob
 from html import escape as html_escape
@@ -473,7 +472,7 @@ def pick_blog(config: Dict[str, Any]) -> str:
             FzfPrompt()
             .prompt(  # pyright: ignore
                 map(
-                    lambda key: f"{key} | {b64decode(config['blogs'][key]['title']).decode()!r}",  # pyright: ignore
+                    lambda key: f"{key} | {config['blogs'][key]['title']!r}",  # pyright: ignore
                     tuple(config["blogs"].keys())[::-1],
                 ),
                 "--prompt='pick a post : '",
@@ -495,7 +494,7 @@ def new_blog(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
     """make a new blog"""
 
     if title := iinput("blog post title"):
-        readline.add_history((title := title[0].upper() + title[1:]))
+        readline.add_history((title := title.capitalize()))
 
         us_title: str = title
         s_title: str = sanitise_title(us_title, config["blogs"])
@@ -503,7 +502,7 @@ def new_blog(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
         return EXIT_ERR, config
 
     blog: Dict[str, Any] = {
-        "title": b64encode(us_title.encode()).decode(),
+        "title": us_title,
         "content": "",
         "time": 0.0,
         "keywords": "",
@@ -518,7 +517,7 @@ def new_blog(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
         return log(f"{file!r} does not exist"), config
 
     with open(file, "r") as md:
-        blog["content"] = b64encode(md.read().encode()).decode()
+        blog["content"] = md.read()
 
     os.remove(file)
 
@@ -599,7 +598,7 @@ def build(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
         with open(os.path.join(blog_dir, "index.html"), "w") as blog_html:
             blog_time: str = format_time(blog_meta["time"])
 
-            blog_title: str = html_escape(b64decode(blog_meta["title"]).decode())
+            blog_title: str = html_escape(blog_meta["title"])
 
             blog_base_html: str = markdown(
                 BLOG_MARKDOWN_TEMPLATE
@@ -610,7 +609,7 @@ def build(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
                     config["base-homepage"],
                     config["git-url"],
                     markdown(
-                        b64decode(blog_meta["content"]).decode(),
+                        blog_meta["content"],
                         extensions=[
                             *config["py-markdown-extensions"],
                             AriMarkdownExts(),
@@ -664,7 +663,7 @@ def build(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
         blog_list = '<ol reversed="true" aria-label="latest blogs">'
 
         for blog_id, blog_meta in reversed(config["blogs"].items()):
-            blog_list += f'<li><a href="{os.path.join(config["blog-dir"], blog_id)}">{html_escape(b64decode(blog_meta["title"]).decode())}</a></li>'
+            blog_list += f'<li><a href="{os.path.join(config["blog-dir"], blog_id)}">{html_escape(blog_meta["title"])}</a></li>'
 
         blog_list += "</ol>"
 
@@ -680,7 +679,7 @@ def build(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
                     lastest_blog_time=lastest_blog_time,
                     latest_blog_url=os.path.join(config["blog-dir"], latest_blog_id),
                     latest_blog_title=truncate_str(
-                        b64decode(html_escape(lastest_blog["title"])).decode(), 20
+                        html_escape(lastest_blog["title"]), 20
                     ),
                     git_url=config["git-url"],
                     content=blog_list,
@@ -703,7 +702,7 @@ def list_blogs(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
     for blog_id, blog_meta in config["blogs"].items():
         print(
             f"""ID : {blog_id}
-title : {b64decode(blog_meta["title"]).decode()!r}
+title : {blog_meta["title"]!r}
 time_of_creation : {format_time(blog_meta["time"])}
 keywords : {blog_meta['keywords'].replace(" ", ", ")}
 """
@@ -735,22 +734,14 @@ def dummy(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
 
 def edit_title(blog: str, config: Dict[str, Any]) -> int:
     new_title: str = iinput(
-        "edit title", b64decode(config["blogs"][blog]["title"]).decode()
+        "edit title",
+        config["blogs"][blog]["title"],
     )
 
     if not new_title.strip():
         return log("new title cannot be empty")
 
-    # Made it not change the slug
-
-    # old_blog: dict = config["blogs"][blog].copy()
-    # old_blog["title"] = b64encode(new_title.encode()).decode()
-    # del config["blogs"][blog]
-
-    # config["blogs"][sanitise_title(new_title, config["blogs"])] = old_blog
-    # del old_blog
-
-    config["blogs"][blog]["title"] = b64encode(new_title.encode()).decode()
+    config["blogs"][blog]["title"] = new_title.capitalize()
 
     return EXIT_OK
 
@@ -770,7 +761,7 @@ def edit_content(blog: str, config: Dict[str, Any]) -> int:
     file: str = tmp_path(f"{blog}.md")
 
     with open(file, "w") as blog_md:
-        blog_md.write(b64decode(config["blogs"][blog]["content"]).decode())
+        blog_md.write(config["blogs"][blog]["content"])
 
     editor(config, file)
 
@@ -781,7 +772,7 @@ def edit_content(blog: str, config: Dict[str, Any]) -> int:
             blog_md_new.close()
             return log("content of a blog post cannot be empty")
 
-        config["blogs"][blog]["content"] = b64encode(content.encode()).decode()
+        config["blogs"][blog]["content"] = content
 
     return EXIT_OK
 
@@ -846,6 +837,8 @@ def clean(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
         "blog_json_hash.txt",
         "manifest.json",
         "content/fonts/*.min.*",
+        "recents_json_hash.txt",
+        "recents.json",
     }
 
     def remove(file: str) -> None:
@@ -885,13 +878,18 @@ def generate_metadata(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
             manifest,
         )
 
-    with open(DEFAULT_CONFIG_FILE, "rb") as blog_api_file:
-        log(f"generating hash for {DEFAULT_CONFIG_FILE!r}", "HASH")
+    with open("recents.json", "w") as blog_recents:
+        log(f"generating {blog_recents.name!r}", "GENERATE")
+        ujson.dump(dict(tuple(config["blogs"].items())[-5:]), blog_recents)
 
-        with open(
-            f"{DEFAULT_CONFIG_FILE.replace('.', '_')}_hash.txt", "w"
-        ) as blog_api_hash:
-            blog_api_hash.write(hashlib.sha256(blog_api_file.read()).hexdigest())
+    for hashable in (DEFAULT_CONFIG_FILE, blog_recents.name):
+        with open(hashable, "rb") as api_file:
+            log(f"generating hash for {api_file.name!r}", "HASH")
+
+            with open(
+                f"{api_file.name.replace('.', '_')}_hash.txt", "w"
+            ) as blog_api_hash:
+                blog_api_hash.write(hashlib.sha256(api_file.read()).hexdigest())
 
     return EXIT_OK, config
 
