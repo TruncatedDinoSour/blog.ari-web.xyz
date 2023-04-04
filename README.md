@@ -1,4 +1,4 @@
-# [Ari-web blogs](https://blog.ari-web.xyz/)
+# [ari-web blogs](https://blog.ari-web.xyz/)
 
 <p align="center">
   <img src="https://img.shields.io/badge/Maintained-Yes-green?color=red&style=flat-square">
@@ -12,7 +12,7 @@
   <a href="https://app.netlify.com/sites/blog-ari-web/deploys"><img src="https://api.netlify.com/api/v1/badges/bbd7d670-9152-41a8-8c99-df57e4669606/deploy-status"></a>
 </p>
 
-## Installing dependencies
+## installing dependencies
 
 ```sh
 $ python3 -m virtualenv venv
@@ -26,23 +26,23 @@ Or
 $ python3 -m pip install --user -r requirements.txt
 ```
 
-## Completions
+## completions
 
--   Bash
+-   bash
 
 ```bash
 $ . completions/blog.bash
 ```
 
-## Building
+## building
 
--   Generate full-on static site
+-   generate full-on static site
 
 ```bash
 $ CI=1 ./scripts/blog static
 ```
 
--   Only build blogs
+-   only build blogs
 
 ```bash
 $ CI=1 ./scripts/blog static
@@ -55,11 +55,7 @@ in that context, for example sorting blogs.
 
 `CI` can have any value.
 
-## The API
+## the API
 
-Nobody is stopping you from using the static API,
-it's located at [/blog.json](https://blog.ari-web.xyz/blog.json), also if you're using
-this API generally, this API is **extremely** large, so
-I implemented cache validation, just cache it,
-including the sha256 hash and validate it with
-the [hash on the api](https://blog.ari-web.xyz/blog_json_hash.txt)
+-   <https://blog.ari-web.xyz/b/ari-web-blog-api-change/>
+-   <https://blog.ari-web.xyz/b/ari-web-apis--how-to-use-them/>
