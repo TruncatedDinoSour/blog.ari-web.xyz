@@ -539,6 +539,12 @@
             "content": "hello world\n\n[the blog api](\/blog.json) has changed, now i dont use base64 to encode, it was useless, i noticed\nnobody uses the api basically, but i want it to be available, so just notifying yall\nof the change, the reason i just changed it with no prior warning is because\nnobody uses it lol\n\nalso, a new api created -- [recents.json](\/recents.json) which has the most recent 5 blog posts as the\n`blog.json` api is extremely large lol, it also has [recents_json_hash.txt](\/recents_json_hash.txt)\n\nkeep in mind `recents.json` only has summaries of blog posts, not full content, time\n( UNIX timestamp ) and the title, thats it\n\nanyway, have fun i guess :)\n",
             "time": 1680636542.575466,
             "keywords": "ari-web blog api change"
+        },
+        "ari-web-index-redesign": {
+            "title": "Ari-web index redesign",
+            "content": "hello world\n\nafter like 2 years of having the same design i changed <https:\/\/ari-web.xyz\/>\nand i am extremely happy to announce it\n\nthis is really important and i hope you like it, the terminal branch still\nexists so no worries, but now ari-web has entered `personal` era :)\n\ncheers, and keep in mind <https:\/\/ari-web.xyz\/git> is still open source\n",
+            "time": 1680735684.293,
+            "keywords": "ari-web redesign new design webdev webdesign github git"
         }
     }
 }
