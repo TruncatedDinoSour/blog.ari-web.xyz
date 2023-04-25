@@ -6,4 +6,4 @@ pyfzf
 typing
 pymdown-extensions
 ujson
-
+readtime

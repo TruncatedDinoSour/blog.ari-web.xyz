@@ -31,6 +31,7 @@ from markdown.inlinepatterns import InlineProcessor  # type: ignore
 from markdown.treeprocessors import Treeprocessor  # type: ignore
 from plumbum.commands.processes import ProcessExecutionError  # type: ignore
 from pyfzf import FzfPrompt  # type: ignore
+from readtime import of_markdown as read_time_of_markdown  # type: ignore
 
 __version__: int = 1
 
@@ -124,7 +125,10 @@ BLOG_MARKDOWN_TEMPLATE: str = """<header role="group">
 skip</a>
         <span role="seperator" aria-hidden="true">|</span>
 
-        <span role="menuitem"><time>%s</time> GMT</span>
+        <span role="menuitem"><time>%s</time> UTC</span>
+        <span role="seperator" aria-hidden="true">|</span>
+
+        <span role="menuitem"><time>%s</time> read</span>
         <span role="seperator" aria-hidden="true">|</span>
 
         <a role="menuitem" href="/">home</a>
@@ -224,7 +228,7 @@ HOME_PAGE_HTML_TEMPLATE: str = f"""<!DOCTYPE html>
                 <span aria-hidden="true" role="seperator">|</span>
 
                 <span role="menuitem">
-                    last posted : <time>{{lastest_blog_time}}</time> GMT
+                    last posted : <time>{{lastest_blog_time}}</time> UTC
                 </span>
 
                 <span aria-hidden="true" role="seperator">|</span>
@@ -530,7 +534,7 @@ def new_blog(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
 
     blog["keywords"] = html_escape(user_keywords)
 
-    blog["time"] = datetime.now().timestamp()
+    blog["time"] = datetime.utcnow().timestamp()
     config["blogs"][s_title] = blog
 
     return EXIT_OK, config
@@ -601,11 +605,16 @@ def build(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
 
             blog_title: str = html_escape(blog_meta["title"])
 
+            # 150 wpm is quite slow, but im compensating for people who
+            # cant read that fast, especially with unprofessional people
+            # who write blog posts -- like me
+
             blog_base_html: str = markdown(
                 BLOG_MARKDOWN_TEMPLATE
                 % (
                     blog_title,
                     blog_time,
+                    read_time_of_markdown(blog_meta["content"], 150).text,  # type: ignore
                     config["comment-url"],
                     config["base-homepage"],
                     config["git-url"],
@@ -629,7 +638,7 @@ def build(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
                 keywords=blog_meta["keywords"].replace(" ", ", ")
                 + ", "
                 + ", ".join(config["default-keywords"]),
-                blog_description=f"blog post on {blog_time} GMT -- {blog_title}",
+                blog_description=f"blog post on {blog_time} UTC -- {blog_title}",
                 blog_title=blog_title,
                 blog=blog_base_html,
                 author=config["full-name"],
