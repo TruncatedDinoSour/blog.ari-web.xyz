@@ -32,7 +32,7 @@
     "page-title": "Ari::web -> Blog",
     "page-description": "my blog page",
     "colourscheme-type": "dark",
-    "short-name": "ari's blogs",
+    "short-name": "ari's posts",
     "home-keywords": [
         "ari",
         "ari-web",
@@ -56,7 +56,7 @@
     "background-colour": "#f9f6e8",
     "full-name": "Ari Archer",
     "locale": "en_GB",
-    "home-page-header": "my blogs",
+    "home-page-header": "my posts",
     "comment-url": "\/c",
     "recents": 14,
     "blogs": {
