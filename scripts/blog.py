@@ -187,6 +187,7 @@ BLOG_HTML_TEMPLATE: str = f"""<!DOCTYPE html>
 
     <meta name="description" content="{{blog_description}}"/>
     <meta property="og:type" content="article"/>
+    <meta property="article:read_time" content="{{read_time}}">
 </head>
 <body>
     <main id="blog-content">
@@ -606,15 +607,17 @@ def build(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
             blog_title: str = html_escape(blog_meta["title"])
 
             # 150 wpm is quite slow, but im compensating for people who
-            # cant read that fast, especially with unprofessional people
+            # cant read that fast, especially with writing style of unprofessional people
             # who write blog posts -- like me
+
+            read_time: str
 
             blog_base_html: str = markdown(
                 BLOG_MARKDOWN_TEMPLATE
                 % (
                     blog_title,
                     blog_time,
-                    read_time_of_markdown(blog_meta["content"], 150).text,  # type: ignore
+                    (read_time := read_time_of_markdown(blog_meta["content"], 150).text),  # type: ignore
                     config["comment-url"],
                     config["base-homepage"],
                     config["git-url"],
@@ -643,6 +646,7 @@ def build(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
                 blog=blog_base_html,
                 author=config["full-name"],
                 locale=config["locale"],
+                read_time=read_time,  # type: ignore
             )
 
             log(f"minifying {blog_id!r} HTML", "MINIFY")
