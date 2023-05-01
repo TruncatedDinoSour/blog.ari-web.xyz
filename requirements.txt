@@ -7,3 +7,4 @@ typing
 pymdown-extensions
 ujson
 readtime
+readtime
