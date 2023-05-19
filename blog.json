@@ -59,6 +59,7 @@
     "home-page-header": "my posts",
     "comment-url": "\/c",
     "recents": 14,
+    "visitor-count": "\/visit",
     "blogs": {
         "new-blog-management-system-": {
             "title": "New blog management system!",

@@ -80,6 +80,7 @@ DEFAULT_CONFIG: Dict[str, Any] = {
     "home-page-header": "my blogs",
     "comment-url": "/c",
     "recents": 16,
+    "visitor-count": "/visit",
     "blogs": {},
 }
 DEFAULT_CONFIG_FILE: str = "blog.json"
@@ -126,6 +127,9 @@ skip</a>
         <span role="seperator" aria-hidden="true">|</span>
 
         <span role="menuitem"><time>%s</time> UTC</span>
+        <span role="seperator" aria-hidden="true">|</span>
+
+        <span role="menuitem">visitor <img src="%s" alt="visitor count"></span>
         <span role="seperator" aria-hidden="true">|</span>
 
         <span role="menuitem"><time>%s</time> read</span>
@@ -238,7 +242,9 @@ HOME_PAGE_HTML_TEMPLATE: str = f"""<!DOCTYPE html>
                     latest post : \
                     <a href="{{latest_blog_url}}">{{latest_blog_title}}</a>
                 </span>
+                <span role="seperator" aria-hidden="true">|</span>
 
+                <span role="menuitem">visitor <img src="{{visitor}}" alt="visitor count"></span>
                 <span aria-hidden="true" role="seperator">|</span>
 
                 <a role="menuitem" href="{{git_url}}">git</a>
@@ -617,6 +623,7 @@ def build(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
                 % (
                     blog_title,
                     blog_time,
+                    config["visitor-count"],
                     (read_time := read_time_of_markdown(blog_meta["content"], 150).text),  # type: ignore
                     config["comment-url"],
                     config["base-homepage"],
@@ -700,6 +707,7 @@ def build(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
                     author=config["full-name"],
                     locale=config["locale"],
                     page_header=config["home-page-header"],
+                    visitor=config["visitor-count"],
                 )
             )
         )

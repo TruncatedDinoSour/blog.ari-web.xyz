@@ -238,6 +238,10 @@ blockquote * {
     }
 }
 
+nav img {
+    height: 1rem;
+}
+
 @media (prefers-contrast: more) {
     :root {
         --clr-bg: #000000;

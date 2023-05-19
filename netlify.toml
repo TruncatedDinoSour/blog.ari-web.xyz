@@ -44,6 +44,12 @@
     force = true
 
 [[redirects]]
+    from = "/visit"
+    to = "https://server.ari-web.xyz/visit"
+    status = 301
+    force = true
+
+[[redirects]]
     from = "/*"
     to = "https://ari-web.xyz/404.blog.xyz"
     status = 404
