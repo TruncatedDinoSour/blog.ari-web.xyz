@@ -965,7 +965,7 @@ def generate_rss(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
     )
     etree.SubElement(channel, "lastBuildDate").text = now.strftime(ftime)
 
-    for id, post in config["blogs"].items():
+    for id, post in tuple(config["blogs"].items())[::-1]:
         content: List[str] = post["content"].strip()[:196][::-1].split(maxsplit=1)
 
         item: etree.Element = etree.SubElement(channel, "item")
