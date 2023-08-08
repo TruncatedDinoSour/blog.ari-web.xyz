@@ -975,6 +975,7 @@ def generate_rss(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
         etree.SubElement(item, "pubDate").text = datetime.utcfromtimestamp(
             post["time"]
         ).strftime(ftime)
+        etree.SubElement(item, "guid").text = encode_url(id)
 
     etree.ElementTree(root).write(config["rss-feed"])
 
