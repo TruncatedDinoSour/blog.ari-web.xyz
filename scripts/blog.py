@@ -19,6 +19,7 @@ from threading import Thread
 from timeit import default_timer as code_timer
 from typing import (Any, Callable, Collection, Dict, List, Optional, Set,
                     Tuple, Union)
+from urllib.parse import quote as encode_url
 from warnings import filterwarnings as filter_warnings
 
 import ujson  # type: ignore
@@ -967,7 +968,7 @@ def generate_rss(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
     for id, post in config["blogs"].items():
         item: etree.Element = etree.SubElement(channel, "item")
         etree.SubElement(item, "title").text = post["title"]
-        etree.SubElement(item, "link").text = f'{config["page-url"]}{id}'
+        etree.SubElement(item, "link").text = f'{config["page-url"]}{encode_url(id)}'
         etree.SubElement(
             item, "description"
         ).text = f'{post["content"].strip()[:128].strip()} ...'
