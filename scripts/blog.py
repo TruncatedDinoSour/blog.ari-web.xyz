@@ -150,7 +150,7 @@ skip</a>
         <a role="menuitem" href="%s">git</a>
         <span role="seperator" aria-hidden="true">|</span>
 
-        <a role="menuitem" href="%s">rss</a>
+        <a role="menuitem" href="/%s">rss</a>
 
         <hr aria-hidden="true" role="seperator" />
     </nav>
