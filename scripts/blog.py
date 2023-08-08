@@ -81,6 +81,8 @@ DEFAULT_CONFIG: Dict[str, Any] = {
     "comment-url": "/c",
     "recents": 16,
     "visitor-count": "/visit",
+    "rss-feed": "rss.xml",
+    "page-url": "https://blog.ari-web.xyz/",
     "blogs": {},
 }
 DEFAULT_CONFIG_FILE: str = "blog.json"
@@ -145,6 +147,9 @@ skip</a>
         <span role="seperator" aria-hidden="true">|</span>
 
         <a role="menuitem" href="%s">git</a>
+        <span role="seperator" aria-hidden="true">|</span>
+
+        <a role="menuitem" href="%s">rss</a>
 
         <hr aria-hidden="true" role="seperator" />
     </nav>
@@ -182,6 +187,12 @@ content="ari-web blog generator version {__version__}"/>
         type="text/css"
         hreflang="en"
     />
+    <link
+        rel="alternate"
+        type="application/rss+xml"
+        href="/{{rss}}"
+        title="RSS feed"
+    >
 """
 
 BLOG_HTML_TEMPLATE: str = f"""<!DOCTYPE html>
@@ -248,6 +259,9 @@ HOME_PAGE_HTML_TEMPLATE: str = f"""<!DOCTYPE html>
                 <span aria-hidden="true" role="seperator">|</span>
 
                 <a role="menuitem" href="{{git_url}}">git</a>
+                <span aria-hidden="true" role="seperator">|</span>
+
+                <a role="menuitem" href="/{{rss}}">rss</a>
             </p>
 
             <hr aria-hidden="true" role="seperator" />
@@ -274,7 +288,6 @@ def remove_basic_punct(s: str) -> str:
 def sanitise_title(
     title: str, titleset: Collection[str], *, nosep: bool = False, generic: bool = True
 ) -> str:
-
     title = title.lower().strip()
     words: list[str] = []
 
@@ -628,6 +641,7 @@ def build(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
                     config["comment-url"],
                     config["base-homepage"],
                     config["git-url"],
+                    config["rss-feed"],
                     markdown(
                         blog_meta["content"],
                         extensions=[
@@ -654,6 +668,7 @@ def build(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
                 author=config["full-name"],
                 locale=config["locale"],
                 read_time=read_time,  # type: ignore
+                rss=config["rss-feed"],
             )
 
             log(f"minifying {blog_id!r} HTML", "MINIFY")
@@ -708,6 +723,7 @@ def build(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
                     locale=config["locale"],
                     page_header=config["home-page-header"],
                     visitor=config["visitor-count"],
+                    rss=config["rss-feed"],
                 )
             )
         )
@@ -861,6 +877,7 @@ def clean(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
         "content/fonts/*.min.*",
         "recents_json_hash.txt",
         "recents.json",
+        config["rss-feed"],
     }
 
     def remove(file: str) -> None:
@@ -928,6 +945,41 @@ def generate_metadata(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
     return EXIT_OK, config
 
 
+def generate_rss(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
+    """generate rss"""
+
+    ftime: str = "%a, %d %b %Y %H:%M:%S GMT"
+    now: datetime = datetime.utcnow()
+
+    root: etree.Element = etree.Element("rss")
+    root.set("version", "2.0")
+
+    channel: etree.Element = etree.SubElement(root, "channel")
+
+    etree.SubElement(channel, "title").text = config["page-title"]
+    etree.SubElement(channel, "link").text = config["page-url"]
+    etree.SubElement(channel, "description").text = config["page-description"]
+    etree.SubElement(channel, "language").text = (
+        config["locale"].lower().replace("_", "-")
+    )
+    etree.SubElement(channel, "lastBuildDate").text = now.strftime(ftime)
+
+    for id, post in config["blogs"].items():
+        item: etree.Element = etree.SubElement(channel, "item")
+        etree.SubElement(item, "title").text = post["title"]
+        etree.SubElement(item, "link").text = f'{config["page-url"]}{id}'
+        etree.SubElement(
+            item, "description"
+        ).text = f'{post["content"].strip()[:128].strip()} ...'
+        etree.SubElement(item, "pubDate").text = datetime.utcfromtimestamp(
+            post["time"]
+        ).strftime(ftime)
+
+    etree.ElementTree(root).write(config["rss-feed"])
+
+    return EXIT_OK, config
+
+
 def generate_static_full(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
     """generate full static site"""
 
@@ -936,6 +988,7 @@ def generate_static_full(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
         "building CSS": build_css,
         "building static site": build,
         "generating metatata": generate_metadata,
+        "generating rss": generate_rss,
     }
 
     for logger_msg, function in BUILD_CFG.items():
@@ -961,6 +1014,7 @@ SUBCOMMANDS: Dict[str, Callable[[Dict[str, Any]], Tuple[int, Dict[str, Any]]]] =
     "metadata": generate_metadata,
     "static": generate_static_full,
     "css": build_css,
+    "rss": generate_rss,
 }
 
 

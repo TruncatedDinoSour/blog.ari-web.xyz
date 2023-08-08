@@ -60,6 +60,8 @@
     "comment-url": "\/c",
     "recents": 14,
     "visitor-count": "\/visit",
+    "rss-feed": "rss.xml",
+    "page-url": "https:\/\/blog.ari-web.xyz\/",
     "blogs": {
         "new-blog-management-system-": {
             "title": "New blog management system!",

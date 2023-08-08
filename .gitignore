@@ -10,3 +10,4 @@ venv/
 /manifest.json
 /recents_json_hash.txt
 /recents.json
+/rss.xml
