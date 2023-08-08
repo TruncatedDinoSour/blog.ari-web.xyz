@@ -966,12 +966,16 @@ def generate_rss(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
     etree.SubElement(channel, "lastBuildDate").text = now.strftime(ftime)
 
     for id, post in config["blogs"].items():
+        content: List[str] = post["content"].strip()[:196][::-1].split(maxsplit=1)
+
         item: etree.Element = etree.SubElement(channel, "item")
         etree.SubElement(item, "title").text = post["title"]
-        etree.SubElement(item, "link").text = (link := f'{config["page-url"]}{encode_url(id)}')
+        etree.SubElement(item, "link").text = (
+            link := f'{config["page-url"]}{encode_url(id)}'
+        )
         etree.SubElement(
             item, "description"
-        ).text = f'{post["content"].strip()[:128].strip()} ...'
+        ).text = f"{content[len(content) > 1][::-1]} ..."
         etree.SubElement(item, "pubDate").text = datetime.utcfromtimestamp(
             post["time"]
         ).strftime(ftime)
