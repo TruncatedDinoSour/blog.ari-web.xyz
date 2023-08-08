@@ -192,7 +192,7 @@ content="ari-web blog generator version {__version__}"/>
         rel="alternate"
         type="application/rss+xml"
         href="/{{rss}}"
-        title="RSS feed"
+        title="{{title}}"
     >
 """
 
