@@ -968,14 +968,14 @@ def generate_rss(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
     for id, post in config["blogs"].items():
         item: etree.Element = etree.SubElement(channel, "item")
         etree.SubElement(item, "title").text = post["title"]
-        etree.SubElement(item, "link").text = f'{config["page-url"]}{encode_url(id)}'
+        etree.SubElement(item, "link").text = (link := f'{config["page-url"]}{encode_url(id)}')
         etree.SubElement(
             item, "description"
         ).text = f'{post["content"].strip()[:128].strip()} ...'
         etree.SubElement(item, "pubDate").text = datetime.utcfromtimestamp(
             post["time"]
         ).strftime(ftime)
-        etree.SubElement(item, "guid").text = encode_url(id)
+        etree.SubElement(item, "guid").text = link
 
     etree.ElementTree(root).write(config["rss-feed"])
 
