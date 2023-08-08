@@ -971,7 +971,7 @@ def generate_rss(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
         item: etree.Element = etree.SubElement(channel, "item")
         etree.SubElement(item, "title").text = post["title"]
         etree.SubElement(item, "link").text = (
-            link := f'{config["page-url"]}{encode_url(id)}'
+            link := f'{config["page-url"]}{config["blog-dir"]}/{encode_url(id)}'
         )
         etree.SubElement(
             item, "description"
