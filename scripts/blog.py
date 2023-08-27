@@ -119,6 +119,8 @@ CONTEXT_WORDS: Tuple[str, ...] = (
     "how",
     "what",
     "for",
+    "with",
+    "without",
 )
 
 BLOG_MARKDOWN_TEMPLATE: str = """<header role="group">
