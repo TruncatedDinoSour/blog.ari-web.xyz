@@ -764,7 +764,7 @@ def ls(config: typing.Dict[str, typing.Any]) -> int:
 
 title : {post["title"]!r}
 description : {post["description"]!r}
-content : {trunc(post["content"], 128)!r}
+content : {trunc(post["content"], config["post-preview-size"])!r}
 keywords : {", ".join(post["keywords"])}
 created : {format_time(post["created"])}"""
             + (
@@ -1116,7 +1116,9 @@ def apis(config: typing.Dict[str, typing.Any]) -> int:
                         kv[0],
                         {
                             "title": kv[1]["title"],
-                            "content": trunc(kv[1]["content"], config["post-preview-size"], ""),
+                            "content": trunc(
+                                kv[1]["content"], config["post-preview-size"], ""
+                            ),
                             "created": kv[1]["created"],
                         },
                     ),
