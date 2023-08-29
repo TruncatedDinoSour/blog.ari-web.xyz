@@ -526,8 +526,8 @@ def open_file(editor: typing.Sequence[str], path: str) -> None:
     subprocess.run([(token.replace("%s", path)) for token in editor])
 
 
-def trunc(data: str, length: int) -> str:
-    return data[:length] + (" ..." if len(data) > length else "")
+def trunc(data: str, length: int, end: str = " ...") -> str:
+    return data[:length] + (end if len(data) > length else "")
 
 
 def read_post(path: str) -> str:
@@ -1116,7 +1116,7 @@ def apis(config: typing.Dict[str, typing.Any]) -> int:
                         kv[0],
                         {
                             "title": kv[1]["title"],
-                            "content": trunc(kv[1]["content"], config["post-preview-size"]),
+                            "content": trunc(kv[1]["content"], config["post-preview-size"], ""),
                             "created": kv[1]["created"],
                         },
                     ),
