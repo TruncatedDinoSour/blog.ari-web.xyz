@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 """blog manager"""
 
+from __future__ import annotations
+
 import asyncio
 import datetime
 import hashlib
@@ -1265,7 +1267,7 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    assert main.__annotations__.get("return") is int, "main() should return an integer"
+    assert main.__annotations__.get("return") == "int", "main() should return an integer"
 
     filter_warnings("error", category=Warning)
     raise SystemExit(main())
