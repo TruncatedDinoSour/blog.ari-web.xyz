@@ -283,7 +283,7 @@ INDEX_TEMPLATE: typing.Final[str] = (
         <hr aria-hidden="true" role="seperator" />
       </nav>
    </header>
-   <article id="main"><ul>{blog_list}</ul></article>
+   <article id="main"><ol reversed>{blog_list}</ol></article>
 </main>
 </body>
 </html>"""
@@ -1216,6 +1216,16 @@ def serve(config: typing.Dict[str, typing.Any]) -> int:
     return OK
 
 
+@cmds.new
+def dev(config: typing.Dict[str, typing.Any]) -> int:
+    """generate a full static site + serve it"""
+
+    if (code := static(config)) is not OK:
+        return code
+
+    return serve(config)
+
+
 def main() -> int:
     """entry/main function"""
 
@@ -1267,7 +1277,9 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    assert main.__annotations__.get("return") == "int", "main() should return an integer"
+    assert (
+        main.__annotations__.get("return") == "int"
+    ), "main() should return an integer"
 
     filter_warnings("error", category=Warning)
     raise SystemExit(main())
