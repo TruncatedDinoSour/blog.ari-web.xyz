@@ -1,5 +1,5 @@
 [build]
-    command = "python3 ./scripts/blog.py static && rm -rf ./scripts/ ./completions/"
+    command = "python3 ./scripts/blog.py static && rm -rf ./scripts/"
 
 [[redirects]]
     from = "/git/*"
@@ -10,18 +10,6 @@
 [[redirects]]
     from = "/favicon.ico"
     to = "https://ari-web.xyz/favicon.ico"
-    status = 200
-    force = true
-
-[[redirects]]
-    from = "/robots.txt"
-    to = "https://ari-web.xyz/robots.txt"
-    status = 200
-    force = true
-
-[[redirects]]
-    from = "/sitemap.xml"
-    to = "https://ari-web.xyz/sitemap.xml"
     status = 200
     force = true
 

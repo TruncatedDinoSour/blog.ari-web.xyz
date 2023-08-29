@@ -1,1104 +1,1265 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""manage blogs"""
+"""blog manager"""
 
+import asyncio
+import datetime
 import hashlib
+import json
 import os
-import random
+import re
+import shutil
 import string
+import subprocess
 import sys
+import tempfile
+import time
+import typing
 import xml.etree.ElementTree as etree
-from datetime import datetime
 from glob import iglob
 from html import escape as html_escape
-from re import Match as RegexMatch
-from shutil import copy as copy_file
-from shutil import rmtree
-from tempfile import gettempdir
 from threading import Thread
 from timeit import default_timer as code_timer
-from typing import (Any, Callable, Collection, Dict, List, Optional, Set,
-                    Tuple, Union)
-from urllib.parse import quote as encode_url
 from warnings import filterwarnings as filter_warnings
 
-import ujson  # type: ignore
+import mistune
+import mistune.core
+import mistune.inline_parser
+import mistune.plugins
+import unidecode
 from css_html_js_minify import html_minify  # type: ignore
 from css_html_js_minify import process_single_css_file  # type: ignore
-from markdown import core as markdown_core  # type: ignore
-from markdown import markdown  # type: ignore
-from markdown.extensions import Extension  # type: ignore
-from markdown.inlinepatterns import InlineProcessor  # type: ignore
-from markdown.treeprocessors import Treeprocessor  # type: ignore
-from plumbum.commands.processes import ProcessExecutionError  # type: ignore
-from pyfzf import FzfPrompt  # type: ignore
 from readtime import of_markdown as read_time_of_markdown  # type: ignore
 
-__version__: int = 1
+__version__: typing.Final[int] = 2
 
-NOT_CI_BUILD: bool = not os.getenv("CI")
 
-if NOT_CI_BUILD:
-    import readline
-    from atexit import register as fn_register
+OK: typing.Final[int] = 0
+ER: typing.Final[int] = 1
 
-EXIT_OK: int = 0
-EXIT_ERR: int = 1
-
-DEFAULT_CONFIG: Dict[str, Any] = {
-    "editor-command": f"{os.environ.get('EDITOR', 'vim')} -- %s",
-    "blog-dir": "b",
-    "git-url": "/git",
-    "py-markdown-extensions": [
-        "markdown.extensions.abbr",
-        "markdown.extensions.def_list",
-        "markdown.extensions.fenced_code",
-        "markdown.extensions.footnotes",
-        "markdown.extensions.md_in_html",
-        "markdown.extensions.tables",
-        "markdown.extensions.admonition",
-        "markdown.extensions.sane_lists",
-        "markdown.extensions.toc",
-        "markdown.extensions.wikilinks",
-        "pymdownx.betterem",
-        "pymdownx.caret",
-        "pymdownx.magiclink",
-        "pymdownx.mark",
-        "pymdownx.tilde",
+CONFIG_FILE: typing.Final[str] = "blog.json"
+DEFAULT_CONFIG: typing.Dict[str, typing.Any] = {
+    "title": "blog",
+    "header": "blog",
+    "description": "my blog page",
+    "posts-dir": "b",
+    "assets-dir": "content",
+    "rss-file": "rss.xml",
+    "blog-keywords": [
+        "blog",
+        "blog page",
+        "blog post",
+        "personal",
+        "website",
     ],
-    "default-keywords": ["website", "blog", "opinion", "article", "ari-web", "ari"],
-    "page-title": "Ari::web -> Blog",
-    "page-description": "my blog page",
-    "colourscheme-type": "dark",
-    "short-name": "aris blogs",
-    "home-keywords": ["ari", "ari-web", "blog", "ari-archer", "foss", "free", "linux"],
-    "base-homepage": "https://ari-web.xyz/",
-    "meta-icons": [{"src": "/favicon.ico", "sizes": "128x128", "type": "image/png"}],
-    "theme-colour": "#f9f6e8",
-    "background-colour": "#262220",
-    "full-name": "Ari Archer",
-    "locale": "en_GB",
-    "home-page-header": "my blogs",
-    "comment-url": "/c",
-    "recents": 16,
+    "default-keywords": [
+        "blog",
+        "blog page",
+        "blog post",
+        "personal",
+        "website",
+    ],
+    "website": "https://example.com",
+    "blog": "https://blog.example.com",
+    "source": "/git",
     "visitor-count": "/visit",
-    "rss-feed": "rss.xml",
-    "page-url": "https://blog.ari-web.xyz/",
-    "blogs": {},
+    "comment": "/c",
+    "theme": {
+        "primary": "#000",
+        "secondary": "#fff",
+        "type": "dark",
+    },
+    "manifest": {
+        "icons": [
+            {
+                "src": "/favicon.ico",
+                "sizes": "128x128",
+                "type": "image/png",
+            },
+        ],
+    },
+    "author": "John Doe",
+    "locale": "en_GB",
+    "recents": 14,
+    "indent": 4,
+    "markdown-plugins": [  # good defaults
+        "speedup",
+        "strikethrough",
+        "insert",
+        "superscript",
+        "subscript",
+        "footnotes",
+        "abbr",
+    ],
+    "editor": ["vim", "--", "%s"],
+    "context-words": [
+        "the",
+        "a",
+        "about",
+        "etc",
+        "on",
+        "at",
+        "in",
+        "by",
+        "its",
+        "i",
+        "to",
+        "my",
+        "of",
+        "between",
+        "because",
+        "of",
+        "or",
+        "how",
+        "to",
+        "begin",
+        "is",
+        "this",
+        "person",
+        "important",
+        "homework",
+        "and",
+        "cause",
+        "how",
+        "what",
+        "for",
+        "with",
+        "without",
+    ],
+    "wslug-limit": 10,
+    "slug-limit": 96,
+    "proxy-api": "https://gimmeproxy.com/api/getProxy?post=true&get=true&user-agent=true&supportsHttps=true&protocol=http&minSpeed=20&curl=true",
+    "test-proxy": "https://example.com/",
+    "test-proxy-timeout": 15,
+    "license": "GPL-3.0-or-later",
+    "recent-title-trunc": 32,
+    "server-host": "127.0.0.1",
+    "server-port": 8080,
+    "posts": {},
 }
-DEFAULT_CONFIG_FILE: str = "blog.json"
-HISTORY_FILE: str = ".blog_history"
-CONTEXT_WORDS: Tuple[str, ...] = (
-    "the",
-    "a",
-    "about",
-    "etc",
-    "on",
-    "at",
-    "in",
-    "by",
-    "its",
-    "i",
-    "to",
-    "my",
-    "of",
-    "between",
-    "because",
-    "of",
-    "or",
-    "how",
-    "to",
-    "begin",
-    "is",
-    "this",
-    "person",
-    "important",
-    "homework",
-    "and",
-    "cause",
-    "how",
-    "what",
-    "for",
-    "with",
-    "without",
-)
 
-BLOG_MARKDOWN_TEMPLATE: str = """<header role="group">
-    <h1 role="heading" aria-level="1">%s</h1>
+NCI: bool = "CI" not in os.environ
 
-    <nav id="info-bar" role="menubar">
-        <a role="menuitem" aria-label="jump to the main content" href="#main">\
-skip</a>
+LOG_CLR: str = "\033[90m"
+ERR_CLR: str = "\033[1m\033[31m"
+NEW_CLR: str = "\033[1m\033[32m"
+IMP_CLR: str = "\033[1m\033[35m"
+
+HTML_BEGIN: typing.Final[
+    str
+] = """<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta
+    name="keywords"
+    content="{keywords}"
+/>
+<meta
+    name="robots"
+    content="follow, index, max-snippet:-1, max-video-preview:-1, max-image-preview:large"
+/>
+<meta name="color-scheme" content="{theme_type}" />
+<meta name="theme-color" content="{theme_primary}" />
+<link rel="manifest" href="/manifest.json" />
+<link rel="canonical" href="{blog}/{path}">
+<link
+    href="/{styles}"
+    hreflang="en"
+    referrerpolicy="no-referrer"
+    rel="stylesheet"
+    type="text/css"
+/>
+<link
+    href="/{rss}"
+    hreflang="en"
+    referrerpolicy="no-referrer"
+    title="{blog_title}"
+    rel="alternate"
+    type="application/rss+xml"
+/>
+<meta name="author" content="{author}" />
+<meta name="generator" content="ari-web blog generator version {version}" />
+<meta property="og:locale" content="{locale}" />
+<meta name="license" content="{license}">
+<link rel="sitemap" href="/sitemap.xml" type="application/xml">"""
+
+POST_TEMPLATE: typing.Final[str] = (
+    HTML_BEGIN
+    + """
+<title>{blog_title} -> {post_title}</title>
+<meta name="description" content="{post_title} by {author} at {post_creation_time} GMT -- {post_description}" />
+<meta property="article:read_time" content="{post_read_time}" />
+<meta property="og:type" content="article" />
+</head>
+
+<body>
+<main id="blog-content">
+   <header role="group">
+      <h1 role="heading" aria-level="1">{post_title}</h1>
+
+      <nav id="info-bar" role="menubar">
+        <a role="menuitem"
+          aria-label="jump to the main content"
+          href="#main">skip</a>
         <span role="seperator" aria-hidden="true">|</span>
 
-        <span role="menuitem"><time>%s</time> UTC</span>
+        <span role="menuitem"><time>{post_creation_time}</time> GMT{post_edit_time}</span>
         <span role="seperator" aria-hidden="true">|</span>
 
-        <span role="menuitem">visitor <img src="%s" alt="visitor count"></span>
+        <span role="menuitem"
+           >visitor <img src="{visitor_count}" alt="visitor count"
+        /></span>
         <span role="seperator" aria-hidden="true">|</span>
 
-        <span role="menuitem"><time>%s</time> read</span>
+        <span role="menuitem"><time>{post_read_time}</time> read</span>
         <span role="seperator" aria-hidden="true">|</span>
 
         <a role="menuitem" href="/">home</a>
         <span role="seperator" aria-hidden="true">|</span>
 
-        <a role="menuitem" href="%s">comment</a>
+        <a role="menuitem" href="{comment}">comment</a>
         <span role="seperator" aria-hidden="true">|</span>
 
-        <a role="menuitem" href="%s">website</a>
+        <a role="menuitem" href="{website}">website</a>
         <span role="seperator" aria-hidden="true">|</span>
 
-        <a role="menuitem" href="%s">git</a>
+        <a role="menuitem" href="{source}">src</a>
         <span role="seperator" aria-hidden="true">|</span>
 
-        <a role="menuitem" href="/%s">rss</a>
+        <a role="menuitem" href="/{rss}">rss</a>
 
         <hr aria-hidden="true" role="seperator" />
-    </nav>
-</header>
-
-<article id="main">
-
-<!-- main blog post content : begin -->
-
-%s
-
-<!-- main blog post content : end -->
-
-</article>"""
-
-HTML_HEADER: str = f"""<head>
-    <meta charset="UTF-8"/>
-    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-
-    <meta property="og:locale" content="{{locale}}"/>
-
-    <meta name="color-scheme" content="{{theme_type}}"/>
-    <meta name="author" content="{{author}}"/>
-    <meta name="keywords" content="{{keywords}}"/>
-    <meta name="robots" content="follow, index, max-snippet:-1, \
-max-video-preview:-1, max-image-preview:large"/>
-    <meta name="generator" \
-content="ari-web blog generator version {__version__}"/>
-
-    <link
-        rel="stylesheet"
-        href="/content/styles.min.css"
-        referrerpolicy="no-referrer"
-        type="text/css"
-        hreflang="en"
-    />
-    <link
-        rel="alternate"
-        type="application/rss+xml"
-        href="/{{rss}}"
-        title="{{title}}"
-    >
-"""
-
-BLOG_HTML_TEMPLATE: str = f"""<!DOCTYPE html>
-<html lang="en">
-{HTML_HEADER}
-    <title>{{title}} -> {{blog_title}}</title>
-
-    <meta name="description" content="{{blog_description}}"/>
-    <meta property="og:type" content="article"/>
-    <meta property="article:read_time" content="{{read_time}}">
-</head>
-<body>
-    <main id="blog-content">
-
-{{blog}}
-
-    </main>
+      </nav>
+   </header>
+   <article id="main">{post_content}</article>
+</main>
 </body>
 </html>"""
+)
 
-HOME_PAGE_HTML_TEMPLATE: str = f"""<!DOCTYPE html>
-<html lang="en">
-{HTML_HEADER}
-    <title>{{title}}</title>
-
-    <meta name="description" content="{{home_page_description}}"/>
-    <meta property="og:type" content="website"/>
-
-    <link
-        rel="manifest"
-        href="/manifest.json"
-        referrerpolicy="no-referrer"
-        type="application/json"
-        hreflang="en"
-    />
+INDEX_TEMPLATE: typing.Final[str] = (
+    HTML_BEGIN
+    + """
+<title>{blog_title}</title>
+<meta name="description" content="{blog_description}" />
+<meta property="og:type" content="website" />
 </head>
+
 <body>
-    <header>
-        <h1 role="heading" aria-level="1">{{page_header}}</h1>
+<main id="blog-content">
+   <header role="group">
+      <h1 role="heading" aria-level="1">{blog_header}</h1>
 
-        <nav id="info-bar" role="navigation">
-            <p role="menubar">
-                <a
-                    role="menuitem"
-                    aria-label="jump to the main content"
-                    href="#main"
-                >skip</a>
+      <nav id="info-bar" role="menubar">
+        <a role="menuitem"
+          aria-label="jump to the main content"
+          href="#main">skip</a>
+        <span role="seperator" aria-hidden="true">|</span>
 
-                <span aria-hidden="true" role="seperator">|</span>
+        <span role="menuitem">latest post : <a href="/{latest_post_path}">{latest_post_title_trunc}</a> at <time>{latest_post_creation_time}</time> GMT</span>
+        <span role="seperator" aria-hidden="true">|</span>
 
-                <span role="menuitem">
-                    last posted : <time>{{lastest_blog_time}}</time> UTC
-                </span>
+        <span role="menuitem"
+           >visitor <img src="{visitor_count}" alt="visitor count"
+        /></span>
+        <span role="seperator" aria-hidden="true">|</span>
 
-                <span aria-hidden="true" role="seperator">|</span>
+        <a role="menuitem" href="{comment}">comment</a>
+        <span role="seperator" aria-hidden="true">|</span>
 
-                <span role="menuitem">
-                    latest post : \
-                    <a href="{{latest_blog_url}}">{{latest_blog_title}}</a>
-                </span>
-                <span role="seperator" aria-hidden="true">|</span>
+        <a role="menuitem" href="{website}">website</a>
+        <span role="seperator" aria-hidden="true">|</span>
 
-                <span role="menuitem">visitor <img src="{{visitor}}" alt="visitor count"></span>
-                <span aria-hidden="true" role="seperator">|</span>
+        <a role="menuitem" href="{source}">src</a>
+        <span role="seperator" aria-hidden="true">|</span>
 
-                <a role="menuitem" href="{{git_url}}">git</a>
-                <span aria-hidden="true" role="seperator">|</span>
+        <a role="menuitem" href="/{rss}">rss</a>
 
-                <a role="menuitem" href="/{{rss}}">rss</a>
-            </p>
-
-            <hr aria-hidden="true" role="seperator" />
-        </nav>
-    </header>
-
-    <main id="main">
-
-<!-- main home page content : begin -->
-
-{{content}}
-
-<!-- main home page content : end -->
-
-    </main>
+        <hr aria-hidden="true" role="seperator" />
+      </nav>
+   </header>
+   <article id="main"><ul>{blog_list}</ul></article>
+</main>
 </body>
 </html>"""
+)
+
+if NCI:
+    import http.server
+
+    import pyfzf  # type: ignore
+    import rebelai.ai.alpaca
+    import rebelai.ai.gpt
+    import rebelai.ai.h2o
+    import requests
+
+    AI_MODELS: typing.Tuple[typing.Tuple[typing.Any, bool], ...] = (
+        (rebelai.ai.gpt.gpt4, False),
+        (rebelai.ai.gpt.gpt3, True),
+        (rebelai.ai.h2o.falcon_40b, True),
+        (rebelai.ai.alpaca.alpaca_7b, True),
+    )
+else:
+    pyfzf: typing.Any = None
+    rebelai: typing.Any = None
+    requests: typing.Any = None
+    http: typing.Any = None
+
+    AI_MODELS = tuple()  # type: ignore
 
 
-def remove_basic_punct(s: str) -> str:
-    return "".join(c for c in s if c not in "'\"()[]{}:;.,?!=#")
+class Commands:
+    def __init__(self) -> None:
+        self.commands: dict[
+            str, typing.Callable[[typing.Dict[str, typing.Any]], int]
+        ] = {}
+
+    def new(
+        self, fn: typing.Callable[[typing.Dict[str, typing.Any]], int]
+    ) -> typing.Callable[[typing.Dict[str, typing.Any]], int]:
+        self.commands[fn.__name__] = fn
+        return fn
+
+    def __getitem__(
+        self, name: str
+    ) -> typing.Callable[[typing.Dict[str, typing.Any]], int]:
+        return self.commands[name]
 
 
-def sanitise_title(
-    title: str, titleset: Collection[str], *, nosep: bool = False, generic: bool = True
-) -> str:
-    title = title.lower().strip()
-    words: list[str] = []
+cmds: Commands = Commands()
+ecmds: Commands = Commands()
 
-    if generic:
-        for w in remove_basic_punct(title).split():
-            if w not in CONTEXT_WORDS:
-                words.append(w)
-            elif len(words) >= 8:
-                break
 
-    if words:
-        title = " ".join(words)
+def log(msg: str, clr: str = LOG_CLR) -> int:
+    """log a message"""
 
-    _title: str = ""
-
-    for char in title:
-        _title += (
-            char
-            if char not in string.whitespace + string.punctuation
-            else "-"
-            if _title and _title[-1] != "-"
-            else ""
+    if NCI:
+        print(
+            f"{clr}{datetime.datetime.now()} | {msg}\033[0m",
+            file=sys.stderr,
         )
 
-    _title = _title.strip("-")
+    return OK
+
+
+def llog(msg: str) -> int:
+    return log(msg, "\033[0m")
+
+
+def err(msg: str) -> int:
+    log(msg, ERR_CLR)
+    return ER
+
+
+def lnew(msg: str) -> int:
+    return log(msg, NEW_CLR)
+
+
+def imp(msg: str) -> int:
+    return log(msg, IMP_CLR)
+
+
+def slugify(
+    title: str,
+    context_words: typing.Optional[typing.Sequence[str]] = None,
+    wslug_limit: int = DEFAULT_CONFIG["wslug-limit"],
+    slug_limit: int = DEFAULT_CONFIG["slug-limit"],
+) -> str:
+    """creates a slug from the title"""
 
     return (
-        _title
-        if _title not in titleset and _title.strip()
-        else sanitise_title(
-            _title + ("" if nosep else "-") + random.choice(string.digits),
-            titleset,
-            nosep=True,
-            generic=generic,
+        "-".join(
+            [
+                w
+                for w in "".join(
+                    c
+                    for c in unidecode.unidecode(title).lower()
+                    if c not in string.punctuation
+                ).split()
+                if w not in (context_words or [])
+            ][:wslug_limit]
+        )[:slug_limit].strip("-")
+        or "post"
+    )
+
+
+def get_proxy(
+    api: str,
+    test: str,
+    timeout: float,
+) -> typing.Dict[str, str]:
+    while True:
+        log("trying to get a proxy")
+
+        proxy: str = requests.get(api).text
+
+        proxies: typing.Dict[str, str] = {
+            "http": proxy,
+            "http2": proxy,
+            "https": proxy,
+        }
+
+        try:
+            log(f"testing proxy {proxy!r}")
+            if not requests.get(
+                test,
+                timeout=timeout,
+                proxies=proxies,
+            ):
+                raise Exception("proxy failed")
+        except Exception:
+            err(f"proxy {proxy!r} is bad")
+            time.sleep(1)
+            continue
+
+        lnew(f"using proxy {proxy!r}")
+        return {"proxy": proxy}
+
+
+def gen_ai(
+    prompt: str,
+    *args: typing.Any,
+    **kwargs: typing.Any,
+) -> typing.Optional[str]:
+    for model, proxy in AI_MODELS:
+        log(
+            f"generating text with {model.__name__} ai ( {'' if proxy else 'un'}proxied )"
+        )
+
+        for idx in range(1, 4):
+            log(f"attempt #{idx}")
+
+            resp: typing.Optional[str] = asyncio.run(
+                model(
+                    prompt=prompt,
+                    request_args=get_proxy(*args, **kwargs) if proxy else None,
+                ),
+            )
+
+            if resp:
+                lnew("text generated")
+                return resp.strip()
+
+    err("ai could not generate text")
+    return None
+
+
+def rformat_time(ts: float) -> str:
+    return datetime.datetime.utcfromtimestamp(ts).strftime("%Y-%m-%d %H:%M:%S")
+
+
+def format_time(ts: float) -> str:
+    return f"{rformat_time(ts)} GMT"
+
+
+def select_multi(options: typing.Sequence[str]) -> typing.List[str]:
+    if not options:
+        return []
+
+    return pyfzf.FzfPrompt().prompt(
+        choices=options,
+        fzf_options="-m",
+    )
+
+
+def select_posts(
+    posts: typing.Dict[str, typing.Dict[str, typing.Any]]
+) -> typing.Tuple[str, ...]:
+    return tuple(
+        map(
+            lambda opt: opt.split("|", maxsplit=1)[0].strip(),
+            select_multi(
+                tuple(
+                    f"{slug} | {post['title']} | {post['description']}"
+                    for slug, post in posts.items()
+                ),
+            ),
         )
     )
 
 
-def truncate_str(string: str, length: int) -> str:
-    return string if len(string) <= length else (string[:length] + " ...")
+if NCI:
+    import readline
 
+    def iinput(prompt: str, default_text: str = "", force: bool = True) -> str:
+        default_text = default_text.strip()
 
-class BetterHeaders(Treeprocessor):
-    """better headers
+        if default_text:
 
-    - downsizes headers from h1 -> h2
-    - adds header links"""
+            def hook() -> None:
+                readline.insert_text(default_text)
+                readline.redisplay()
 
-    def run(self, root: etree.Element) -> None:
-        ids: List[str] = []
-        heading_sizes_em: Dict[str, float] = {
-            "h2": 1.32,
-            "h3": 1.15,
-            "h4": 1.0,
-            "h5": 0.87,
-            "h6": 0.76,
-        }
+            readline.set_pre_input_hook(hook)
 
-        for idx, elem in enumerate(root):
-            if elem.tag == "h1":
-                elem.tag = "h2"
+        while not (user_input := input(f"\033[1m{prompt}\033[0m ").strip()) and force:
+            pass
 
-            if elem.tag not in heading_sizes_em:
-                continue
+        readline.set_pre_input_hook()
 
-            if elem.text is None:
-                elem.text = ""
+        return user_input
 
-            gen_id: str = sanitise_title(elem.text, ids, generic=False)
-            ids.append(gen_id)
+else:
 
-            heading_parent: etree.Element = elem.makeelement(
-                "div",
-                {
-                    "data-pl": "",
-                    "style": f"font-size:{(heading_sizes_em[elem.tag] + 0.1):.2f}".strip(
-                        "0"
-                    ).rstrip(
-                        "."
-                    )
-                    + "em",
-                },
-            )
-
-            heading: etree.Element = heading_parent.makeelement(
-                elem.tag, {"id": gen_id}
-            )
-            link: etree.Element = heading.makeelement(
-                "a",
-                {
-                    "href": f"#{gen_id}",
-                    "aria-hidden": "true",
-                    "focusable": "false",
-                    "tabindex": "-1",
-                },
-            )
-
-            link.text = "#"
-            heading.text = elem.text
-
-            heading_parent.extend(
-                (
-                    link,
-                    heading,
-                )
-            )
-            root.remove(elem)
-            root.insert(idx, heading_parent)
-
-
-class TitleLinks(InlineProcessor):
-    """add support for <#:title> links"""
-
-    def handleMatch(  # pyright: ignore
-        self, match: RegexMatch, *_  # pyright: ignore
-    ) -> Union[Tuple[etree.Element, Any, Any], Tuple[None, ...]]:
-        text: str = match.group(1)  # type: ignore
-
-        if not text:
-            return (None,) * 3
-
-        link: etree.Element = etree.Element("a")
-
-        link.text = f"# {text}"
-        link.set("href", f"#{sanitise_title(text, [], generic=False)}")  # type: ignore
-
-        return link, match.start(0), match.end(0)
-
-
-class AriMarkdownExts(Extension):
-    """ari-web markdown extensions"""
-
-    def extendMarkdown(
-        self,
-        md: markdown_core.Markdown,
-        key: str = "add_header_links",
-        index: int = int(1e8),
-    ) -> None:
-        md.registerExtension(self)
-
-        md.treeprocessors.register(
-            BetterHeaders(md.parser), key, index  # pyright: ignore
-        )
-
-        md.inlinePatterns.register(
-            TitleLinks(r"<#:(.*)>", "a"), key, index  # pyright: ignore
+    def iinput(prompt: str, default_text: str = "", force: bool = True) -> str:
+        raise ValueError(
+            f"cannot read user input in CI mode, prompt : {prompt!r}; default text : {default_text!r}; force : {force!r}"
         )
 
 
-def log(message: str, header: str = "ERROR", code: int = EXIT_ERR) -> int:
-    if not (not NOT_CI_BUILD and header != "ERROR"):
-        sys.stderr.write(f"{header} : {message}\n")
-
-    return code
+def yn(prompt: str, default: str = "y") -> bool:
+    return (iinput(f"{prompt} ? [y/n]", default) + default)[0].lower() == "y"
 
 
-def tmp_path(path: str) -> str:
-    return os.path.join(gettempdir(), path)
+def get_tmpfile(name: str) -> str:
+    return os.path.join(tempfile.gettempdir(), name + ".md")
 
 
-def editor(config: Dict[str, Any], file: str) -> None:
-    copy_file(".editorconfig", tmp_path(".editorconfig"))
-    os.system(config["editor-command"] % file)
+def open_file(editor: typing.Sequence[str], path: str) -> None:
+    log(f"formatting and running {editor!r} with {path!r}")
+    subprocess.run([(token.replace("%s", path)) for token in editor])
 
 
-def format_time(timestamp: float) -> str:
-    return datetime.fromtimestamp(timestamp).strftime("%Y-%m-%d %H:%M:%S")
+def trunc(data: str, length: int) -> str:
+    return data[:length] + (" ..." if len(data) > length else "")
 
 
-def iinput(prompt: str, default_text: str = "") -> str:
-    default_text = default_text.strip()
+def read_post(path: str) -> str:
+    log(f"reading {path!r}")
 
-    def hook():
-        if not default_text:
-            return
-
-        readline.insert_text(default_text)
-        readline.redisplay()
-
-    readline.set_pre_input_hook(hook)
-    user_inpt: str = input(f"({prompt}) ").strip()
-    readline.set_pre_input_hook()
-
-    return user_inpt
-
-
-def yn(prompt: str, default: str = "y", current_value: str = "") -> bool:
-    return (
-        iinput(
-            f"{prompt}? ({'y/n'.replace(default.lower(), default.upper())})",
-            current_value,
-        )
-        + default
-    ).lower()[0] == "y"
-
-
-def new_config() -> None:
-    log("making new config ...", "INFO")
-
-    with open(DEFAULT_CONFIG_FILE, "w") as cfg:
-        ujson.dump(DEFAULT_CONFIG, cfg, indent=4)
-
-
-def pick_blog(config: Dict[str, Any]) -> str:
     try:
-        blog_id: str = (
-            FzfPrompt()
-            .prompt(  # pyright: ignore
-                map(
-                    lambda key: f"{key} | {config['blogs'][key]['title']!r}",  # pyright: ignore
-                    tuple(config["blogs"].keys())[::-1],
+        with open(path, "r") as data:
+            return data.read().strip()
+    except Exception as e:
+        err(f"failed to read {path!r} : {e.__class__.__name__} {e}")
+        return ""
+
+
+# markdown
+
+TITLE_LINKS_RE: typing.Final[str] = r"<:#[^>]+>"
+
+
+def parse_inline_titlelink(
+    _: mistune.inline_parser.InlineParser,
+    m: re.Match[str],
+    state: mistune.core.InlineState,
+) -> int:
+    text: str = m.group(0)[3:-1]
+
+    state.append_token(
+        {
+            "type": "link",
+            "children": [{"type": "text", "raw": f"# {text}"}],
+            "attrs": {"url": f"#{slugify(text, [], 768, 768)}"},
+        }
+    )
+    return m.end()
+
+
+def titlelink(md: mistune.Markdown) -> None:
+    md.inline.register("titlelink", TITLE_LINKS_RE, parse_inline_titlelink, before="link")  # type: ignore
+
+
+class BlogRenderer(mistune.HTMLRenderer):
+    def heading(self, text: str, level: int, **_: typing.Any) -> str:
+        slug: str = slugify(text, [], 768, 768)
+        level = max(2, level)
+
+        return f'<h{level} id="{slug}" h><a href="#{slug}">#</a> {text}</h{level}>'
+
+
+def markdown(md: str, plugins: typing.List[typing.Any]) -> str:
+    return mistune.create_markdown(plugins=plugins + [titlelink], renderer=BlogRenderer())(md)  # type: ignore
+
+
+# edit commands
+
+
+@ecmds.new
+def title(post: typing.Dict[str, typing.Any]) -> int:
+    post["title"] = iinput("post title", post["title"])
+    return OK
+
+
+@ecmds.new
+def description(post: typing.Dict[str, typing.Any]) -> int:
+    post["description"] = iinput("post description", post["description"])
+    return OK
+
+
+@ecmds.new
+def content(post: typing.Dict[str, typing.Any]) -> int:
+    """edit posts"""
+
+    log("getting post markdown path")
+    path: str = get_tmpfile(post["slug"])
+
+    log("writing content")
+    with open(path, "w") as p:
+        p.write(post["content"])
+
+    open_file(post["editor"], path)
+
+    if not (content := read_post(path)):
+        return err("post content cannot be empty")
+
+    post["content"] = content
+
+    return OK
+
+
+@ecmds.new
+def keywords(post: typing.Dict[str, typing.Any]) -> int:
+    """edit keywords"""
+
+    post["keywords"] = tuple(
+        map(
+            lambda k: unidecode.unidecode(k.strip()),
+            filter(
+                bool,
+                set(
+                    iinput("post keywords", ", ".join(post["keywords"]), force=False)
+                    .lower()
+                    .split(",")
                 ),
-                "--prompt='pick a post : '",
-            )[0]
-            .split()[0]  # pyright: ignore
+            ),
         )
-    except ProcessExecutionError:
-        log("fzf process exited unexpectedly")
-        return ""
-
-    if blog_id not in config["blogs"]:
-        log(f"blog post {blog_id!r} does not exist")
-        return ""
-
-    return blog_id
+    )
+    return OK
 
 
-def new_blog(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
-    """make a new blog"""
+# normal commands
 
-    if title := iinput("blog post title"):
-        readline.add_history((title := title.capitalize()))
 
-        us_title: str = title
-        s_title: str = sanitise_title(us_title, config["blogs"])
-    else:
-        return EXIT_ERR, config
+@cmds.new
+def help(_: typing.Dict[str, typing.Any]) -> int:
+    """print help"""
 
-    blog: Dict[str, Any] = {
-        "title": us_title,
-        "content": "",
-        "time": 0.0,
-        "keywords": "",
+    return llog(
+        "\n\n"
+        + "\n".join(
+            f"{cmd} -- {fn.__doc__ or 'no help provided'}"
+            for cmd, fn in cmds.commands.items()
+        )
+    )
+
+
+@cmds.new
+def sort(config: typing.Dict[str, typing.Any]) -> int:
+    """sort blog posts by creation time"""
+
+    log("sorting posts by creation time")
+
+    config["posts"] = dict(
+        map(
+            lambda k: (k, config["posts"][k]),
+            sorted(
+                config["posts"],
+                key=lambda k: config["posts"][k]["created"],
+                reverse=True,
+            ),
+        )
+    )
+
+    return lnew("sorted blog posts by creation time")
+
+
+@cmds.new
+def new(config: typing.Dict[str, typing.Any]) -> int:
+    """create a new blog post"""
+
+    title: str = iinput("post title")
+
+    log("creating a slug from the given title")
+    slug: str = slugify(title)
+
+    if slug in (posts := config["posts"]):
+        slug += f"-{sum(map(lambda k: k.startswith(slug), posts))}"
+
+    log("getting post markdown path")
+    post_path: str = get_tmpfile(slug)
+
+    open_file(config["editor"], post_path)
+
+    if not (content := read_post(post_path)):
+        return err("content cannot be empty")
+
+    keywords: typing.Tuple[str, ...] = tuple(
+        map(
+            lambda k: unidecode.unidecode(k.strip()),
+            filter(
+                bool,
+                set(
+                    iinput("post keywords ( separated by `,` )", force=False)
+                    .lower()
+                    .split(",")
+                ),
+            ),
+        )
+    )
+
+    description: str = ""
+
+    if yn("auto-generate post description"):
+        while True:
+            description = "  ".join(
+                (
+                    gen_ai(
+                        f"""Write a good, personal, medium to short description for this blog post with the title "{title}" and keywords : \
+{', '.join(keywords) or '<none>'}, give just the description, leave some details out as a teaser, the blog post is formatted using Markdown, \
+description must be on a singular line and all you should return is the description and nothing else, the description should look as if \
+it was written by the author, mimic the writing style of the blog post in the description:
+
+{content}""",
+                        api=config["proxy-api"],
+                        test=config["test-proxy"],
+                        timeout=config["test-proxy-timeout"],
+                    )
+                    or ""
+                ).splitlines()
+            )
+
+            if description:
+                llog(description)
+
+                if yn("generate new", "n"):
+                    continue
+
+                description = iinput("ai post description", description)
+                break
+
+            if not yn("failed to generate description, re-generate ?", "n"):
+                break
+
+    if not description:
+        description = iinput("manual post description")
+
+    lnew(f"saving blog post {slug!r}")
+
+    posts[slug] = {
+        "title": title,
+        "description": description.strip(),
+        "content": content,
+        "keywords": keywords,
+        "created": datetime.datetime.utcnow().timestamp(),
     }
 
-    file: str = tmp_path(f"{s_title}.md")
-
-    open(file, "w").close()
-    editor(config, file)
-
-    if not os.path.isfile(file):
-        return log(f"{file!r} does not exist"), config
-
-    with open(file, "r") as md:
-        blog["content"] = md.read()
-
-    os.remove(file)
-
-    if not blog["content"].strip():  # type: ignore
-        return log("blog post cannot be empty"), config
-
-    user_keywords: str = iinput("keywords ( seperated by spaces )")
-    readline.add_history(user_keywords)
-
-    blog["keywords"] = html_escape(user_keywords)
-
-    blog["time"] = datetime.utcnow().timestamp()
-    config["blogs"][s_title] = blog
-
-    return EXIT_OK, config
+    return OK
 
 
-def build_css(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
-    """minify ( build ) the CSS"""
+@cmds.new
+def ls(config: typing.Dict[str, typing.Any]) -> int:
+    """list all posts"""
 
-    log("minifying CSS ...", "MINIFY")
+    for slug, post in config["posts"].items():
+        llog(
+            f"""post({slug})
 
-    saved_stdout = sys.stdout
-    sys.stdout = open(os.devnull, "w")
-
-    css_threads: List[Thread] = []
-
-    def _thread(t: Callable[..., Any]) -> None:
-        css_threads.append(Thread(target=t, daemon=True))
-        css_threads[-1].start()
-
-    if os.path.isfile("content/styles.css"):
-        log("minifying main styles", "MINIFY")
-        _thread(
-            lambda: process_single_css_file("content/styles.css")  # pyright: ignore
+title : {post["title"]!r}
+description : {post["description"]!r}
+content : {trunc(post["content"], 128)!r}
+keywords : {", ".join(post["keywords"])}
+created : {format_time(post["created"])}"""
+            + (
+                ""
+                if (ed := post.get("edited")) is None
+                else f"\nedited : {format_time(ed)}"
+            )
         )
 
-    if os.path.isdir("content/fonts"):
-        log("minifying fonts ...", "MINIFY")
+    return OK
 
-        for font in iglob("content/fonts/*.css"):
-            if font.endswith(".min.css"):
+
+@cmds.new
+def ed(config: typing.Dict[str, typing.Any]) -> int:
+    """edit posts"""
+
+    fields: typing.List[str] = select_multi(tuple(ecmds.commands.keys()))
+
+    for slug in select_posts(config["posts"]):
+        llog(f"editing {slug!r}")
+
+        for field in fields:
+            log(f"editing field {field!r}")
+
+            post: typing.Dict[str, typing.Any] = config["posts"][slug]
+
+            post["slug"] = slug
+            post["editor"] = config["editor"]
+
+            code: int = ecmds[field](post)
+
+            del post["slug"]
+            del post["editor"]
+
+            if code is not OK:
+                return code
+
+            post["edited"] = datetime.datetime.utcnow().timestamp()
+
+    return OK
+
+
+@cmds.new
+def rm(config: typing.Dict[str, typing.Any]) -> int:
+    """remove posts"""
+
+    for slug in select_posts(config["posts"]):
+        imp(f"deleting {slug!r}")
+        del config["posts"][slug]
+
+    return OK
+
+
+@cmds.new
+def build(config: typing.Dict[str, typing.Any]) -> int:
+    """build blog posts"""
+
+    log("setting up posts directory")
+
+    if os.path.exists(config["posts-dir"]):
+        shutil.rmtree(config["posts-dir"])
+
+    os.makedirs(config["posts-dir"], exist_ok=True)
+
+    llog("building blog")
+
+    blog_title: str = html_escape(config["title"])
+    author: str = html_escape(config["author"])
+    styles: str = os.path.join(config["assets-dir"], "styles.css")
+
+    def build_post(slug: str, post: typing.Dict[str, typing.Any]) -> None:
+        ct: float = code_timer()
+
+        post_dir: str = os.path.join(config["posts-dir"], slug)
+        os.makedirs(post_dir)
+
+        with open(os.path.join(post_dir, "index.html"), "w") as html:
+            html.write(
+                html_minify(
+                    POST_TEMPLATE.format(
+                        keywords=html_escape(
+                            ", ".join(
+                                set(post["keywords"] + config["default-keywords"])
+                            )
+                        ),
+                        theme_type=config["theme"]["type"],
+                        theme_primary=config["theme"]["primary"],
+                        styles=styles,
+                        rss=config["rss-file"],
+                        blog_title=blog_title,
+                        post_title=html_escape(post["title"]),
+                        author=author,
+                        version=__version__,
+                        locale=config["locale"],
+                        post_creation_time=rformat_time(post["created"]),
+                        post_description=html_escape(post["description"]),
+                        post_read_time=read_time_of_markdown(post["content"]).text,
+                        post_edit_time=(
+                            ""
+                            if "edited" not in post
+                            else f', edited on <time>{rformat_time(post["edited"])}</time> GMT'
+                        ),
+                        visitor_count=config["visitor-count"],
+                        comment=config["comment"],
+                        website=config["website"],
+                        source=config["source"],
+                        post_content=markdown(
+                            post["content"], config["markdown-plugins"]
+                        ),
+                        blog=config["blog"],
+                        path=os.path.join(config["posts-dir"], slug),
+                        license=config["license"],
+                    )
+                )
+            )
+
+        lnew(f"built post {post['title']!r} in {code_timer() - ct} s")
+
+    ts: typing.List[Thread] = []
+
+    for slug, post in tuple(config["posts"].items()):
+        ts.append(Thread(target=build_post, args=(slug, post), daemon=True))
+        ts[-1].start()
+
+    latest_post: typing.Tuple[str, typing.Dict[str, typing.Any]] = tuple(
+        config["posts"].items()
+    )[0]
+
+    with open("index.html", "w") as index:
+        index.write(
+            html_minify(
+                INDEX_TEMPLATE.format(  # type: ignore
+                    keywords=html_escape(", ".join(config["blog-keywords"])),
+                    theme_type=config["theme"]["type"],
+                    theme_primary=config["theme"]["primary"],
+                    blog=config["blog"],
+                    path="",
+                    styles=styles,
+                    rss=config["rss-file"],
+                    blog_title=blog_title,
+                    author=author,
+                    version=__version__,
+                    locale=config["locale"],
+                    license=config["license"],
+                    blog_description=html_escape(config["description"]),
+                    blog_header=html_escape(config["header"]),
+                    latest_post_path=os.path.join(config["posts-dir"], latest_post[0]),
+                    latest_post_title_trunc=html_escape(
+                        trunc(latest_post[1]["title"], config["recent-title-trunc"])
+                    ),
+                    latest_post_creation_time=rformat_time(latest_post[1]["created"]),
+                    visitor_count=config["visitor-count"],
+                    comment=config["comment"],
+                    website=config["website"],
+                    source=config["source"],
+                    blog_list=" ".join(
+                        f'<li><a href="/{os.path.join(config["posts-dir"], slug)}">{html_escape(post["title"])}</a></li>'
+                        for slug, post in config["posts"].items()
+                    ),
+                )
+            )
+        )
+
+        lnew(f"generated {index.name!r}")
+
+    for t in ts:
+        t.join()
+
+    return 0
+
+
+@cmds.new
+def css(config: typing.Dict[str, typing.Any]) -> int:
+    """build and minify css"""
+
+    ts: typing.List[Thread] = []
+
+    saved_stdout: typing.Any = sys.stdout
+    sys.stdout = open(os.devnull, "w")
+
+    def _thread(c: typing.Callable[..., typing.Any], css: str) -> None:
+        def _c() -> None:
+            ct: float = code_timer()
+            c(css)
+            lnew(f"processed {css!r} in {code_timer() - ct} s")
+
+        ts.append(Thread(target=_c, daemon=True))
+        ts[-1].start()
+
+    if os.path.isfile(styles := os.path.join(config["assets-dir"], "styles.css")):
+        llog(f"minifying {styles!r}")
+        _thread(process_single_css_file, styles)  # type: ignore
+
+    if os.path.isdir(fonts := os.path.join(config["assets-dir"], "fonts")):
+        log(f"minifying fonts in {fonts!r}")
+
+        for fcss in iglob(os.path.join(fonts, "*.css")):
+            if fcss.endswith(".min.css"):
                 continue
 
-            log(f"minifying font file -- {font}", "MINIFY")
-            _thread(lambda: process_single_css_file(font))  # pyright: ignore
+            _thread(process_single_css_file, fcss)  # type: ignore
 
-    for t in css_threads:
+    for t in ts:
         t.join()
 
     sys.stdout.close()
     sys.stdout = saved_stdout
 
-    log("done minifying CSS", "MINIFY")
-
-    return EXIT_OK, config
+    return OK
 
 
-def build(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
-    """build, minimise and generate site"""
+@cmds.new
+def robots(config: typing.Dict[str, typing.Any]) -> int:
+    """generate a robots.txt"""
 
-    if not config["blogs"]:
-        return log("no blogs to build"), config
+    llog("generating robots")
 
-    latest_blog_id: str = tuple(config["blogs"].keys())[-1]
-
-    if os.path.isdir(config["blog-dir"]):
-        rmtree(config["blog-dir"])
-
-    os.makedirs(config["blog-dir"], exist_ok=True)
-
-    log("building blogs ...", "INFO")
-
-    def thread(blog_id: str, blog_meta: Dict[str, Any]):
-        blog_dir: str = os.path.join(config["blog-dir"], blog_id)
-        os.makedirs(blog_dir, exist_ok=True)
-
-        with open(os.path.join(blog_dir, "index.html"), "w") as blog_html:
-            blog_time: str = format_time(blog_meta["time"])
-
-            blog_title: str = html_escape(blog_meta["title"])
-
-            # 150 wpm is quite slow, but im compensating for people who
-            # cant read that fast, especially with writing style of unprofessional people
-            # who write blog posts -- like me
-
-            read_time: str
-
-            blog_base_html: str = markdown(
-                BLOG_MARKDOWN_TEMPLATE
-                % (
-                    blog_title,
-                    blog_time,
-                    config["visitor-count"],
-                    (read_time := read_time_of_markdown(blog_meta["content"], 150).text),  # type: ignore
-                    config["comment-url"],
-                    config["base-homepage"],
-                    config["git-url"],
-                    config["rss-feed"],
-                    markdown(
-                        blog_meta["content"],
-                        extensions=[
-                            *config["py-markdown-extensions"],
-                            AriMarkdownExts(),
-                        ],
-                    )
-                    .replace("<pre>", '<pre focusable="true" role="code" tabindex="0">')
-                    .replace(
-                        "<blockquote>", '<blockquote focusable="true" tabindex="0">'
-                    ),
-                )
-            )
-
-            blog_html_full: str = BLOG_HTML_TEMPLATE.format(
-                title=config["page-title"],
-                theme_type=config["colourscheme-type"],
-                keywords=blog_meta["keywords"].replace(" ", ", ")
-                + ", "
-                + ", ".join(config["default-keywords"]),
-                blog_description=f"blog post on {blog_time} UTC -- {blog_title}",
-                blog_title=blog_title,
-                blog=blog_base_html,
-                author=config["full-name"],
-                locale=config["locale"],
-                read_time=read_time,  # type: ignore
-                rss=config["rss-feed"],
-            )
-
-            log(f"minifying {blog_id!r} HTML", "MINIFY")
-            blog_html_full = html_minify(blog_html_full)
-            log(f"done minifying the HTML of {blog_id!r}", "MINIFY")
-
-            blog_html.write(blog_html_full)
-
-        log(f"finished building blog post {blog_id!r}", "BUILD")
-
-    _tmp_threads: List[Thread] = []
-
-    for blog_id, blog_meta in config["blogs"].items():
-        t: Thread = Thread(target=thread, args=(blog_id, blog_meta), daemon=True)
-        t.start()
-
-        _tmp_threads.append(t)
-
-    for awaiting_thread in _tmp_threads:
-        awaiting_thread.join()
-
-    log("building blog post index ...", "INFO")
-
-    with open("index.html", "w") as index:
-        lastest_blog: Dict[str, Any] = config["blogs"][latest_blog_id]
-        lastest_blog_time: str = format_time(lastest_blog["time"])
-
-        blog_list = '<ol reversed="true" aria-label="latest blogs">'
-
-        for blog_id, blog_meta in reversed(config["blogs"].items()):
-            blog_list += f'<li><a href="{os.path.join(config["blog-dir"], blog_id)}">{html_escape(blog_meta["title"])}</a></li>'
-
-        blog_list += "</ol>"
-
-        index.write(
-            html_minify(
-                HOME_PAGE_HTML_TEMPLATE.format(
-                    title=config["page-title"],
-                    theme_type=config["colourscheme-type"],
-                    keywords=", ".join(config["home-keywords"])
-                    + ", "
-                    + ", ".join(config["default-keywords"]),
-                    home_page_description=config["page-description"],
-                    lastest_blog_time=lastest_blog_time,
-                    latest_blog_url=os.path.join(config["blog-dir"], latest_blog_id),
-                    latest_blog_title=truncate_str(
-                        html_escape(lastest_blog["title"]), 20
-                    ),
-                    git_url=config["git-url"],
-                    content=blog_list,
-                    author=config["full-name"],
-                    locale=config["locale"],
-                    page_header=config["home-page-header"],
-                    visitor=config["visitor-count"],
-                    rss=config["rss-feed"],
-                )
-            )
+    with open("robots.txt", "w") as r:
+        r.write(
+            f"""User-agent: *
+Disallow: /{config["assets-dir"]}/*
+Allow: *
+Sitemap: {config["blog"]}/sitemap.xml"""
         )
 
-    return EXIT_OK, config
+        lnew(f"generated {r.name!r}")
+
+    return OK
 
 
-def list_blogs(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
-    """list blogs"""
+@cmds.new
+def manifest(config: typing.Dict[str, typing.Any]) -> int:
+    """generate a manifest.json"""
 
-    if not config["blogs"]:
-        return log("no blogs to list"), config
+    llog("generating a manifest")
 
-    for blog_id, blog_meta in config["blogs"].items():
-        print(
-            f"""ID : {blog_id}
-title : {blog_meta["title"]!r}
-time_of_creation : {format_time(blog_meta["time"])}
-keywords : {blog_meta['keywords'].replace(" ", ", ")}
-"""
-        )
-
-    return EXIT_OK, config
-
-
-def remove_blog(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
-    """remove a blog post"""
-
-    if not config["blogs"]:
-        return log("no blogs to remove"), config
-
-    blog_id: str = pick_blog(config)
-
-    if not blog_id:
-        return EXIT_ERR, config
-
-    del config["blogs"][blog_id]
-    return EXIT_OK, config
-
-
-def dummy(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
-    """print help / usage information"""
-
-    return EXIT_OK, config
-
-
-def edit_title(blog: str, config: Dict[str, Any]) -> int:
-    new_title: str = iinput(
-        "edit title",
-        config["blogs"][blog]["title"],
-    )
-
-    if not new_title.strip():
-        return log("new title cannot be empty")
-
-    config["blogs"][blog]["title"] = new_title.capitalize()
-
-    return EXIT_OK
-
-
-def edit_keywords(blog: str, config: Dict[str, Any]) -> int:
-    new_keywords: str = iinput("edit keywords", config["blogs"][blog]["keywords"])
-
-    if not new_keywords.strip():
-        return log("keywords cannot be empty")
-
-    config["blogs"][blog]["keywords"] = new_keywords
-
-    return EXIT_OK
-
-
-def edit_content(blog: str, config: Dict[str, Any]) -> int:
-    file: str = tmp_path(f"{blog}.md")
-
-    with open(file, "w") as blog_md:
-        blog_md.write(config["blogs"][blog]["content"])
-
-    editor(config, file)
-
-    with open(file, "r") as blog_md_new:
-        content: str = blog_md_new.read()
-
-        if not content.strip():
-            blog_md_new.close()
-            return log("content of a blog post cannot be empty")
-
-        config["blogs"][blog]["content"] = content
-
-    return EXIT_OK
-
-
-EDIT_HOOKS: Dict[str, Callable[[str, Dict[str, Any]], int]] = {
-    "quit": lambda *_: EXIT_OK,  # pyright: ignore
-    "title": edit_title,
-    "keywords": edit_keywords,
-    "content": edit_content,
-}
-
-
-def edit(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
-    """edit a blog"""
-
-    if not config["blogs"]:
-        return log("no blogs to edit"), config
-
-    blog_id: str = pick_blog(config)
-
-    if not blog_id:
-        return EXIT_ERR, config
-
-    try:
-        hook: str = FzfPrompt().prompt(  # pyright: ignore
-            EDIT_HOOKS.keys(), "--prompt='what to edit : '"
-        )[0]
-
-        if hook not in EDIT_HOOKS:
-            return log(f"hook {hook!r} does not exist"), config
-
-        EDIT_HOOKS[hook](blog_id, config)
-    except ProcessExecutionError:
-        return log("no blog post selected"), config
-
-    return EXIT_OK, config
-
-
-def gen_def_config(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
-    """generate default config"""
-
-    if os.path.exists(DEFAULT_CONFIG_FILE):
-        if iinput("do you want to overwite config ? ( y / n )").lower()[0] != "y":
-            return log("not overwritting config", "INFO", EXIT_OK), config
-
-    new_config()
-
-    with open(DEFAULT_CONFIG_FILE, "r") as cfg:
-        config = ujson.load(cfg)
-
-    return EXIT_OK, config
-
-
-def clean(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
-    """clean up current directory"""
-
-    TRASH: Set[str] = {
-        HISTORY_FILE,
-        config["blog-dir"],
-        "index.html",
-        "content/*.min.*",
-        "blog_json_hash.txt",
-        "manifest.json",
-        "content/fonts/*.min.*",
-        "recents_json_hash.txt",
-        "recents.json",
-        config["rss-feed"],
-    }
-
-    def remove(file: str) -> None:
-        log(f"removing {file!r}", "REMOVE")
-
-        try:
-            os.remove(file)
-        except IsADirectoryError:
-            rmtree(file)
-
-    for glob_ex in TRASH:
-        for file in iglob(glob_ex, recursive=True):
-            remove(file)
-
-    open(HISTORY_FILE, "w").close()
-
-    return EXIT_OK, config
-
-
-def generate_metadata(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
-    """generate metadata"""
-
-    with open("manifest.json", "w") as manifest:
-        log(f"generating {manifest.name} ...", "GENERATE")
-        ujson.dump(
+    with open("manifest.json", "w") as m:
+        json.dump(
             {
                 "$schema": "https://json.schemastore.org/web-manifest-combined.json",
-                "short_name": config["short-name"],
-                "name": config["page-title"],
-                "description": config["page-description"],
-                "icons": config["meta-icons"],
+                "short_name": config["header"],
+                "name": config["title"],
+                "description": config["description"],
                 "start_url": ".",
                 "display": "standalone",
-                "theme_color": config["theme-colour"],
-                "background_color": config["background-colour"],
+                "theme_color": config["theme"]["primary"],
+                "background_color": config["theme"]["secondary"],
+                **config["manifest"],
             },
-            manifest,
+            m,
         )
 
-    with open("recents.json", "w") as blog_recents:
-        log(f"generating {blog_recents.name!r}", "GENERATE")
+        lnew(f"generated {m.name!r}")
 
-        recents: Dict[str, Any] = {}
-
-        for rid, recent in tuple(config["blogs"].items())[-(config["recents"]) :]:
-            r: Dict[str, Any] = recent.copy()
-            content: List[str] = r["content"].strip()[:196][::-1].split(maxsplit=1)
-
-            r["content"] = content[len(content) > 1][::-1]
-            del r["keywords"]
-
-            recents[rid] = r
-
-        ujson.dump(recents, blog_recents)
-
-    for hashable in (DEFAULT_CONFIG_FILE, blog_recents.name):
-        with open(hashable, "rb") as api_file:
-            log(f"generating hash for {api_file.name!r}", "HASH")
-
-            with open(
-                f"{api_file.name.replace('.', '_')}_hash.txt", "w"
-            ) as blog_api_hash:
-                blog_api_hash.write(hashlib.sha256(api_file.read()).hexdigest())
-
-    return EXIT_OK, config
+    return OK
 
 
-def generate_rss(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
-    """generate rss"""
+@cmds.new
+def sitemap(config: typing.Dict[str, typing.Any]) -> int:
+    """generate a sitemap.xml"""
+
+    llog("generating a sitemap")
+
+    now: float = datetime.datetime.utcnow().timestamp()
+
+    root: etree.Element = etree.Element("urlset")
+    root.set("xmlns", "http://www.sitemaps.org/schemas/sitemap/0.9")
+
+    for slug, post in (
+        ("", config["website"]),
+        ("", config["blog"]),
+        ("", f"{config['blog']}/{config['rss-file']}"),
+    ) + tuple(config["posts"].items()):
+        llog(f"adding {slug or post!r} to sitemap")
+
+        url: etree.Element = etree.SubElement(root, "url")
+
+        etree.SubElement(url, "loc").text = (
+            f"{config['blog']}/{os.path.join(config['posts-dir'], slug)}"
+            if slug
+            else post
+        )
+        etree.SubElement(url, "lastmod").text = datetime.datetime.utcfromtimestamp(
+            post.get("edited", post["created"]) if slug else now  # type: ignore
+        ).strftime("%Y-%m-%dT%H:%M:%S+00:00")
+        etree.SubElement(url, "priority").text = "1.0"
+
+    etree.ElementTree(root).write("sitemap.xml", encoding="UTF-8", xml_declaration=True)
+    lnew("generated 'sitemap.xml'")
+
+    return OK
+
+
+@cmds.new
+def rss(config: typing.Dict[str, typing.Any]) -> int:
+    """generate an rss feed"""
+
+    llog("generating an rss feed")
 
     ftime: str = "%a, %d %b %Y %H:%M:%S GMT"
-    now: datetime = datetime.utcnow()
+    now: datetime.datetime = datetime.datetime.utcnow()
 
     root: etree.Element = etree.Element("rss")
     root.set("version", "2.0")
 
     channel: etree.Element = etree.SubElement(root, "channel")
 
-    etree.SubElement(channel, "title").text = config["page-title"]
-    etree.SubElement(channel, "link").text = config["page-url"]
-    etree.SubElement(channel, "description").text = config["page-description"]
+    etree.SubElement(channel, "title").text = config["title"]
+    etree.SubElement(channel, "link").text = config["blog"]
+    etree.SubElement(channel, "description").text = config["description"]
     etree.SubElement(channel, "language").text = (
         config["locale"].lower().replace("_", "-")
     )
     etree.SubElement(channel, "lastBuildDate").text = now.strftime(ftime)
 
-    for id, post in tuple(config["blogs"].items())[::-1]:
-        content: List[str] = post["content"].strip()[:196][::-1].split(maxsplit=1)
+    for slug, post in config["posts"].items():
+        llog(f"adding {slug!r} to rss")
 
         item: etree.Element = etree.SubElement(channel, "item")
+
         etree.SubElement(item, "title").text = post["title"]
         etree.SubElement(item, "link").text = (
-            link := f'{config["page-url"]}{config["blog-dir"]}/{encode_url(id)}'
+            link := f"{config['blog']}/{os.path.join(config['posts-dir'], slug)}"
         )
-        etree.SubElement(
-            item, "description"
-        ).text = f"{content[len(content) > 1][::-1]} ..."
-        etree.SubElement(item, "pubDate").text = datetime.utcfromtimestamp(
-            post["time"]
+        etree.SubElement(item, "description").text = post["description"]
+        etree.SubElement(item, "pubDate").text = datetime.datetime.utcfromtimestamp(
+            post["created"]
         ).strftime(ftime)
         etree.SubElement(item, "guid").text = link
 
-    etree.ElementTree(root).write(config["rss-feed"])
+    etree.ElementTree(root).write(
+        config["rss-file"], encoding="UTF-8", xml_declaration=True
+    )
 
-    return EXIT_OK, config
+    lnew(f"generated {config['rss-file']!r}")
 
-
-def generate_static_full(config: Dict[str, Any]) -> Tuple[int, Dict[str, Any]]:
-    """generate full static site"""
-
-    BUILD_CFG: Dict[str, Callable[[Dict[str, Any]], Tuple[int, Dict[str, Any]]]] = {
-        "cleaning up": clean,
-        "building CSS": build_css,
-        "building static site": build,
-        "generating metatata": generate_metadata,
-        "generating rss": generate_rss,
-    }
-
-    for logger_msg, function in BUILD_CFG.items():
-        log(f"{logger_msg} ...", "STATIC")
-        code, config = function(config)
-
-        if code != EXIT_OK:
-            log("failed to generate static site")
-            return EXIT_ERR, config
-
-    return EXIT_OK, config
+    return OK
 
 
-SUBCOMMANDS: Dict[str, Callable[[Dict[str, Any]], Tuple[int, Dict[str, Any]]]] = {
-    "help": dummy,
-    "new": new_blog,
-    "build": build,
-    "ls": list_blogs,
-    "rm": remove_blog,
-    "edit": edit,
-    "defcfg": gen_def_config,
-    "clean": clean,
-    "metadata": generate_metadata,
-    "static": generate_static_full,
-    "css": build_css,
-    "rss": generate_rss,
-}
+@cmds.new
+def apis(config: typing.Dict[str, typing.Any]) -> int:
+    """generate and hash apis"""
+
+    with open("recents.json", "w") as recents:
+        json.dump(dict(tuple(config["posts"].items())[: config["recents"]]), recents)
+        lnew(f"generated {recents.name!r}")
+
+    for api in recents.name, CONFIG_FILE:
+        with open(api, "rb") as content:
+            h: str = hashlib.sha256(content.read()).hexdigest()
+
+        with open(f"{api.replace('.', '_')}_hash.txt", "w") as hf:
+            hf.write(h)
+            lnew(f"generated {hf.name!r}")
+
+    return OK
 
 
-def usage(code: int = EXIT_ERR, _: Optional[Dict[str, Any]] = None) -> int:
-    sys.stderr.write(f"usage : {sys.argv[0]} <subcommand>\n")
+@cmds.new
+def clean(config: typing.Dict[str, typing.Any]) -> int:
+    """clean up the site"""
 
-    for subcommand, func in SUBCOMMANDS.items():
-        sys.stderr.write(f"  {subcommand:20s}{func.__doc__ or ''}\n")
+    def remove(file: str) -> None:
+        imp(f"removing {file!r}")
 
-    return code
+        try:
+            os.remove(file)
+        except IsADirectoryError:
+            shutil.rmtree(file)
+
+    for pattern in (
+        config["posts-dir"],
+        "index.html",
+        os.path.join(config["assets-dir"], "*.min.*"),
+        "blog_json_hash.txt",
+        "manifest.json",
+        os.path.join(config["assets-dir"], os.path.join("fonts", "*.min.*")),
+        "recents_json_hash.txt",
+        "recents.json",
+        config["rss-file"],
+        "robots.txt",
+        "sitemap.xml",
+    ):
+        if os.path.exists(pattern):
+            remove(pattern)
+        else:
+            for file in iglob(pattern, recursive=True):
+                remove(file)
+
+    return OK
+
+
+@cmds.new
+def static(config: typing.Dict[str, typing.Any]) -> int:
+    """generate a full static site"""
+
+    ct: float = code_timer()
+
+    for stage in clean, build, css, robots, manifest, sitemap, rss, apis:
+        imp(f"running stage {stage.__name__!r} : {stage.__doc__ or stage.__name__!r}")
+
+        st: float = code_timer()
+
+        if (code := stage(config)) is not OK:
+            return code
+
+        imp(f"stage finished in {code_timer() - st} s")
+
+    return log(f"site built in {code_timer() - ct} s")
+
+
+@cmds.new
+def serve(config: typing.Dict[str, typing.Any]) -> int:
+    """simple server"""
+
+    class RequestHandler(http.server.SimpleHTTPRequestHandler):
+        def log_message(self, format: str, *args: typing.Any) -> None:
+            llog(format % args)
+
+        def do_GET(self) -> None:
+            file_path: str = self.translate_path(self.path)  # type: ignore
+
+            if os.path.isdir(file_path):  # type: ignore
+                file_path = os.path.join(file_path, "index.html")  # type: ignore
+
+            try:
+                with open(file_path, "rb") as fp:  # type: ignore
+                    self.send_response(200)  # type: ignore
+                    self.end_headers()  # type: ignore
+                    self.wfile.write(fp.read())  # type: ignore
+            except Exception as e:
+                self.send_response(404)  # type: ignore
+                self.end_headers()  # type: ignore
+                self.wfile.write(f"{e.__class__.__name__} : {e}".encode())  # type: ignore
+
+    httpd: typing.Any = http.server.HTTPServer(
+        (config["server-host"], config["server-port"]), RequestHandler
+    )
+    httpd.RequestHandlerClass.directory = "."
+
+    try:
+        imp(
+            f"server running on http://{httpd.server_address[0]}:{httpd.server_address[1]}/ ^C to close it"
+        )
+        httpd.serve_forever()
+    except KeyboardInterrupt:
+        httpd.server_close()
+        imp("server shut down")
+
+    return OK
 
 
 def main() -> int:
-    """entry / main function"""
+    """entry/main function"""
 
-    if NOT_CI_BUILD:
-        if not os.path.isfile(HISTORY_FILE):
-            open(HISTORY_FILE, "w").close()
+    main_t: float = code_timer()
 
-        readline.parse_and_bind("tab: complete")
+    log("hello world")
 
-        fn_register(readline.write_history_file, HISTORY_FILE)
-        fn_register(readline.read_history_file, HISTORY_FILE)
+    if len(sys.argv) < 2:
+        return err("no arguments provided, see `help`")
 
-        readline.read_history_file(HISTORY_FILE)
-        readline.set_history_length(5000)
+    cfg: dict[str, typing.Any] = DEFAULT_CONFIG.copy()
 
-        readline.set_auto_history(False)
+    if os.path.exists(CONFIG_FILE):
+        with open(CONFIG_FILE, "r") as config:
+            log(f"using {config.name!r} config")
+            cfg.update(json.load(config))
+    else:
+        lnew("using the default config")
 
-    if not os.path.isfile(DEFAULT_CONFIG_FILE):
-        new_config()
-        log(f"please configure {DEFAULT_CONFIG_FILE!r}")
-        return EXIT_ERR
+    sort(cfg)
 
-    if len(sys.argv) != 2:
-        return usage()
-    elif sys.argv[1] not in SUBCOMMANDS:
-        return log(f"{sys.argv[1]!r} is not a subcommand, try `{sys.argv[0]} help`")
-    elif sys.argv[1] == "help":
-        return usage(EXIT_OK)
+    log(f"looking command {sys.argv[1]!r} up")
 
-    with open(DEFAULT_CONFIG_FILE, "r") as lcfg:
-        cmd_time_init = code_timer()
+    try:
+        cmd: typing.Callable[[dict[str, typing.Any]], int] = cmds[sys.argv[1]]
+    except KeyError:
+        return err(f"command {sys.argv[1]!r} does not exist")
 
-        code: int
-        config: Dict[str, Any]
+    log("calling and timing the command")
+    if NCI:
+        print()
 
-        code, config = SUBCOMMANDS[sys.argv[1]](ujson.load(lcfg))
+    timer: float = code_timer()
+    code: int = cmd(cfg)
 
-        log(
-            f"finished in {code_timer() - cmd_time_init} seconds with code {code}",
-            "TIME",
-        )
+    if NCI:
+        print()
+    log(f"command finished in {code_timer() - timer} s")
 
-        if config["blogs"] and NOT_CI_BUILD:
-            log("Sorting blogs by creation time ...", "CLEANUP")
+    sort(cfg)
 
-            sort_timer = code_timer()
+    with open(CONFIG_FILE, "w") as config:
+        log(f"dumping config to {config.name!r}")
+        json.dump(cfg, config, indent=cfg["indent"] if NCI else None)
 
-            config["blogs"] = dict(
-                map(
-                    lambda k: (k, config["blogs"][k]),
-                    sorted(config["blogs"], key=lambda k: config["blogs"][k]["time"]),
-                )
-            )
-
-            log(f"sorted in {code_timer() - sort_timer} seconds", "TIME")
-
-        log("redumping config", "CONFIG")
-
-        dump_timer = code_timer()
-
-        with open(DEFAULT_CONFIG_FILE, "w") as dcfg:
-            ujson.dump(config, dcfg, indent=(4 if NOT_CI_BUILD else 0))
-
-        log(f"dumped config in {code_timer() - dump_timer} seconds", "TIME")
+    log(f"goodbye world, return {code}, total {code_timer() - main_t} s")
 
     return code
 

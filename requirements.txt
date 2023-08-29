@@ -1,9 +1,5 @@
 css-html-js-minify
-datetime
-markdown
-plumbum
-pyfzf
+mistune
 typing
-pymdown-extensions
-ujson
 readtime
+unidecode
