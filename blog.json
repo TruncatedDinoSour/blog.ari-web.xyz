@@ -123,6 +123,7 @@
   "recent-title-trunc": 32,
   "server-host": "127.0.0.1",
   "server-port": 8080,
+  "post-preview-size": 196,
   "posts": {
     "blogging-system-rewrite-again-3": {
       "title": "blogging system rewrite ( again ) :3",

@@ -137,6 +137,7 @@ DEFAULT_CONFIG: typing.Dict[str, typing.Any] = {
     "recent-title-trunc": 32,
     "server-host": "127.0.0.1",
     "server-port": 8080,
+    "post-preview-size": 196,
     "posts": {},
 }
 
@@ -1108,7 +1109,22 @@ def apis(config: typing.Dict[str, typing.Any]) -> int:
     """generate and hash apis"""
 
     with open("recents.json", "w") as recents:
-        json.dump(dict(tuple(config["posts"].items())[: config["recents"]]), recents)
+        json.dump(
+            dict(
+                map(
+                    lambda kv: (
+                        kv[0],
+                        {
+                            "title": kv[1]["title"],
+                            "content": trunc(kv[1]["content"], config["post-preview-size"]),
+                            "created": kv[1]["created"],
+                        },
+                    ),
+                    tuple(config["posts"].items())[: config["recents"]],
+                )
+            ),
+            recents,
+        )
         lnew(f"generated {recents.name!r}")
 
     for api in recents.name, CONFIG_FILE:
