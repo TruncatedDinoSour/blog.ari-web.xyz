@@ -544,7 +544,7 @@ def read_post(path: str) -> str:
 
 # markdown
 
-TITLE_LINKS_RE: typing.Final[str] = r"<:#[^>]+>"
+TITLE_LINKS_RE: typing.Final[str] = r"<#:[^>]+?>"
 
 
 def parse_inline_titlelink(
@@ -862,7 +862,10 @@ def build(config: typing.Dict[str, typing.Any]) -> int:
                         locale=config["locale"],
                         post_creation_time=rformat_time(post["created"]),
                         post_description=html_escape(post["description"]),
-                        post_read_time=read_time_of_markdown(post["content"], config["read-wpm"]).text,
+                        post_read_time=read_time_of_markdown(
+                            post["content"],
+                            config["read-wpm"],
+                        ).text,
                         post_edit_time=(
                             ""
                             if "edited" not in post
