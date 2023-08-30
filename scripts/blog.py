@@ -127,6 +127,8 @@ DEFAULT_CONFIG: typing.Dict[str, typing.Any] = {
         "for",
         "with",
         "without",
+        "using",
+        "im",
     ],
     "wslug-limit": 10,
     "slug-limit": 96,
@@ -337,9 +339,11 @@ cmds: Commands = Commands()
 ecmds: Commands = Commands()
 
 
-def log(msg: str, clr: str = LOG_CLR) -> int:
-    """log a message"""
+def ctimer() -> float:
+    return code_timer() if NCI else 0
 
+
+def log(msg: str, clr: str = LOG_CLR) -> int:
     if NCI:
         print(
             f"{clr}{datetime.datetime.now()} | {msg}\033[0m",
@@ -372,8 +376,6 @@ def slugify(
     wslug_limit: int = DEFAULT_CONFIG["wslug-limit"],
     slug_limit: int = DEFAULT_CONFIG["slug-limit"],
 ) -> str:
-    """creates a slug from the title"""
-
     return (
         "-".join(
             [
@@ -679,7 +681,12 @@ def new(config: typing.Dict[str, typing.Any]) -> int:
     title: str = iinput("post title")
 
     log("creating a slug from the given title")
-    slug: str = slugify(title)
+    slug: str = slugify(
+        title,
+        config["context-words"],
+        config["wslug-limit"],
+        config["slug-limit"],
+    )
 
     if slug in (posts := config["posts"]):
         slug += f"-{sum(map(lambda k: k.startswith(slug), posts))}"
@@ -708,7 +715,7 @@ def new(config: typing.Dict[str, typing.Any]) -> int:
 
     description: str = ""
 
-    if yn("auto-generate post description"):
+    if yn("auto-generate post description", "n"):
         while True:
             description = "  ".join(
                 (
@@ -736,7 +743,7 @@ it was written by the author, mimic the writing style of the blog post in the de
                 description = iinput("ai post description", description)
                 break
 
-            if not yn("failed to generate description, re-generate ?", "n"):
+            if not yn("failed to generate description, re-generate", "n"):
                 break
 
     if not description:
@@ -837,7 +844,7 @@ def build(config: typing.Dict[str, typing.Any]) -> int:
     styles: str = os.path.join(config["assets-dir"], "styles.css")
 
     def build_post(slug: str, post: typing.Dict[str, typing.Any]) -> None:
-        ct: float = code_timer()
+        ct: float = ctimer()
 
         post_dir: str = os.path.join(config["posts-dir"], slug)
         os.makedirs(post_dir)
@@ -885,7 +892,7 @@ def build(config: typing.Dict[str, typing.Any]) -> int:
                 )
             )
 
-        lnew(f"built post {post['title']!r} in {code_timer() - ct} s")
+        lnew(f"built post {post['title']!r} in {ctimer() - ct} s")
 
     ts: typing.List[Thread] = []
 
@@ -951,9 +958,9 @@ def css(config: typing.Dict[str, typing.Any]) -> int:
 
     def _thread(c: typing.Callable[..., typing.Any], css: str) -> None:
         def _c() -> None:
-            ct: float = code_timer()
+            ct: float = ctimer()
             c(css)
-            lnew(f"processed {css!r} in {code_timer() - ct} s")
+            lnew(f"processed {css!r} in {ctimer() - ct} s")
 
         ts.append(Thread(target=_c, daemon=True))
         ts[-1].start()
@@ -1182,19 +1189,19 @@ def clean(config: typing.Dict[str, typing.Any]) -> int:
 def static(config: typing.Dict[str, typing.Any]) -> int:
     """generate a full static site"""
 
-    ct: float = code_timer()
+    ct: float = ctimer()
 
     for stage in clean, build, css, robots, manifest, sitemap, rss, apis:
         imp(f"running stage {stage.__name__!r} : {stage.__doc__ or stage.__name__!r}")
 
-        st: float = code_timer()
+        st: float = ctimer()
 
         if (code := stage(config)) is not OK:
             return code
 
-        imp(f"stage finished in {code_timer() - st} s")
+        imp(f"stage finished in {ctimer() - st} s")
 
-    return log(f"site built in {code_timer() - ct} s")
+    return log(f"site built in {ctimer() - ct} s")
 
 
 @cmds.new
@@ -1251,7 +1258,7 @@ def dev(config: typing.Dict[str, typing.Any]) -> int:
 def main() -> int:
     """entry/main function"""
 
-    main_t: float = code_timer()
+    main_t: float = ctimer()
 
     log("hello world")
 
@@ -1279,21 +1286,20 @@ def main() -> int:
     log("calling and timing the command")
     if NCI:
         print()
+        timer: float = ctimer()
 
-    timer: float = code_timer()
     code: int = cmd(cfg)
 
     if NCI:
         print()
-    log(f"command finished in {code_timer() - timer} s")
-
-    sort(cfg)
+        log(f"command finished in {ctimer() - timer} s")  # type: ignore
+        sort(cfg)
 
     with open(CONFIG_FILE, "w") as config:
         log(f"dumping config to {config.name!r}")
         json.dump(cfg, config, indent=cfg["indent"] if NCI else None)
 
-    log(f"goodbye world, return {code}, total {code_timer() - main_t} s")
+    log(f"goodbye world, return {code}, total {ctimer() - main_t} s")
 
     return code
 
