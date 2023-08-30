@@ -145,6 +145,7 @@ DEFAULT_CONFIG: typing.Dict[str, typing.Any] = {
 }
 
 NCI: bool = "CI" not in os.environ
+NOCLR: bool = "NOCLR" in os.environ
 
 LOG_CLR: str = "\033[90m"
 ERR_CLR: str = "\033[1m\033[31m"
@@ -346,7 +347,9 @@ def ctimer() -> float:
 def log(msg: str, clr: str = LOG_CLR) -> int:
     if NCI:
         print(
-            f"{clr}{datetime.datetime.now()} | {msg}\033[0m",
+            f"{datetime.datetime.now()} | {msg}"
+            if NOCLR
+            else f"{clr}{datetime.datetime.now()} | {msg}\033[0m",
             file=sys.stderr,
         )
 
