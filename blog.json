@@ -127,6 +127,22 @@
   "post-preview-size": 196,
   "read-wpm": 150,
   "posts": {
+    "omg-pls-stop": {
+      "title": "omg pls stop",
+      "description": "dealing with ddos attacks and online harassment from some random idiots online ugh",
+      "content": "today i came back from school to see <https://server.ari-web.xyz/> ddosed, the visitor count\nwas dead and made HUGE, the server was laggy and in general being stupid, fuckton of errors, fuckton of anti-semitism\n( im not even jewish ),\ntransphobia, racism ( im white while ur calling me the n word bro ), etc,, its all so fucking stupid, do u rlly not\nhave anything else to do besides ddos an api written by a 15 yr old, anyway, its all fixed now, the server\nwas malfunctioning for say like from 2023/09/06 01:00 til 2023/09/06 10:00 GMT, so 9 hours, i am sorry it took me this long\nto notice that, but well, some people have to attend school lol\n\nanyway, i dont get any of this lol, its so stupid, if i have to ill implement harder measures to limit people even more,\nuntil then if i see another attack like this i wont handle it gently lol, i am tired of this bullshit being thrown at me\ndaily, i have a life, i have exams, i have tests and shit and if i have to i will shut down the server as a whole leaving\nthe static part in\n\nnow please stfu with ur ddosing shit and let me read and do my hw, i couldve been doing that if i\nhavent had to fix this lol\n\ndanke and fuck u for like the 3 rd time this yr lol, whoever u r anyway",
+      "keywords": [
+        "ddos",
+        "racism",
+        "server.ari-web.xyz",
+        "ip address",
+        "anti semetism",
+        "network",
+        "logs",
+        "hacking"
+      ],
+      "created": 1693987023.88586
+    },
     "blogging-system-rewrite-again-3": {
       "title": "blogging system rewrite ( again ) :3",
       "description": "changes to the static site builder, api",
