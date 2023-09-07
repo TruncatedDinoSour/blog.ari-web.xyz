@@ -1097,13 +1097,19 @@ def rss(config: typing.Dict[str, typing.Any]) -> int:
     for slug, post in config["posts"].items():
         llog(f"adding {slug!r} to rss")
 
+        created: typing.Optional[float] = post.get("edited")
+
         item: etree.Element = etree.SubElement(channel, "item")
 
         etree.SubElement(item, "title").text = post["title"]
         etree.SubElement(item, "link").text = (
             link := f"{config['blog']}/{os.path.join(config['posts-dir'], slug)}"
         )
-        etree.SubElement(item, "description").text = post["description"]
+        etree.SubElement(item, "description").text = post["description"] + (
+            f" [edited at {datetime.datetime.utcfromtimestamp(created).strftime(ftime)}]"
+            if created
+            else ""
+        )
         etree.SubElement(item, "pubDate").text = datetime.datetime.utcfromtimestamp(
             post["created"]
         ).strftime(ftime)
