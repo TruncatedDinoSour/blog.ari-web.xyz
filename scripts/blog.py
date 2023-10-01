@@ -723,7 +723,8 @@ def new(config: typing.Dict[str, typing.Any]) -> int:
             description = "  ".join(
                 (
                     gen_ai(
-                        f"""Write a good, personal, short description for this blog post with the title "{title}" and keywords : \
+                        f"""Write a good and short description, the description should b 1 line and it shouldnt b long and spoil the whole post \
+for this blog post titled "{title}" and keywords : \
 {', '.join(keywords) or '<none>'}, give just the description, leave some details out as a teaser, the blog post is formatted using Markdown, \
 description must be on a singular line and all you should return is the description and nothing else, the description should look as if \
 it was written by the author, mimic the writing style of the blog post in the description:

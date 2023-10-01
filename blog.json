@@ -127,6 +127,25 @@
   "post-preview-size": 196,
   "read-wpm": 150,
   "posts": {
+    "leaking-windows-11-home-key": {
+      "title": "leaking my windows 11 home key",
+      "description": "in this blog post im leaking my windows 11 home product key bc fuck microsoft and paying for an os that spies on u lol, the key came with my new laptop which i got around 3 months ago, anyway, i never used that key, i didnt even boot windows i dont think, i extracted the key from efivars and acpi tables linux filesystems, enjoy the key if u wanna use windows 11, but consider switching to linux or bsd :3, the key is JNGYX-KDD9G-CKB93-8FBJ8-9TPR8 btw",
+      "content": "**tldr** -- the key is `JNGYX-KDD9G-CKB93-8FBJ8-9TPR8` and im leaking it bc i dont use windows\n\nhi\n\ni got a new lappy like 3 months ago and i installed linux right away, although\nit did come with **[windows 11 home]** i think,\n( ref to <https://www.telia.lt/prekes/kompiuteriai/nesiojami/asus-vivobook-m1605-16-ryz5-8gb-512gb>, i got it there )\n\nanyway, all that aside, today i fucked around with my `/sys/firmware/efi/` and i thought\n'what if the original key was stored in efivars or acpi tables' and well, it was\n\nfirst thing i did was run this :\n\n    cd /sys/firmware/efi/efivars/\n    grep -rE '[A-HJ-NP-TV-Z2-9]{5}-[A-HJ-NP-TV-Z2-9]{5}-[A-HJ-NP-TV-Z2-9]{5}-[A-HJ-NP-TV-Z2-9]{5}'\n\nwhich searched for all windows keys, and it found 1, and in the found file there was\n`JNGYX-KDD9G-CKB93-8FBJ8-9TPR8`, then to verify, i decided to check acpi tables :\n\n    su -c 'strings /sys/firmware/acpi/tables/MSDM`\n\nand it gave me the same key, so well, i wanted to leak it initially anyway, meaning i am doing it now\nas i can, enjoy this, as well, i dont use windows and never plan to use windows, idk why laptops\neven come with windows smh\n\ngbye :3\n\n( pls consider not using windows and using linux or bsd instead, but if u wanna use windows 11 home,\nhave my key, fuck paying for an os that spies on u lol )",
+      "keywords": [
+        "my windows product key",
+        "microsoft",
+        "windows 11",
+        "w11 key",
+        "linux",
+        "windows",
+        "w11",
+        "windows product key leak",
+        "windows 11 home",
+        "w11 product key",
+        "windows product key"
+      ],
+      "created": 1696191515.645223
+    },
     "linux": {
       "title": "linux",
       "description": "exploring the standards of linux, gnu, posix, bsd and alternatives, expressing my opinions on a bunch of shit, showing some distributions and talking about linux in general, its all based off my opinion and personal exp so take stuff with a grain of salt, it does have a bit of standard, distro and code basing kinda lol, just me expressing my concerns abt it and stuff, opinions, anyway enjoy, cheers :3",
