@@ -24,7 +24,7 @@ from threading import Thread
 from timeit import default_timer as code_timer
 from warnings import filterwarnings as filter_warnings
 
-import minify_html_onepass
+import html_minifier.minify  # type: ignore
 import mistune
 import mistune.core
 import mistune.inline_parser
@@ -571,6 +571,10 @@ def process_css_file(file: str, out: str) -> None:
         css.write(process_css_from_file(file))
 
 
+def min_html(code: str) -> str:
+    return html_minifier.minify.Minifier(code).minify()  # type: ignore
+
+
 # markdown
 
 TITLE_LINKS_RE: typing.Final[str] = r"<#:[^>]+?>"
@@ -891,7 +895,7 @@ def build(config: dict[str, typing.Any]) -> int:
 
         with open(f"{post_dir}/index.html", "w") as html:
             html.write(
-                minify_html_onepass.minify(
+                min_html(
                     POST_TEMPLATE.format(
                         lang=lang,
                         keywords=html_escape(
@@ -933,7 +937,6 @@ def build(config: dict[str, typing.Any]) -> int:
                         path=f"{config['posts-dir']}/{slug}",
                         license=config["license"],
                     ),
-                    True,
                 )
             )
 
@@ -949,7 +952,7 @@ def build(config: dict[str, typing.Any]) -> int:
 
     with open("index.html", "w") as index:
         index.write(
-            minify_html_onepass.minify(
+            min_html(
                 INDEX_TEMPLATE.format(  # type: ignore
                     lang=lang,
                     keywords=html_escape(", ".join(config["blog-keywords"])),
@@ -982,7 +985,6 @@ def build(config: dict[str, typing.Any]) -> int:
                         for slug, post in config["posts"].items()
                     ),
                 ),
-                True,
             )
         )
 

@@ -1,5 +1,5 @@
 [build]
-    command = "sh scripts/netlify.sh"
+    command = "CI=1 NOCLR=1 python3 ./scripts/blog.py static"
 
 [[redirects]]
     from = "/git/*"

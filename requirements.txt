@@ -1,4 +1,4 @@
-minify-html-onepass
+html-minifer
 rcssmin
 mistune
 typing
