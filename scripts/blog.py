@@ -40,7 +40,7 @@ OK: typing.Final[int] = 0
 ER: typing.Final[int] = 1
 
 CONFIG_FILE: typing.Final[str] = "blog.json"
-DEFAULT_CONFIG: typing.Dict[str, typing.Any] = {
+DEFAULT_CONFIG: dict[str, typing.Any] = {
     "title": "blog",
     "header": "blog",
     "description": "my blog page",
@@ -327,7 +327,7 @@ if NCI:
     import rebelai.ai.h2o
     import requests
 
-    AI_MODELS: typing.Tuple[typing.Tuple[typing.Any, bool], ...] = (
+    AI_MODELS: tuple[tuple[typing.Any, bool], ...] = (
         (rebelai.ai.gpt.gpt4, False),
         (rebelai.ai.gpt.gpt3, True),
         (rebelai.ai.h2o.falcon_40b, True),
@@ -345,18 +345,18 @@ else:
 class Commands:
     def __init__(self) -> None:
         self.commands: dict[
-            str, typing.Callable[[typing.Dict[str, typing.Any]], int]
+            str, typing.Callable[[dict[str, typing.Any]], int]
         ] = {}
 
     def new(
-        self, fn: typing.Callable[[typing.Dict[str, typing.Any]], int]
-    ) -> typing.Callable[[typing.Dict[str, typing.Any]], int]:
+        self, fn: typing.Callable[[dict[str, typing.Any]], int]
+    ) -> typing.Callable[[dict[str, typing.Any]], int]:
         self.commands[fn.__name__] = fn
         return fn
 
     def __getitem__(
         self, name: str
-    ) -> typing.Callable[[typing.Dict[str, typing.Any]], int]:
+    ) -> typing.Callable[[dict[str, typing.Any]], int]:
         return self.commands[name]
 
 
@@ -399,7 +399,7 @@ def imp(msg: str) -> int:
 
 def slugify(
     title: str,
-    context_words: typing.Optional[typing.Sequence[str]] = None,
+    context_words: typing.Sequence[str] | None = None,
     wslug_limit: int = DEFAULT_CONFIG["wslug-limit"],
     slug_limit: int = DEFAULT_CONFIG["slug-limit"],
 ) -> str:
@@ -423,13 +423,13 @@ def get_proxy(
     api: str,
     test: str,
     timeout: float,
-) -> typing.Dict[str, str]:
+) -> dict[str, str]:
     while True:
         log("trying to get a proxy")
 
         proxy: str = requests.get(api).text
 
-        proxies: typing.Dict[str, str] = {
+        proxies: dict[str, str] = {
             "http": proxy,
             "http2": proxy,
             "https": proxy,
@@ -456,7 +456,7 @@ def gen_ai(
     prompt: str,
     *args: typing.Any,
     **kwargs: typing.Any,
-) -> typing.Optional[str]:
+) -> str | None:
     for model, proxy in AI_MODELS:
         log(
             f"generating text with {model.__name__} ai ( {'' if proxy else 'un'}proxied )"
@@ -465,7 +465,7 @@ def gen_ai(
         for idx in range(1, 4):
             log(f"attempt #{idx}")
 
-            resp: typing.Optional[str] = asyncio.run(
+            resp: str | None = asyncio.run(
                 model(
                     prompt=prompt,
                     request_args=get_proxy(*args, **kwargs) if proxy else None,
@@ -488,7 +488,7 @@ def format_time(ts: float) -> str:
     return f"{rformat_time(ts)} GMT"
 
 
-def select_multi(options: typing.Sequence[str]) -> typing.List[str]:
+def select_multi(options: typing.Sequence[str]) -> list[str]:
     if not options:
         return []
 
@@ -499,8 +499,8 @@ def select_multi(options: typing.Sequence[str]) -> typing.List[str]:
 
 
 def select_posts(
-    posts: typing.Dict[str, typing.Dict[str, typing.Any]]
-) -> typing.Tuple[str, ...]:
+    posts: dict[str, dict[str, typing.Any]]
+) -> tuple[str, ...]:
     return tuple(
         map(
             lambda opt: opt.split("|", maxsplit=1)[0].strip(),
@@ -605,7 +605,7 @@ class BlogRenderer(mistune.HTMLRenderer):
         return f'<h{level} id="{slug}" h><a href="#{slug}">#</a> {text}</h{level}>'
 
 
-def markdown(md: str, plugins: typing.List[typing.Any]) -> str:
+def markdown(md: str, plugins: list[typing.Any]) -> str:
     return mistune.create_markdown(plugins=plugins + [titlelink], renderer=BlogRenderer())(md)  # type: ignore
 
 
@@ -613,19 +613,19 @@ def markdown(md: str, plugins: typing.List[typing.Any]) -> str:
 
 
 @ecmds.new
-def title(post: typing.Dict[str, typing.Any]) -> int:
+def title(post: dict[str, typing.Any]) -> int:
     post["title"] = iinput("post title", post["title"])
     return OK
 
 
 @ecmds.new
-def description(post: typing.Dict[str, typing.Any]) -> int:
+def description(post: dict[str, typing.Any]) -> int:
     post["description"] = iinput("post description", post["description"])
     return OK
 
 
 @ecmds.new
-def content(post: typing.Dict[str, typing.Any]) -> int:
+def content(post: dict[str, typing.Any]) -> int:
     """edit posts"""
 
     log("getting post markdown path")
@@ -646,7 +646,7 @@ def content(post: typing.Dict[str, typing.Any]) -> int:
 
 
 @ecmds.new
-def keywords(post: typing.Dict[str, typing.Any]) -> int:
+def keywords(post: dict[str, typing.Any]) -> int:
     """edit keywords"""
 
     post["keywords"] = tuple(
@@ -669,7 +669,7 @@ def keywords(post: typing.Dict[str, typing.Any]) -> int:
 
 
 @cmds.new
-def help(_: typing.Dict[str, typing.Any]) -> int:
+def help(_: dict[str, typing.Any]) -> int:
     """print help"""
 
     return llog(
@@ -682,7 +682,7 @@ def help(_: typing.Dict[str, typing.Any]) -> int:
 
 
 @cmds.new
-def sort(config: typing.Dict[str, typing.Any]) -> int:
+def sort(config: dict[str, typing.Any]) -> int:
     """sort blog posts by creation time"""
 
     log("sorting posts by creation time")
@@ -702,7 +702,7 @@ def sort(config: typing.Dict[str, typing.Any]) -> int:
 
 
 @cmds.new
-def new(config: typing.Dict[str, typing.Any]) -> int:
+def new(config: dict[str, typing.Any]) -> int:
     """create a new blog post"""
 
     title: str = iinput("post title")
@@ -726,7 +726,7 @@ def new(config: typing.Dict[str, typing.Any]) -> int:
     if not (content := read_post(post_path)):
         return err("content cannot be empty")
 
-    keywords: typing.Tuple[str, ...] = tuple(
+    keywords: tuple[str, ...] = tuple(
         map(
             lambda k: unidecode.unidecode(k.strip()),
             filter(
@@ -791,7 +791,7 @@ it was written by the author, mimic the writing style of the blog post in the de
 
 
 @cmds.new
-def ls(config: typing.Dict[str, typing.Any]) -> int:
+def ls(config: dict[str, typing.Any]) -> int:
     """list all posts"""
 
     for slug, post in config["posts"].items():
@@ -814,10 +814,10 @@ created : {format_time(post["created"])}"""
 
 
 @cmds.new
-def ed(config: typing.Dict[str, typing.Any]) -> int:
+def ed(config: dict[str, typing.Any]) -> int:
     """edit posts"""
 
-    fields: typing.List[str] = select_multi(tuple(ecmds.commands.keys()))
+    fields: list[str] = select_multi(tuple(ecmds.commands.keys()))
 
     for slug in select_posts(config["posts"]):
         llog(f"editing {slug!r}")
@@ -825,7 +825,7 @@ def ed(config: typing.Dict[str, typing.Any]) -> int:
         for field in fields:
             log(f"editing field {field!r}")
 
-            post: typing.Dict[str, typing.Any] = config["posts"][slug]
+            post: dict[str, typing.Any] = config["posts"][slug]
 
             post["slug"] = slug
             post["editor"] = config["editor"]
@@ -844,7 +844,7 @@ def ed(config: typing.Dict[str, typing.Any]) -> int:
 
 
 @cmds.new
-def rm(config: typing.Dict[str, typing.Any]) -> int:
+def rm(config: dict[str, typing.Any]) -> int:
     """remove posts"""
 
     for slug in select_posts(config["posts"]):
@@ -855,7 +855,7 @@ def rm(config: typing.Dict[str, typing.Any]) -> int:
 
 
 @cmds.new
-def build(config: typing.Dict[str, typing.Any]) -> int:
+def build(config: dict[str, typing.Any]) -> int:
     """build blog posts"""
 
     log("setting up posts directory")
@@ -883,7 +883,7 @@ def build(config: typing.Dict[str, typing.Any]) -> int:
         with open(critp, "r") as f:
             post_crit_css = f.read()
 
-    def build_post(slug: str, post: typing.Dict[str, typing.Any]) -> None:
+    def build_post(slug: str, post: dict[str, typing.Any]) -> None:
         ct: float = ctimer()
 
         post_dir: str = os.path.join(config["posts-dir"], slug)
@@ -938,13 +938,13 @@ def build(config: typing.Dict[str, typing.Any]) -> int:
 
         lnew(f"built post {post['title']!r} in {ctimer() - ct} s")
 
-    ts: typing.List[Thread] = []
+    ts: list[Thread] = []
 
     for slug, post in tuple(config["posts"].items()):
         ts.append(Thread(target=build_post, args=(slug, post), daemon=True))
         ts[-1].start()
 
-    latest_post: typing.Tuple[str, typing.Dict[str, typing.Any]] = tuple(
+    latest_post: tuple[str, dict[str, typing.Any]] = tuple(
         config["posts"].items()
     )[0]
 
@@ -995,10 +995,10 @@ def build(config: typing.Dict[str, typing.Any]) -> int:
 
 
 @cmds.new
-def css(config: typing.Dict[str, typing.Any]) -> int:
+def css(config: dict[str, typing.Any]) -> int:
     """build and minify css"""
 
-    ts: typing.List[Thread] = []
+    ts: list[Thread] = []
 
     saved_stdout: typing.Any = sys.stdout
     sys.stdout = open(os.devnull, "w")
@@ -1035,7 +1035,7 @@ def css(config: typing.Dict[str, typing.Any]) -> int:
 
 
 @cmds.new
-def robots(config: typing.Dict[str, typing.Any]) -> int:
+def robots(config: dict[str, typing.Any]) -> int:
     """generate a robots.txt"""
 
     llog("generating robots")
@@ -1054,7 +1054,7 @@ Sitemap: {config["blog"]}/sitemap.xml"""
 
 
 @cmds.new
-def manifest(config: typing.Dict[str, typing.Any]) -> int:
+def manifest(config: dict[str, typing.Any]) -> int:
     """generate a manifest.json"""
 
     llog("generating a manifest")
@@ -1081,7 +1081,7 @@ def manifest(config: typing.Dict[str, typing.Any]) -> int:
 
 
 @cmds.new
-def sitemap(config: typing.Dict[str, typing.Any]) -> int:
+def sitemap(config: dict[str, typing.Any]) -> int:
     """generate a sitemap.xml"""
 
     llog("generating a sitemap")
@@ -1117,7 +1117,7 @@ def sitemap(config: typing.Dict[str, typing.Any]) -> int:
 
 
 @cmds.new
-def rss(config: typing.Dict[str, typing.Any]) -> int:
+def rss(config: dict[str, typing.Any]) -> int:
     """generate an rss feed"""
 
     llog("generating an rss feed")
@@ -1141,7 +1141,7 @@ def rss(config: typing.Dict[str, typing.Any]) -> int:
     for slug, post in config["posts"].items():
         llog(f"adding {slug!r} to rss")
 
-        created: typing.Optional[float] = post.get("edited")
+        created: float | None = post.get("edited")
 
         item: etree.Element = etree.SubElement(channel, "item")
 
@@ -1169,7 +1169,7 @@ def rss(config: typing.Dict[str, typing.Any]) -> int:
 
 
 @cmds.new
-def apis(config: typing.Dict[str, typing.Any]) -> int:
+def apis(config: dict[str, typing.Any]) -> int:
     """generate and hash apis"""
 
     with open("recents.json", "w") as recents:
@@ -1205,7 +1205,7 @@ def apis(config: typing.Dict[str, typing.Any]) -> int:
 
 
 @cmds.new
-def clean(config: typing.Dict[str, typing.Any]) -> int:
+def clean(config: dict[str, typing.Any]) -> int:
     """clean up the site"""
 
     def remove(file: str) -> None:
@@ -1239,7 +1239,7 @@ def clean(config: typing.Dict[str, typing.Any]) -> int:
 
 
 @cmds.new
-def static(config: typing.Dict[str, typing.Any]) -> int:
+def static(config: dict[str, typing.Any]) -> int:
     """generate a full static site"""
 
     ct: float = ctimer()
@@ -1258,7 +1258,7 @@ def static(config: typing.Dict[str, typing.Any]) -> int:
 
 
 @cmds.new
-def serve(config: typing.Dict[str, typing.Any]) -> int:
+def serve(config: dict[str, typing.Any]) -> int:
     """simple server"""
 
     class RequestHandler(http.server.SimpleHTTPRequestHandler):
@@ -1299,7 +1299,7 @@ def serve(config: typing.Dict[str, typing.Any]) -> int:
 
 
 @cmds.new
-def dev(config: typing.Dict[str, typing.Any]) -> int:
+def dev(config: dict[str, typing.Any]) -> int:
     """generate a full static site + serve it"""
 
     if (code := static(config)) is not OK:
