@@ -534,7 +534,7 @@ def yn(prompt: str, default: str = "y") -> bool:
 
 
 def get_tmpfile(name: str) -> str:
-    return f"{tempfile.gettempdir()}{name}.md"
+    return f"{tempfile.gettempdir()}/{name}.md"
 
 
 def open_file(editor: typing.Sequence[str], path: str) -> None:
