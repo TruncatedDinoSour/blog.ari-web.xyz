@@ -24,7 +24,7 @@ from threading import Thread
 from timeit import default_timer as code_timer
 from warnings import filterwarnings as filter_warnings
 
-import html_minifier.minify  # type: ignore
+import htmlmin  # type: ignore
 import mistune
 import mistune.core
 import mistune.inline_parser
@@ -572,7 +572,7 @@ def process_css_file(file: str, out: str) -> None:
 
 
 def min_html(code: str) -> str:
-    return html_minifier.minify.Minifier(code).minify()  # type: ignore
+    return htmlmin.minify(code, True, True, True, True, True, True, True)
 
 
 # markdown
