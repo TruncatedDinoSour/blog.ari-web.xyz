@@ -1,5 +1,5 @@
 [build]
-    command = "rustup default stable && NOCLR=1 python3 ./scripts/blog.py static && rm -rf ./scripts/"
+    command = "NOCLR=1 python3 ./scripts/blog.py static && rm -rf ./scripts/"
 
 [[redirects]]
     from = "/git/*"
