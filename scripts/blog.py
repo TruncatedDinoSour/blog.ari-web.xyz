@@ -172,13 +172,7 @@ HTML_BEGIN: typing.Final[
 <meta name="theme-color" content="{theme_primary}" />
 <link rel="manifest" href="/manifest.json" />
 <link rel="canonical" href="{blog}/{path}">
-<style type="text/css">
-*,*::before,*::after {{
-    color-scheme:{theme_type};
-    background-color:{theme_primary};
-    color:{theme_secondary}
-}}
-</style>
+<style type="text/css">{critical_css}</style>
 <link
     href="/{styles}"
     rel="preload"
@@ -214,6 +208,7 @@ HTML_BEGIN: typing.Final[
 POST_TEMPLATE: typing.Final[str] = (
     HTML_BEGIN
     + """
+<style type="text/css">{post_critical_css}</style>
 <title>{blog_title} -> {post_title}</title>
 <meta name="description" content="{post_title} by {author} at {post_creation_time} GMT -- {post_description}" />
 <meta property="article:read_time" content="{post_read_time}" />
@@ -221,7 +216,7 @@ POST_TEMPLATE: typing.Final[str] = (
 </head>
 
 <body>
-<main id="blog-content">
+<main id="post-content">
    <header role="group">
       <h1 role="heading" aria-level="1">{post_title}</h1>
 
@@ -274,7 +269,7 @@ INDEX_TEMPLATE: typing.Final[str] = (
 </head>
 
 <body>
-<main id="blog-content">
+<main id="post-content">
    <header role="group">
       <h1 role="heading" aria-level="1">{blog_header}</h1>
 
@@ -866,6 +861,17 @@ def build(config: typing.Dict[str, typing.Any]) -> int:
     styles: str = os.path.join(config["assets-dir"], "styles.min.css")
     lang: str = config["locale"][:2]
 
+    crit_css: str = ""
+    post_crit_css: str = ""
+
+    if os.path.isfile(critp := os.path.join(config["assets-dir"], "critical.css")):
+        with open(critp, "r") as f:
+            crit_css = f.read()
+
+    if os.path.isfile(critp := os.path.join(config["assets-dir"], "post_critical.css")):
+        with open(critp, "r") as f:
+            post_crit_css = f.read()
+
     def build_post(slug: str, post: typing.Dict[str, typing.Any]) -> None:
         ct: float = ctimer()
 
@@ -886,6 +892,8 @@ def build(config: typing.Dict[str, typing.Any]) -> int:
                         theme_primary=config["theme"]["primary"],
                         theme_secondary=config["theme"]["secondary"],
                         styles=styles,
+                        critical_css=crit_css,
+                        post_critical_css=post_crit_css,
                         rss=config["rss-file"],
                         blog_title=blog_title,
                         post_title=html_escape(post["title"]),
@@ -941,6 +949,7 @@ def build(config: typing.Dict[str, typing.Any]) -> int:
                     blog=config["blog"],
                     path="",
                     styles=styles,
+                    critical_css=crit_css,
                     rss=config["rss-file"],
                     blog_title=blog_title,
                     author=author,

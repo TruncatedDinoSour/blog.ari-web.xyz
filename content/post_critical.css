@@ -1,0 +1,35 @@
+blockquote {
+    margin: 10px 0;
+    overflow: hidden;
+    padding: 0 0 0 20px;
+    font-weight: 100;
+    position: relative;
+}
+
+blockquote:before {
+    content: "";
+    border-left: var(--blockquote-width) solid var(--clr-blockquote-bg); /* Thx cel */
+    position: absolute;
+    bottom: 14px;
+    top: 13px;
+    left: 0;
+}
+
+pre {
+    padding: 1em;
+    border-radius: 4px;
+}
+
+pre,
+pre code {
+    overflow-x: auto !important;
+
+    scrollbar-width: initial;
+    -ms-overflow-style: initial;
+}
+
+code:not(pre code),
+time {
+    border-radius: 2px;
+    padding: 0.2em;
+}

@@ -1,45 +1,24 @@
-@import url("/content/fonts/Hack.min.css");
+@import url(/content/fonts/Hack.min.css);
 
 :root {
-    color-scheme: dark;
-
-    --clr-bg: #262220;
-    --clr-fg: #f9f6e8;
-
     --clr-blockquote-fg: #e6e0c8;
-    --clr-blockquote-bg: #ede9d3;
-
-    --blockquote-width: 2px;
 
     --clr-code-bg: #1f1b1a;
     --clr-code-fg: #f0f3e6;
     --clr-code-bg-dark: #181414;
 
-    --clr-link: #cdc4c4; /* #9e9b9b; */
-
-    --scrollbar-height: 6px; /* TODO: Firefox */
+    --scrollbar-height: 6px; /* TODO Firefox */
 }
 
 *,
 *::before,
 *::after {
-    background-color: var(--clr-bg);
-    color: var(--clr-fg);
     font-family: Hack, hack, monospace;
 
     scrollbar-width: none;
     -ms-overflow-style: none;
 
     scrollbar-color: var(--clr-code-bg-dark) transparent;
-
-    -webkit-box-sizing: border-box;
-    box-sizing: border-box;
-
-    word-wrap: break-word;
-    /*
-     * Removed because users asked to to:
-     * word-break: break-all;
-     * */
 
     scroll-behavior: smooth;
 
@@ -64,60 +43,10 @@ body::-webkit-scrollbar {
     display: none !important;
 }
 
-/* Removed because I want code blocks to scroll
-code,
-code *,
-pre,
-pre * {
-    white-space: pre-wrap;
-    white-space: -moz-pre-wrap;
-    white-space: -pre-wrap;
-    white-space: -o-pre-wrap;
-}
-*/
-
-body {
-    margin: auto;
-    padding: 2rem;
-    max-width: 1100px;
-    min-height: 100vh;
-    text-rendering: optimizeSpeed;
-}
-
-h1 {
-    text-align: center;
-    margin: 1em;
-    font-size: 2em;
-}
-
-li {
-    margin: 0.5em;
-}
-
-a {
-    text-decoration: none;
-    color: var(--clr-link);
-    font-style: italic;
-}
-
 a:focus,
 a:hover {
     text-decoration: underline;
 }
-
-/*
-a:not(li > a)::before {
-    content: "[";
-    font-style: bold;
-    color: #c9c3c3;
-}
-
-a:not(li > a)::after {
-    content: "]";
-    font-style: bold;
-    color: #c9c3c3;
-}
-*/
 
 pre,
 pre * {
@@ -130,62 +59,14 @@ code {
     color: var(--clr-code-fg);
 }
 
-pre,
-pre code {
-    overflow-x: auto !important;
-
-    scrollbar-width: initial;
-    -ms-overflow-style: initial;
-}
-
-pre {
-    padding: 1em;
-    border-radius: 4px;
-}
-
 code:not(pre code),
 time {
     background-color: var(--clr-code-bg);
-    border-radius: 2px;
-    padding: 0.2em;
-}
-
-#info-bar {
-    text-align: center;
-}
-
-#blog-content {
-    padding: 0.3em;
-    line-height: 1.4;
-}
-
-blockquote {
-    margin: 10px 0;
-    overflow: hidden;
-    padding: 0 0 0 20px;
-    font-weight: 100;
-    position: relative;
-}
-
-blockquote:before {
-    content: "";
-    border-left: var(--blockquote-width) solid var(--clr-blockquote-bg); /* Thx cel */
-    position: absolute;
-    bottom: 14px;
-    top: 13px;
-    left: 0;
 }
 
 blockquote,
 blockquote * {
     color: var(--clr-blockquote-fg);
-}
-
-*[h] > a {
-    opacity: 0.3;
-    -webkit-transition: opacity 0.1s ease-in-out;
-    -o-transition: opacity 0.1s ease-in-out;
-    transition: opacity 0.1s ease-in-out;
 }
 
 *[h]:hover > a,
@@ -224,10 +105,6 @@ blockquote * {
     }
 }
 
-nav img {
-    height: 1rem;
-}
-
 @media (prefers-contrast: more) {
     :root {
         --clr-bg: #000000;
@@ -258,6 +135,6 @@ nav img {
     }
 
     a {
-        opacity: 1;
+        opacity: 1 !important;
     }
 }
