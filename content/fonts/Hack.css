@@ -3,6 +3,8 @@
     font-weight: 400;
     font-style: normal;
     src:
+        local("Hack Nerd Font Regular"),
+        local("Hack Regular"),
         url(/content/fonts/hack-regular.woff2) format("woff2"),
         url(/content/fonts/hack-regular.woff) format("woff");
     font-display: swap;
@@ -13,6 +15,8 @@
     font-weight: 700;
     font-style: normal;
     src:
+        local("Hack Nerd Font Bold"),
+        local("Hack Bold"),
         url(/content/fonts/hack-bold.woff2) format("woff2"),
         url(/content/fonts/hack-bold.woff) format("woff");
     font-display: swap;
@@ -23,6 +27,8 @@
     font-weight: 400;
     font-style: italic;
     src:
+        local("Hack Nerd Font Italic"),
+        local("Hack Italic"),
         url(/content/fonts/hack-italic.woff2) format("woff2"),
         url(/content/fonts/hack-italic.woff) format("woff");
     font-display: swap;
@@ -33,6 +39,8 @@
     font-weight: 700;
     font-style: italic;
     src:
+        local("Hack Nerd Font Bold Italic"),
+        local("Hack Bold Italic"),
         url(/content/fonts/hack-bolditalic.woff2) format("woff2"),
         url(/content/fonts/hack-bolditalic.woff) format("woff");
     font-display: swap;
