@@ -43,25 +43,6 @@
     status = 404
     force = false
 
-# Processing
-[build.processing]
-    skip_processing = false
-
-[build.processing.html]
-    pretty_urls = true
-
-[build.processing.css]
-    bundle = true
-    minify = false
-
-[build.processing.js]
-    bundle = false
-    minify = false
-
-[build.processing.images]
-    compress = true
-# --------------
-
 # This has been replaced, currently I'm looking how
 # JavaScript blocking is affecting my statistics
 # as it seems like most people are much more interested
