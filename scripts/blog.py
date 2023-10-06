@@ -173,15 +173,15 @@ HTML_BEGIN: typing.Final[
 <link rel="manifest" href="/manifest.json" />
 <link rel="canonical" href="{blog}/{path}">
 <style type="text/css">
-:root{
+:root{{
     color-scheme:{theme_type};
     --clr-bg:{theme_primary};
     --clr-fg:{theme_secondary}
-}
-*,*::before,*::after{
+}}
+*,*::before,*::after{{
     background-color:var(--clr-bg);
     color:var(--clr-fg)
-}
+}}
 {critical_css}
 </style>
 <link
