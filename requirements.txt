@@ -1,4 +1,5 @@
-css-html-js-minify
+minify-html-onepass
+rcssmin
 mistune
 typing
 readtime

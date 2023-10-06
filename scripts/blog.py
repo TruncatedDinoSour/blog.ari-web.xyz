@@ -24,13 +24,13 @@ from threading import Thread
 from timeit import default_timer as code_timer
 from warnings import filterwarnings as filter_warnings
 
+import minify_html_onepass
 import mistune
 import mistune.core
 import mistune.inline_parser
 import mistune.plugins
+import rcssmin  # type: ignore
 import unidecode
-from css_html_js_minify import html_minify  # type: ignore
-from css_html_js_minify import process_single_css_file  # type: ignore
 from readtime import of_markdown as read_time_of_markdown  # type: ignore
 
 __version__: typing.Final[int] = 2
@@ -173,16 +173,8 @@ HTML_BEGIN: typing.Final[
 <link rel="manifest" href="/manifest.json" />
 <link rel="canonical" href="{blog}/{path}">
 <style type="text/css">
-:root{{
-    color-scheme:{theme_type};
-    --clr-bg:{theme_primary};
-    --clr-fg:{theme_secondary}
-}}
-*,*::before,*::after{{
-    background-color:var(--clr-bg);
-    color:var(--clr-fg)
-}}
-{critical_css}
+:root{{color-scheme:{theme_type};--clr-bg:{theme_primary};--clr-fg:{theme_secondary}}}\
+*,*::before,*::after{{background-color:var(--clr-bg);color:var(--clr-fg)}}{critical_css}
 </style>
 <link
     href="/{styles}"
@@ -235,30 +227,30 @@ POST_TEMPLATE: typing.Final[str] = (
         <a role="menuitem"
           aria-label="skip"
           href="#main">skip</a>
-        <span role="seperator" aria-hidden="true">|</span>
+        <span role="seperator" aria-hidden="true"> | </span>
 
         <span role="menuitem"><time>{post_creation_time}</time> GMT{post_edit_time}</span>
-        <span role="seperator" aria-hidden="true">|</span>
+        <span role="seperator" aria-hidden="true"> | </span>
 
         <span role="menuitem"
            >visitor <img src="{visitor_count}" alt="visitor count"
         /></span>
-        <span role="seperator" aria-hidden="true">|</span>
+        <span role="seperator" aria-hidden="true"> | </span>
 
         <span role="menuitem"><time>{post_read_time}</time> read</span>
-        <span role="seperator" aria-hidden="true">|</span>
+        <span role="seperator" aria-hidden="true"> | </span>
 
         <a role="menuitem" href="/">home</a>
-        <span role="seperator" aria-hidden="true">|</span>
+        <span role="seperator" aria-hidden="true"> | </span>
 
         <a role="menuitem" href="{comment}">comment</a>
-        <span role="seperator" aria-hidden="true">|</span>
+        <span role="seperator" aria-hidden="true"> | </span>
 
         <a role="menuitem" href="{website}">website</a>
-        <span role="seperator" aria-hidden="true">|</span>
+        <span role="seperator" aria-hidden="true"> | </span>
 
         <a role="menuitem" href="{source}">src</a>
-        <span role="seperator" aria-hidden="true">|</span>
+        <span role="seperator" aria-hidden="true"> | </span>
 
         <a role="menuitem" href="/{rss}">rss</a>
 
@@ -288,24 +280,24 @@ INDEX_TEMPLATE: typing.Final[str] = (
         <a role="menuitem"
           aria-label="jump to the main content"
           href="#main">skip</a>
-        <span role="seperator" aria-hidden="true">|</span>
+        <span role="seperator" aria-hidden="true"> | </span>
 
         <span role="menuitem">latest post : <a href="/{latest_post_path}">{latest_post_title_trunc}</a> at <time>{latest_post_creation_time}</time> GMT</span>
-        <span role="seperator" aria-hidden="true">|</span>
+        <span role="seperator" aria-hidden="true"> | </span>
 
         <span role="menuitem"
            >visitor <img src="{visitor_count}" alt="visitor count"
         /></span>
-        <span role="seperator" aria-hidden="true">|</span>
+        <span role="seperator" aria-hidden="true"> | </span>
 
         <a role="menuitem" href="{comment}">comment</a>
-        <span role="seperator" aria-hidden="true">|</span>
+        <span role="seperator" aria-hidden="true"> | </span>
 
         <a role="menuitem" href="{website}">website</a>
-        <span role="seperator" aria-hidden="true">|</span>
+        <span role="seperator" aria-hidden="true"> | </span>
 
         <a role="menuitem" href="{source}">src</a>
-        <span role="seperator" aria-hidden="true">|</span>
+        <span role="seperator" aria-hidden="true"> | </span>
 
         <a role="menuitem" href="/{rss}">rss</a>
 
@@ -344,9 +336,7 @@ else:
 
 class Commands:
     def __init__(self) -> None:
-        self.commands: dict[
-            str, typing.Callable[[dict[str, typing.Any]], int]
-        ] = {}
+        self.commands: dict[str, typing.Callable[[dict[str, typing.Any]], int]] = {}
 
     def new(
         self, fn: typing.Callable[[dict[str, typing.Any]], int]
@@ -354,9 +344,7 @@ class Commands:
         self.commands[fn.__name__] = fn
         return fn
 
-    def __getitem__(
-        self, name: str
-    ) -> typing.Callable[[dict[str, typing.Any]], int]:
+    def __getitem__(self, name: str) -> typing.Callable[[dict[str, typing.Any]], int]:
         return self.commands[name]
 
 
@@ -498,9 +486,7 @@ def select_multi(options: typing.Sequence[str]) -> list[str]:
     )
 
 
-def select_posts(
-    posts: dict[str, dict[str, typing.Any]]
-) -> tuple[str, ...]:
+def select_posts(posts: dict[str, dict[str, typing.Any]]) -> tuple[str, ...]:
     return tuple(
         map(
             lambda opt: opt.split("|", maxsplit=1)[0].strip(),
@@ -548,7 +534,7 @@ def yn(prompt: str, default: str = "y") -> bool:
 
 
 def get_tmpfile(name: str) -> str:
-    return os.path.join(tempfile.gettempdir(), name + ".md")
+    return f"{tempfile.gettempdir()}{name}.md"
 
 
 def open_file(editor: typing.Sequence[str], path: str) -> None:
@@ -569,6 +555,20 @@ def read_post(path: str) -> str:
     except Exception as e:
         err(f"failed to read {path!r} : {e.__class__.__name__} {e}")
         return ""
+
+
+def process_css(code: str) -> str:
+    return rcssmin.cssmin(code)  # type: ignore
+
+
+def process_css_from_file(file: str) -> str:
+    with open(file, "r") as css:
+        return process_css(css.read())
+
+
+def process_css_file(file: str, out: str) -> None:
+    with open(out, "w") as css:
+        css.write(process_css_from_file(file))
 
 
 # markdown
@@ -867,31 +867,31 @@ def build(config: dict[str, typing.Any]) -> int:
 
     llog("building blog")
 
+    t: Thread
+
     blog_title: str = html_escape(config["title"])
     author: str = html_escape(config["author"])
-    styles: str = os.path.join(config["assets-dir"], "styles.min.css")
+    styles: str = f"{config['assets-dir']}/styles.min.css"
     lang: str = config["locale"][:2]
 
     crit_css: str = ""
     post_crit_css: str = ""
 
-    if os.path.isfile(critp := os.path.join(config["assets-dir"], "critical.css")):
-        with open(critp, "r") as f:
-            crit_css = f.read()
+    if os.path.isfile(critp := f"{config['assets-dir']}/critical.css"):
+        crit_css = process_css_from_file(critp)
 
-    if os.path.isfile(critp := os.path.join(config["assets-dir"], "post_critical.css")):
-        with open(critp, "r") as f:
-            post_crit_css = f.read()
+    if os.path.isfile(critp := f"{config['assets-dir']}/post_critical.css"):
+        post_crit_css = process_css_from_file(critp)
 
     def build_post(slug: str, post: dict[str, typing.Any]) -> None:
         ct: float = ctimer()
 
-        post_dir: str = os.path.join(config["posts-dir"], slug)
+        post_dir: str = f"{config['posts-dir']}/{slug}"
         os.makedirs(post_dir)
 
-        with open(os.path.join(post_dir, "index.html"), "w") as html:
+        with open(f"{post_dir}/index.html", "w") as html:
             html.write(
-                html_minify(
+                minify_html_onepass.minify(
                     POST_TEMPLATE.format(
                         lang=lang,
                         keywords=html_escape(
@@ -930,9 +930,10 @@ def build(config: dict[str, typing.Any]) -> int:
                             post["content"], config["markdown-plugins"]
                         ),
                         blog=config["blog"],
-                        path=os.path.join(config["posts-dir"], slug),
+                        path=f"{config['posts-dir']}/{slug}",
                         license=config["license"],
-                    )
+                    ),
+                    True,
                 )
             )
 
@@ -941,16 +942,14 @@ def build(config: dict[str, typing.Any]) -> int:
     ts: list[Thread] = []
 
     for slug, post in tuple(config["posts"].items()):
-        ts.append(Thread(target=build_post, args=(slug, post), daemon=True))
-        ts[-1].start()
+        ts.append(t := Thread(target=build_post, args=(slug, post), daemon=True))
+        t.start()
 
-    latest_post: tuple[str, dict[str, typing.Any]] = tuple(
-        config["posts"].items()
-    )[0]
+    latest_post: tuple[str, dict[str, typing.Any]] = tuple(config["posts"].items())[0]
 
     with open("index.html", "w") as index:
         index.write(
-            html_minify(
+            minify_html_onepass.minify(
                 INDEX_TEMPLATE.format(  # type: ignore
                     lang=lang,
                     keywords=html_escape(", ".join(config["blog-keywords"])),
@@ -969,7 +968,7 @@ def build(config: dict[str, typing.Any]) -> int:
                     license=config["license"],
                     blog_description=html_escape(config["description"]),
                     blog_header=html_escape(config["header"]),
-                    latest_post_path=os.path.join(config["posts-dir"], latest_post[0]),
+                    latest_post_path=f"{config['posts-dir']}/{latest_post[0]}",
                     latest_post_title_trunc=html_escape(
                         trunc(latest_post[1]["title"], config["recent-title-trunc"])
                     ),
@@ -979,10 +978,11 @@ def build(config: dict[str, typing.Any]) -> int:
                     website=config["website"],
                     source=config["source"],
                     blog_list=" ".join(
-                        f'<li><a href="/{os.path.join(config["posts-dir"], slug)}">{html_escape(post["title"])}</a></li>'
+                        f'<li><a href="/{config["posts-dir"]}/{slug}">{html_escape(post["title"])}</a></li>'
                         for slug, post in config["posts"].items()
                     ),
-                )
+                ),
+                True,
             )
         )
 
@@ -998,38 +998,33 @@ def build(config: dict[str, typing.Any]) -> int:
 def css(config: dict[str, typing.Any]) -> int:
     """build and minify css"""
 
+    t: Thread
     ts: list[Thread] = []
 
-    saved_stdout: typing.Any = sys.stdout
-    sys.stdout = open(os.devnull, "w")
-
-    def _thread(c: typing.Callable[..., typing.Any], css: str) -> None:
+    def _thread(c: typing.Callable[..., typing.Any], *args: str) -> None:
         def _c() -> None:
             ct: float = ctimer()
-            c(css)
-            lnew(f"processed {css!r} in {ctimer() - ct} s")
+            c(*args)
+            lnew(f"processed {args[0]!r} in {ctimer() - ct} s")
 
-        ts.append(Thread(target=_c, daemon=True))
-        ts[-1].start()
+        ts.append(t := Thread(target=_c, daemon=True))
+        t.start()
 
-    if os.path.isfile(styles := os.path.join(config["assets-dir"], "styles.css")):
-        llog(f"minifying {styles!r}")
-        _thread(process_single_css_file, styles)  # type: ignore
+    if os.path.isfile(styles := f"{config['assets-dir']}/styles.css"):
+        lnew(f"minifying {styles!r}")
+        _thread(process_css_file, styles, f"{config['assets-dir']}/styles.min.css")  # type: ignore
 
-    if os.path.isdir(fonts := os.path.join(config["assets-dir"], "fonts")):
+    if os.path.isdir(fonts := f"{config['assets-dir']}/fonts"):
         log(f"minifying fonts in {fonts!r}")
 
-        for fcss in iglob(os.path.join(fonts, "*.css")):
+        for fcss in iglob(f"{fonts}/*.css"):
             if fcss.endswith(".min.css"):
                 continue
 
-            _thread(process_single_css_file, fcss)  # type: ignore
+            _thread(process_css_file, fcss, f"{os.path.splitext(fcss)[0]}.min.css")  # type: ignore
 
     for t in ts:
         t.join()
-
-    sys.stdout.close()
-    sys.stdout = saved_stdout
 
     return OK
 
@@ -1101,9 +1096,7 @@ def sitemap(config: dict[str, typing.Any]) -> int:
         url: etree.Element = etree.SubElement(root, "url")
 
         etree.SubElement(url, "loc").text = (
-            f"{config['blog']}/{os.path.join(config['posts-dir'], slug)}"
-            if slug
-            else post
+            f"{config['blog']}/{config['posts-dir']}/{slug}" if slug else post
         )
         etree.SubElement(url, "lastmod").text = datetime.datetime.utcfromtimestamp(
             post.get("edited", post["created"]) if slug else now  # type: ignore
@@ -1147,7 +1140,7 @@ def rss(config: dict[str, typing.Any]) -> int:
 
         etree.SubElement(item, "title").text = post["title"]
         etree.SubElement(item, "link").text = (
-            link := f"{config['blog']}/{os.path.join(config['posts-dir'], slug)}"
+            link := f"{config['blog']}/{config['posts-dir']}/{slug}"
         )
         etree.SubElement(item, "description").text = post["description"] + (
             f" [edited at {datetime.datetime.utcfromtimestamp(created).strftime(ftime)}]"
@@ -1219,10 +1212,10 @@ def clean(config: dict[str, typing.Any]) -> int:
     for pattern in (
         config["posts-dir"],
         "index.html",
-        os.path.join(config["assets-dir"], "*.min.*"),
+        f"{config['assets-dir']}/*.min.*",
         "blog_json_hash.txt",
         "manifest.json",
-        os.path.join(config["assets-dir"], os.path.join("fonts", "*.min.*")),
+        f"{config['assets-dir']}/fonts/*.min.*",
         "recents_json_hash.txt",
         "recents.json",
         config["rss-file"],
@@ -1269,7 +1262,7 @@ def serve(config: dict[str, typing.Any]) -> int:
             file_path: str = self.translate_path(self.path)  # type: ignore
 
             if os.path.isdir(file_path):  # type: ignore
-                file_path = os.path.join(file_path, "index.html")  # type: ignore
+                file_path = f"{file_path}/index.html"
 
             try:
                 with open(file_path, "rb") as fp:  # type: ignore

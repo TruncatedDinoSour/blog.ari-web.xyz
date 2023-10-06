@@ -59,3 +59,17 @@ in that context, for example sorting blogs.
 
 -   <https://blog.ari-web.xyz/b/ari-web-blog-api-change/>
 -   <https://blog.ari-web.xyz/b/ari-web-apis--how-to-use-them/>
+
+## why ari-web blog manager
+
+-   writer friendly -- uses markdown, keeps tracks of dates, ai integration for descriptions, useful custom markdown extensions, support for editing, removal of posts,, and u can style ur blog the way you want it to b using css, easy build directory cleanup, support for custom fonts, locales, licenses, etc
+-   reader friendly -- the blog posts are sorted from newest to oldest making it easy to get latest blog posts, they can also get a shortcut on their device as it has a `manifest.json` so they can open ur blog as an app, also support for an rss feed meaning ur users can subscribe to ur blog to get latest posts on their rss feeder app
+-   writer-developer friendly -- the script is easily extensible by developers, markdown extensions, etc,, testing of each component using subcommands and a built-in testing http server
+-   reader-developer friendly -- api access to latest blog posts and ur blog as a whole though `blog.json`, apis are hashed and minified
+-   search engine optimization ( seo ) -- generator tries to follow best seo practices and adds a bunch of metadata not only in html but in other files too -- `robots.txt`, `manifest.json`, `sitemap.xml`, `rss.xml` and ofc the apis ( `recents.json`, `recents_json_hash.txt`, `blog_json_hash.txt` )
+-   payload size -- generator generates minified content ( all apis, `rss.xml`, generated html of blog posts and home page, all css and fonts ) making it fast to load for readers
+-   accessibility -- the blog generator follows best a11y practices making it easy for people with disabilities to read ur posts
+-   google pagespeed optimized -- this metric shows us how accessible and fast our pages r and this generator tries to optimize for it
+-   fast -- the generator uses fast libraries, data structures and threading, it doesnt import useless libraries in build time ( unless theyre pointless to exclude ), meaning its very quick to build ur blog into a full-blown static website
+-   open source -- this generator and all of the content on it are licensed under gplv3 and the code and content are free to the public making it open source
+-   overall pleasant experience to grow ur blog :)
