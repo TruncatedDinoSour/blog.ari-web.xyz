@@ -155,7 +155,7 @@ IMP_CLR: str = "\033[1m\033[35m"
 HTML_BEGIN: typing.Final[
     str
 ] = """<!DOCTYPE html>
-<html lang="en">
+<html lang="{lang}">
 <head>
 <meta charset="UTF-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -172,6 +172,23 @@ HTML_BEGIN: typing.Final[
 <meta name="theme-color" content="{theme_primary}" />
 <link rel="manifest" href="/manifest.json" />
 <link rel="canonical" href="{blog}/{path}">
+<style type="text/css">
+*,*::before,*::after {{
+    color-scheme:{theme_type};
+    background-color:{theme_primary};
+    color:{theme_secondary}
+}}
+</style>
+<link
+    href="/{styles}"
+    rel="preload"
+    hreflang="en"
+    referrerpolicy="no-referrer"
+    type="text/css"
+    as="style"
+    onload="this.onload=null;this.rel='stylesheet'"
+/>
+<noscript>
 <link
     href="/{styles}"
     hreflang="en"
@@ -179,6 +196,7 @@ HTML_BEGIN: typing.Final[
     rel="stylesheet"
     type="text/css"
 />
+</noscript>
 <link
     href="/{rss}"
     hreflang="en"
@@ -846,6 +864,7 @@ def build(config: typing.Dict[str, typing.Any]) -> int:
     blog_title: str = html_escape(config["title"])
     author: str = html_escape(config["author"])
     styles: str = os.path.join(config["assets-dir"], "styles.min.css")
+    lang: str = config["locale"][:2]
 
     def build_post(slug: str, post: typing.Dict[str, typing.Any]) -> None:
         ct: float = ctimer()
@@ -857,6 +876,7 @@ def build(config: typing.Dict[str, typing.Any]) -> int:
             html.write(
                 html_minify(
                     POST_TEMPLATE.format(
+                        lang=lang,
                         keywords=html_escape(
                             ", ".join(
                                 set(post["keywords"] + config["default-keywords"])
@@ -864,6 +884,7 @@ def build(config: typing.Dict[str, typing.Any]) -> int:
                         ),
                         theme_type=config["theme"]["type"],
                         theme_primary=config["theme"]["primary"],
+                        theme_secondary=config["theme"]["secondary"],
                         styles=styles,
                         rss=config["rss-file"],
                         blog_title=blog_title,
@@ -912,9 +933,11 @@ def build(config: typing.Dict[str, typing.Any]) -> int:
         index.write(
             html_minify(
                 INDEX_TEMPLATE.format(  # type: ignore
+                    lang=lang,
                     keywords=html_escape(", ".join(config["blog-keywords"])),
                     theme_type=config["theme"]["type"],
                     theme_primary=config["theme"]["primary"],
+                    theme_secondary=config["theme"]["secondary"],
                     blog=config["blog"],
                     path="",
                     styles=styles,
