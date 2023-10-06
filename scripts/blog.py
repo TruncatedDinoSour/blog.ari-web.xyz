@@ -172,7 +172,18 @@ HTML_BEGIN: typing.Final[
 <meta name="theme-color" content="{theme_primary}" />
 <link rel="manifest" href="/manifest.json" />
 <link rel="canonical" href="{blog}/{path}">
-<style type="text/css">{critical_css}</style>
+<style type="text/css">
+:root{
+    color-scheme:{theme_type};
+    --clr-bg:{theme_primary};
+    --clr-fg:{theme_secondary}
+}
+*,*::before,*::after{
+    background-color:var(--clr-bg);
+    color:var(--clr-fg)
+}
+{critical_css}
+</style>
 <link
     href="/{styles}"
     rel="preload"

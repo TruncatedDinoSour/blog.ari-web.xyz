@@ -1,11 +1,5 @@
 :root {
-    color-scheme: dark;
-
-    --clr-bg: #262220;
-    --clr-fg: #f9f6e8;
-
     --clr-blockquote-bg: #ede9d3;
-
     --blockquote-width: 2px;
 
     --clr-link: #cdc4c4; /* #9e9b9b; */
@@ -14,12 +8,8 @@
 *,
 *::before,
 *::after {
-    background-color: var(--clr-bg);
-    color: var(--clr-fg);
-
     -webkit-box-sizing: border-box;
     box-sizing: border-box;
-
     word-wrap: break-word;
 }
 
