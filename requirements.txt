@@ -1,4 +1,4 @@
-html-minifer
+html-minifier
 rcssmin
 mistune
 typing
