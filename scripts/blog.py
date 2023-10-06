@@ -845,7 +845,7 @@ def build(config: typing.Dict[str, typing.Any]) -> int:
 
     blog_title: str = html_escape(config["title"])
     author: str = html_escape(config["author"])
-    styles: str = os.path.join(config["assets-dir"], "styles.css")
+    styles: str = os.path.join(config["assets-dir"], "styles.min.css")
 
     def build_post(slug: str, post: typing.Dict[str, typing.Any]) -> None:
         ct: float = ctimer()
