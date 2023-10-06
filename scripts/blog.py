@@ -209,7 +209,7 @@ POST_TEMPLATE: typing.Final[str] = (
 
       <nav id="info-bar" role="menubar">
         <a role="menuitem"
-          aria-label="jump to the main content"
+          aria-label="skip"
           href="#main">skip</a>
         <span role="seperator" aria-hidden="true">|</span>
 
