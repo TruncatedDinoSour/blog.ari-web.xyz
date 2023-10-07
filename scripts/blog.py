@@ -24,7 +24,7 @@ from threading import Thread
 from timeit import default_timer as code_timer
 from warnings import filterwarnings as filter_warnings
 
-import minify_html_onepass
+import htmlmin
 import mistune
 import mistune.core
 import mistune.inline_parser
@@ -572,8 +572,7 @@ def process_css_file(file: str, out: str) -> None:
 
 
 def min_html(code: str) -> str:
-    return minify_html_onepass.minify(code, True)
-    # return htmlmin.minify(code, True, True, True, True, True, True, True)
+    return htmlmin.minify(code, True, True, True, True, True, True, True)
 
 
 # markdown
