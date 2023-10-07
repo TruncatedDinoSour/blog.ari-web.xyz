@@ -1,5 +1,4 @@
-htmlmin
-rcssmin
+css-html-js-minify
 mistune
 typing
 readtime

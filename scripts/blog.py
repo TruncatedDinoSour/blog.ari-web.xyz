@@ -24,13 +24,13 @@ from threading import Thread
 from timeit import default_timer as code_timer
 from warnings import filterwarnings as filter_warnings
 
-import htmlmin
 import mistune
 import mistune.core
 import mistune.inline_parser
 import mistune.plugins
-import rcssmin  # type: ignore
 import unidecode
+from css_html_js_minify import html_minify  # type: ignore
+from css_html_js_minify import process_single_css_file  # type: ignore
 from readtime import of_markdown as read_time_of_markdown  # type: ignore
 
 __version__: typing.Final[int] = 2
@@ -557,24 +557,6 @@ def read_post(path: str) -> str:
         return ""
 
 
-def process_css(code: str) -> str:
-    return rcssmin.cssmin(code)  # type: ignore
-
-
-def process_css_from_file(file: str) -> str:
-    with open(file, "r") as css:
-        return process_css(css.read())
-
-
-def process_css_file(file: str, out: str) -> None:
-    with open(out, "w") as css:
-        css.write(process_css_from_file(file))
-
-
-def min_html(code: str) -> str:
-    return htmlmin.minify(code, True, True, True, True, True, True, True)
-
-
 # markdown
 
 TITLE_LINKS_RE: typing.Final[str] = r"<#:[^>]+?>"
@@ -882,10 +864,12 @@ def build(config: dict[str, typing.Any]) -> int:
     post_crit_css: str = ""
 
     if os.path.isfile(critp := f"{config['assets-dir']}/critical.css"):
-        crit_css = process_css_from_file(critp)
+        with open(critp, "r") as fp:
+            crit_css = fp.read()
 
     if os.path.isfile(critp := f"{config['assets-dir']}/post_critical.css"):
-        post_crit_css = process_css_from_file(critp)
+        with open(critp, "r") as fp:
+            post_crit_css = fp.read()
 
     def build_post(slug: str, post: dict[str, typing.Any]) -> None:
         ct: float = ctimer()
@@ -895,7 +879,7 @@ def build(config: dict[str, typing.Any]) -> int:
 
         with open(f"{post_dir}/index.html", "w") as html:
             html.write(
-                min_html(
+                html_minify(
                     POST_TEMPLATE.format(
                         lang=lang,
                         keywords=html_escape(
@@ -952,7 +936,7 @@ def build(config: dict[str, typing.Any]) -> int:
 
     with open("index.html", "w") as index:
         index.write(
-            min_html(
+            html_minify(
                 INDEX_TEMPLATE.format(  # type: ignore
                     lang=lang,
                     keywords=html_escape(", ".join(config["blog-keywords"])),
@@ -1014,7 +998,7 @@ def css(config: dict[str, typing.Any]) -> int:
 
     if os.path.isfile(styles := f"{config['assets-dir']}/styles.css"):
         lnew(f"minifying {styles!r}")
-        _thread(process_css_file, styles, f"{config['assets-dir']}/styles.min.css")  # type: ignore
+        _thread(process_single_css_file, styles, f"{config['assets-dir']}/styles.min.css")  # type: ignore
 
     if os.path.isdir(fonts := f"{config['assets-dir']}/fonts"):
         log(f"minifying fonts in {fonts!r}")
@@ -1023,7 +1007,7 @@ def css(config: dict[str, typing.Any]) -> int:
             if fcss.endswith(".min.css"):
                 continue
 
-            _thread(process_css_file, fcss, f"{os.path.splitext(fcss)[0]}.min.css")  # type: ignore
+            _thread(process_single_css_file, fcss, f"{os.path.splitext(fcss)[0]}.min.css")  # type: ignore
 
     for t in ts:
         t.join()
