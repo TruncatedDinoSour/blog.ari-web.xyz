@@ -1,4 +1,3 @@
-htmlmin
 rcssmin
 mistune
 typing
