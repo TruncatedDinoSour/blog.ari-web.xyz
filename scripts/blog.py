@@ -581,6 +581,7 @@ def parse_inline_titlelink(
             "attrs": {"url": f"#{slugify(text, [], 768, 768)}"},
         }
     )
+
     return m.end()
 
 
