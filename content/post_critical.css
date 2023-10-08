@@ -27,9 +27,3 @@ pre code {
     scrollbar-width: initial;
     -ms-overflow-style: initial;
 }
-
-code:not(pre code),
-time {
-    border-radius: 2px;
-    padding: 0.2em;
-}

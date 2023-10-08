@@ -56,3 +56,10 @@ a {
 nav img {
     height: 1rem;
 }
+
+code:not(pre code),
+time {
+    border-radius: 2px;
+    padding: 0.2em;
+}
+
