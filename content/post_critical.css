@@ -8,7 +8,7 @@ blockquote {
 
 blockquote:before {
     content: "";
-    border-left: var(--blockquote-width) solid var(--clr-blockquote-bg); /* Thx cel */
+    border-left: var(--bqw) solid var(--bq-b); /* Thx cel */
     position: absolute;
     bottom: 14px;
     top: 13px;

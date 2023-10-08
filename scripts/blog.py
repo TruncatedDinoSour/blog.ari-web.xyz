@@ -29,8 +29,7 @@ import mistune.core
 import mistune.inline_parser
 import mistune.plugins
 import unidecode
-from css_html_js_minify import html_minify  # type: ignore
-from css_html_js_minify import process_single_css_file  # type: ignore
+import web_mini
 from readtime import of_markdown as read_time_of_markdown  # type: ignore
 
 __version__: typing.Final[int] = 2
@@ -173,8 +172,8 @@ HTML_BEGIN: typing.Final[
 <link rel="manifest" href="/manifest.json" />
 <link rel="canonical" href="{blog}/{path}">
 <style type="text/css">
-:root{{color-scheme:{theme_type};--clr-bg:{theme_primary};--clr-fg:{theme_secondary}}}\
-*,*::before,*::after{{background-color:var(--clr-bg);color:var(--clr-fg)}}{critical_css}
+:root{{color-scheme:{theme_type};--b:{theme_primary};--f:{theme_secondary}}}\
+*,*::before,*::after{{background-color:var(--b);color:var(--f)}}{critical_css}
 </style>
 <link
     href="/{styles}"
@@ -557,6 +556,12 @@ def read_post(path: str) -> str:
         return ""
 
 
+def min_css_file(file: str, out: str) -> None:
+    with open(file, "r") as icss:
+        with open(out, "w") as ocss:
+            ocss.write(web_mini.css.minify_css(icss.read()))
+
+
 # markdown
 
 TITLE_LINKS_RE: typing.Final[str] = r"<#:[^>]+?>"
@@ -844,6 +849,10 @@ def rm(config: dict[str, typing.Any]) -> int:
 def build(config: dict[str, typing.Any]) -> int:
     """build blog posts"""
 
+    log("compiling regex")
+
+    web_mini.html.html_fns.compileall()
+
     log("setting up posts directory")
 
     if os.path.exists(config["posts-dir"]):
@@ -865,11 +874,11 @@ def build(config: dict[str, typing.Any]) -> int:
 
     if os.path.isfile(critp := f"{config['assets-dir']}/critical.css"):
         with open(critp, "r") as fp:
-            crit_css = fp.read()
+            crit_css = web_mini.css.minify_css(fp.read())
 
     if os.path.isfile(critp := f"{config['assets-dir']}/post_critical.css"):
         with open(critp, "r") as fp:
-            post_crit_css = fp.read()
+            post_crit_css = web_mini.css.minify_css(fp.read())
 
     def build_post(slug: str, post: dict[str, typing.Any]) -> None:
         ct: float = ctimer()
@@ -879,7 +888,7 @@ def build(config: dict[str, typing.Any]) -> int:
 
         with open(f"{post_dir}/index.html", "w") as html:
             html.write(
-                html_minify(
+                web_mini.html.minify_html(
                     POST_TEMPLATE.format(
                         lang=lang,
                         keywords=html_escape(
@@ -936,7 +945,7 @@ def build(config: dict[str, typing.Any]) -> int:
 
     with open("index.html", "w") as index:
         index.write(
-            html_minify(
+            web_mini.html.minify_html(
                 INDEX_TEMPLATE.format(  # type: ignore
                     lang=lang,
                     keywords=html_escape(", ".join(config["blog-keywords"])),
@@ -987,6 +996,9 @@ def css(config: dict[str, typing.Any]) -> int:
     t: Thread
     ts: list[Thread] = []
 
+    log("compiling regex")
+    web_mini.css.css_fns.compileall()
+
     def _thread(c: typing.Callable[..., typing.Any], *args: str) -> None:
         def _c() -> None:
             ct: float = ctimer()
@@ -998,7 +1010,7 @@ def css(config: dict[str, typing.Any]) -> int:
 
     if os.path.isfile(styles := f"{config['assets-dir']}/styles.css"):
         lnew(f"minifying {styles!r}")
-        _thread(process_single_css_file, styles, f"{config['assets-dir']}/styles.min.css")  # type: ignore
+        _thread(min_css_file, styles, f"{config['assets-dir']}/styles.min.css")  # type: ignore
 
     if os.path.isdir(fonts := f"{config['assets-dir']}/fonts"):
         log(f"minifying fonts in {fonts!r}")
@@ -1007,7 +1019,7 @@ def css(config: dict[str, typing.Any]) -> int:
             if fcss.endswith(".min.css"):
                 continue
 
-            _thread(process_single_css_file, fcss, f"{os.path.splitext(fcss)[0]}.min.css")  # type: ignore
+            _thread(min_css_file, fcss, f"{os.path.splitext(fcss)[0]}.min.css")  # type: ignore
 
     for t in ts:
         t.join()

@@ -1,4 +1,4 @@
-css-html-js-minify
+web-mini
 mistune
 typing
 readtime

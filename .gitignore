@@ -11,3 +11,5 @@ venv/
 /recents_json_hash.txt
 /recents.json
 /rss.xml
+/sitemap.xml
+/robots.txt

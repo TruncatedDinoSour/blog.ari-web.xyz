@@ -1,13 +1,13 @@
 @import url(/content/fonts/Hack.min.css);
 
 :root {
-    --clr-blockquote-fg: #e6e0c8;
+    --bq-f: #e6e0c8;
 
-    --clr-code-bg: #1f1b1a;
-    --clr-code-fg: #f0f3e6;
-    --clr-code-bg-dark: #181414;
+    --cd-b: #1f1b1a;
+    --cd-f: #f0f3e6;
+    --cd-bd: #181414;
 
-    --scrollbar-height: 6px; /* TODO Firefox */
+    --scrlh: 6px; /* TODO Firefox */
 }
 
 *,
@@ -18,7 +18,7 @@
     scrollbar-width: none;
     -ms-overflow-style: none;
 
-    scrollbar-color: var(--clr-code-bg-dark) transparent;
+    scrollbar-color: var(--cd-bd) transparent;
 
     scroll-behavior: smooth;
 
@@ -27,7 +27,7 @@
 
 ::-webkit-scrollbar,
 ::-webkit-scrollbar-thumb {
-    height: var(--scrollbar-height);
+    height: var(--scrlh);
 }
 
 ::-webkit-scrollbar {
@@ -35,7 +35,7 @@
 }
 
 ::-webkit-scrollbar-thumb {
-    background-color: var(--clr-code-bg-dark);
+    background-color: var(--cd-bd);
 }
 
 html::-webkit-scrollbar,
@@ -50,23 +50,23 @@ a:hover {
 
 pre,
 pre * {
-    background-color: var(--clr-code-bg);
+    background-color: var(--cd-b);
 }
 
 pre,
 pre *,
 code {
-    color: var(--clr-code-fg);
+    color: var(--cd-f);
 }
 
 code:not(pre code),
 time {
-    background-color: var(--clr-code-bg);
+    background-color: var(--cd-b);
 }
 
 blockquote,
 blockquote * {
-    color: var(--clr-blockquote-fg);
+    color: var(--bq-f);
 }
 
 *[h]:hover > a,
@@ -107,20 +107,20 @@ blockquote * {
 
 @media (prefers-contrast: more) {
     :root {
-        --clr-bg: #000000;
-        --clr-fg: #ffffff;
+        --b: #000;
+        --f: #fff;
 
-        --clr-blockquote-fg: #ededed;
-        --clr-blockquote-bg: #868e91;
+        --bq-f: #ededed;
+        --bq-b: #868e91;
 
-        --clr-code-bg: #090909;
-        --clr-code-fg: #f0f0f0;
+        --cd-b: #090909;
+        --cd-f: #f0f0f0;
 
-        --clr-link: #a9c4d1;
+        --a-f: #a9c4d1;
 
-        --blockquote-width: 4px;
+        --bqw: 4px;
 
-        --scrollbar-height: initial; /* TODO: Firefox */
+        --scrlh: initial; /* TODO: Firefox */
     }
 
     html::-webkit-scrollbar {

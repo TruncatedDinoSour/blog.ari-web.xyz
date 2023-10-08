@@ -1,8 +1,8 @@
 :root {
-    --clr-blockquote-bg: #ede9d3;
-    --blockquote-width: 2px;
+    --bq-b: #ede9d3;
+    --bqw: 2px;
 
-    --clr-link: #cdc4c4; /* #9e9b9b; */
+    --a-f: #cdc4c4; /* #9e9b9b; */
 }
 
 *,
@@ -43,7 +43,7 @@ li {
 a {
     text-decoration: none;
     font-style: italic;
-    color: var(--clr-link);
+    color: var(--a-f);
 }
 
 *[h] > a {

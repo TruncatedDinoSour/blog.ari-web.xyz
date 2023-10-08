@@ -1,4 +1,0 @@
-User-agent: *
-Disallow: /content/*
-Allow: *
-Sitemap: https://blog.ari-web.xyz/sitemap.xml
