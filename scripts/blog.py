@@ -187,9 +187,9 @@ HTML_BEGIN: typing.Final[
 <noscript>
 <link
     href="/{styles}"
+    rel="stylesheet"
     hreflang="en"
     referrerpolicy="no-referrer"
-    rel="stylesheet"
     type="text/css"
 />
 </noscript>
