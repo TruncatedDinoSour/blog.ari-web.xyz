@@ -1299,7 +1299,7 @@
     "contact-me": {
       "title": "contact me",
       "description": "some of my contacts",
-      "content": "Here's some of my contacts:\n\n- Email: [ari.web.xyz@gmail.com](mailto:ari.web.xyz@gmail.com)\n- CaO: [TruncatedDinosour@user.ari-web.xyz](https://user.ari-web.xyz/)\n- Matrix: [@ari_archer:matrix.org](https://matrix.to/#/@ari_archer:matrix.org)\n\nThat's about it I think (?)\n\nAnyway if you want to say anything to me\nI'm going to be available there\n\nCya :)\n",
+      "content": "Here's some of my contacts:\n\n- Email: [ari.web.xyz@gmail.com](mailto:ari.web.xyz@gmail.com)\n- CaO: [ari@user.ari-web.xyz](https://user.ari-web.xyz/)\n\nThat's about it I think (?)\n\nAnyway if you want to say anything to me\nI'm going to be available there\n\nCya :)",
       "keywords": [
         "mastardon",
         "email",
@@ -1310,7 +1310,8 @@
         "info",
         "comment"
       ],
-      "created": 1666286592.223678
+      "created": 1666286592.223678,
+      "edited": 1697027270.962583
     },
     "working-with-paths-in-c": {
       "title": "working with paths in c",
