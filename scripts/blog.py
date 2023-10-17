@@ -4,7 +4,6 @@
 
 from __future__ import annotations
 
-import asyncio
 import datetime
 import hashlib
 import json
@@ -15,7 +14,6 @@ import string
 import subprocess
 import sys
 import tempfile
-import time
 import typing
 import xml.etree.ElementTree as etree
 from glob import iglob
@@ -131,9 +129,6 @@ DEFAULT_CONFIG: dict[str, typing.Any] = {
     ],
     "wslug-limit": 10,
     "slug-limit": 96,
-    "proxy-api": "https://gimmeproxy.com/api/getProxy?post=true&get=true&user-agent=true&supportsHttps=true&protocol=http&minSpeed=20&curl=true",
-    "test-proxy": "https://example.com/",
-    "test-proxy-timeout": 15,
     "license": "GPL-3.0-or-later",
     "recent-title-trunc": 32,
     "server-host": "127.0.0.1",
@@ -313,24 +308,9 @@ if NCI:
     import http.server
 
     import pyfzf  # type: ignore
-    import rebelai.ai.alpaca
-    import rebelai.ai.gpt
-    import rebelai.ai.h2o
-    import requests
-
-    AI_MODELS: tuple[tuple[typing.Any, bool], ...] = (
-        (rebelai.ai.gpt.gpt4, False),
-        (rebelai.ai.gpt.gpt3, True),
-        (rebelai.ai.h2o.falcon_40b, True),
-        (rebelai.ai.alpaca.alpaca_7b, True),
-    )
 else:
     pyfzf: typing.Any = None
-    rebelai: typing.Any = None
-    requests: typing.Any = None
     http: typing.Any = None
-
-    AI_MODELS = tuple()  # type: ignore
 
 
 class Commands:
@@ -404,67 +384,6 @@ def slugify(
         )[:slug_limit].strip("-")
         or "post"
     )
-
-
-def get_proxy(
-    api: str,
-    test: str,
-    timeout: float,
-) -> dict[str, str]:
-    while True:
-        log("trying to get a proxy")
-
-        proxy: str = requests.get(api).text
-
-        proxies: dict[str, str] = {
-            "http": proxy,
-            "http2": proxy,
-            "https": proxy,
-        }
-
-        try:
-            log(f"testing proxy {proxy!r}")
-            if not requests.get(
-                test,
-                timeout=timeout,
-                proxies=proxies,
-            ):
-                raise Exception("proxy failed")
-        except Exception:
-            err(f"proxy {proxy!r} is bad")
-            time.sleep(1)
-            continue
-
-        lnew(f"using proxy {proxy!r}")
-        return {"proxy": proxy}
-
-
-def gen_ai(
-    prompt: str,
-    *args: typing.Any,
-    **kwargs: typing.Any,
-) -> str | None:
-    for model, proxy in AI_MODELS:
-        log(
-            f"generating text with {model.__name__} ai ( {'' if proxy else 'un'}proxied )"
-        )
-
-        for idx in range(1, 4):
-            log(f"attempt #{idx}")
-
-            resp: str | None = asyncio.run(
-                model(
-                    prompt=prompt,
-                    request_args=get_proxy(*args, **kwargs) if proxy else None,
-                ),
-            )
-
-            if resp:
-                lnew("text generated")
-                return resp.strip()
-
-    err("ai could not generate text")
-    return None
 
 
 def rformat_time(ts: float) -> str:
@@ -732,42 +651,7 @@ def new(config: dict[str, typing.Any]) -> int:
         )
     )
 
-    description: str = ""
-
-    if yn("auto-generate post description", "n"):
-        while True:
-            description = "  ".join(
-                (
-                    gen_ai(
-                        f"""Write a good and short description, the description should b 1 line and it shouldnt b long and spoil the whole post \
-for this blog post titled "{title}" and keywords : \
-{', '.join(keywords) or '<none>'}, give just the description, leave some details out as a teaser, the blog post is formatted using Markdown, \
-description must be on a singular line and all you should return is the description and nothing else, the description should look as if \
-it was written by the author, mimic the writing style of the blog post in the description:
-
-{content}""",
-                        api=config["proxy-api"],
-                        test=config["test-proxy"],
-                        timeout=config["test-proxy-timeout"],
-                    )
-                    or ""
-                ).splitlines()
-            )
-
-            if description:
-                llog(description)
-
-                if yn("generate new", "n"):
-                    continue
-
-                description = iinput("ai post description", description)
-                break
-
-            if not yn("failed to generate description, re-generate", "n"):
-                break
-
-    if not description:
-        description = iinput("manual post description")
+    description: str = iinput("post description")
 
     lnew(f"saving blog post {slug!r}")
 
@@ -1168,7 +1052,7 @@ def apis(config: dict[str, typing.Any]) -> int:
         json.dump(
             dict(
                 map(
-                    lambda kv: (
+                    lambda kv: (  # type: ignore
                         kv[0],
                         {
                             "title": kv[1]["title"],
@@ -1301,7 +1185,7 @@ def dev(config: dict[str, typing.Any]) -> int:
 
 
 def main() -> int:
-    """entry/main function"""
+    """entry / main function"""
 
     main_t: float = ctimer()
 
