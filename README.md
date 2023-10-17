@@ -62,7 +62,7 @@ in that context, for example sorting blogs.
 
 ## why ari-web blog manager
 
--   writer friendly -- uses markdown, keeps tracks of dates, ai integration for descriptions, useful custom markdown extensions, support for editing, removal of posts,, and u can style ur blog the way you want it to b using css, easy build directory cleanup, support for custom fonts, locales, licenses, etc
+-   writer friendly -- uses markdown, keeps tracks of dates useful custom markdown extensions, support for editing, removal of posts,, and u can style ur blog the way you want it to b using css, easy build directory cleanup, support for custom fonts, locales, licenses, etc
 -   reader friendly -- the blog posts are sorted from newest to oldest making it easy to get latest blog posts, they can also get a shortcut on their device as it has a `manifest.json` so they can open ur blog as an app, also support for an rss feed meaning ur users can subscribe to ur blog to get latest posts on their rss feeder app
 -   writer-developer friendly -- the script is easily extensible by developers, markdown extensions, etc,, testing of each component using subcommands and a built-in testing http server
 -   reader-developer friendly -- api access to latest blog posts and ur blog as a whole though `blog.json`, apis are hashed and minified
