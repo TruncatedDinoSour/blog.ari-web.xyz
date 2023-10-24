@@ -118,7 +118,7 @@
   "wslug-limit": 10,
   "slug-limit": 96,
   "license": "GPL-3.0-or-later",
-  "recent-title-trunc": 32,
+  "recent-title-trunc": 16,
   "server-host": "127.0.0.1",
   "server-port": 8080,
   "post-preview-size": 196,
@@ -127,7 +127,7 @@
     "removal-domls-7-8": {
       "title": "removal of domls 7 and 8",
       "description": "i had to remove domls 7 and 8 due to a request",
-      "content": "i had to remove domls 7 and 8 because i was requested to, i am writing this to notify\nthat it happened and thts all lol, nothing more than tht\n\ncya in doml 7 ig, back to the future \ud83d\ude80",
+      "content": "i had to remove domls 7 and 8 because i was requested to, i am writing this to notify\nthat it happened and thts all lol\n\ncya in doml 7 ig, back to the future \ud83d\ude80",
       "keywords": [
         "doml 8",
         "doml 7",

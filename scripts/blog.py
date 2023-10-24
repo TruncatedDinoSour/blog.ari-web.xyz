@@ -130,7 +130,7 @@ DEFAULT_CONFIG: dict[str, typing.Any] = {
     "wslug-limit": 10,
     "slug-limit": 96,
     "license": "GPL-3.0-or-later",
-    "recent-title-trunc": 32,
+    "recent-title-trunc": 16,
     "server-host": "127.0.0.1",
     "server-port": 8080,
     "post-preview-size": 196,
@@ -168,7 +168,7 @@ HTML_BEGIN: typing.Final[
 <link rel="canonical" href="{blog}/{path}">
 <style type="text/css">
 :root{{color-scheme:{theme_type};--b:{theme_primary};--f:{theme_secondary}}}\
-*,*::before,*::after{{background-color:var(--b);color:var(--f)}}{critical_css}
+html{{background-color:var(--b);color:var(--f)}}{critical_css}
 </style>
 <link
   href="/{styles}"
@@ -232,7 +232,7 @@ POST_TEMPLATE: typing.Final[str] = (
     <span role="seperator" aria-hidden="true"> | </span>
 
     <span role="menuitem"><time>{post_read_time}</time> read</span>
-    <span role="seperator" aria-hidden="true"> | </span>
+    <br role="seperator" aria-hidden="true" />
 
     <a role="menuitem" href="/">home</a>
     <span role="seperator" aria-hidden="true"> | </span>
@@ -282,7 +282,7 @@ INDEX_TEMPLATE: typing.Final[str] = (
     <span role="menuitem"
        >visitor <img src="{visitor_count}" alt="visitor count"
     /></span>
-    <span role="seperator" aria-hidden="true"> | </span>
+    <br role="seperator" aria-hidden="true" />
 
     <a role="menuitem" href="{comment}">comment</a>
     <span role="seperator" aria-hidden="true"> | </span>
