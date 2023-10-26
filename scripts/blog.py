@@ -31,6 +31,7 @@ import web_mini
 from readtime import of_markdown as read_time_of_markdown  # type: ignore
 
 __version__: typing.Final[int] = 2
+GEN: typing.Final[str] = f"ari-web blog generator version {__version__}"
 
 
 OK: typing.Final[int] = 0
@@ -78,6 +79,7 @@ DEFAULT_CONFIG: dict[str, typing.Any] = {
         ],
     },
     "author": "John Doe",
+    "email": "me@example.com",
     "locale": "en_GB",
     "recents": 14,
     "indent": 4,
@@ -197,7 +199,7 @@ html{{background-color:var(--b);color:var(--f)}}{critical_css}
   type="application/rss+xml"
 />
 <meta name="author" content="{author}" />
-<meta name="generator" content="ari-web blog generator version {version}" />
+<meta name="generator" content="{gen}" />
 <meta property="og:locale" content="{locale}" />
 <meta name="license" content="{license}">
 <link rel="sitemap" href="/sitemap.xml" type="application/xml">"""
@@ -252,6 +254,7 @@ POST_TEMPLATE: typing.Final[str] = (
   </nav>
  </header>
  <article id="main">{post_content}</article>
+ <footer><p>{author} &lt;<a href="mailto:{email}">{email}</a>&gt; + {license}</p></footer>
 </main>
 </body>
 </html>"""
@@ -299,6 +302,7 @@ INDEX_TEMPLATE: typing.Final[str] = (
   </nav>
  </header>
  <article id="main"><ol reversed>{blog_list}</ol></article>
+ <footer><p>{author} &lt;<a href="mailto:{email}">{email}</a>&gt; + {license}</p></footer>
 </main>
 </body>
 </html>"""
@@ -787,11 +791,11 @@ def build(config: dict[str, typing.Any]) -> int:
                         styles=styles,
                         critical_css=crit_css,
                         post_critical_css=post_crit_css,
+                        gen=GEN,
                         rss=config["rss-file"],
                         blog_title=blog_title,
                         post_title=html_escape(post["title"]),
                         author=author,
-                        version=__version__,
                         locale=config["locale"],
                         post_creation_time=rformat_time(post["created"]),
                         post_description=html_escape(post["description"]),
@@ -814,6 +818,7 @@ def build(config: dict[str, typing.Any]) -> int:
                         blog=config["blog"],
                         path=f"{config['posts-dir']}/{slug}",
                         license=config["license"],
+                        email=config["email"],
                     ),
                 )
             )
@@ -841,10 +846,10 @@ def build(config: dict[str, typing.Any]) -> int:
                     path="",
                     styles=styles,
                     critical_css=crit_css,
+                    gen=GEN,
                     rss=config["rss-file"],
                     blog_title=blog_title,
                     author=author,
-                    version=__version__,
                     locale=config["locale"],
                     license=config["license"],
                     blog_description=html_escape(config["description"]),
@@ -862,6 +867,7 @@ def build(config: dict[str, typing.Any]) -> int:
                         f'<li><a href="/{config["posts-dir"]}/{slug}">{html_escape(post["title"])}</a></li>'
                         for slug, post in config["posts"].items()
                     ),
+                    email=config["email"],
                 ),
             )
         )
@@ -1009,6 +1015,10 @@ def rss(config: dict[str, typing.Any]) -> int:
     etree.SubElement(channel, "title").text = config["title"]
     etree.SubElement(channel, "link").text = config["blog"]
     etree.SubElement(channel, "description").text = config["description"]
+    etree.SubElement(channel, "generator").text = GEN
+    etree.SubElement(
+        channel, "webmaster"
+    ).text = f"{config['author']} [{config['email']}]"
     etree.SubElement(channel, "language").text = (
         config["locale"].lower().replace("_", "-")
     )
@@ -1150,10 +1160,16 @@ def serve(config: dict[str, typing.Any]) -> int:
             try:
                 with open(file_path, "rb") as fp:  # type: ignore
                     self.send_response(200)  # type: ignore
+                    self.send_header(
+                        "Cache-Control", "no-store, no-cache, must-revalidate"
+                    )
+                    self.send_header("Pragma", "no-cache")
                     self.end_headers()  # type: ignore
                     self.wfile.write(fp.read())  # type: ignore
             except Exception as e:
                 self.send_response(404)  # type: ignore
+                self.send_header("Cache-Control", "no-store, no-cache, must-revalidate")
+                self.send_header("Pragma", "no-cache")
                 self.end_headers()  # type: ignore
                 self.wfile.write(f"{e.__class__.__name__} : {e}".encode())  # type: ignore
 
