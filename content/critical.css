@@ -79,7 +79,7 @@ br {
 }
 
 main {
-    height: 98vh;
+    height: 96.5vh;
     display: flex;
     flex-direction: column;
 }
