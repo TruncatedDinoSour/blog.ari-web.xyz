@@ -1592,7 +1592,7 @@
       "keywords": [],
       "created": 1662643265.490569
     },
-    "the-best-temperature-system----degrees-torture--t\u00b0-": {
+    "the-best-temperature-system----degrees-torture--t": {
       "title": "the best temperature system -- degrees torture (t\u00b0)",
       "description": "degrees torture -- a satire measurement system satarizing the imperial system",
       "content": "So you know how everyone hates every temperature system?\nWhy not make the most ~~painful~~ best one? I did it, I call it torture,\nits measurement unit is T, this the formula for it:\n\n    cos((((C + 273.15) + C + ((C * (9 / 5) + 32))) / 3) + \u03c0) + e\n\nWhere C is temperature in Celcius, in this system precision in\nfloating points is **_VERY_** important because yes\n\nHere's a python implementation of it:\n\n    import math\n\n    def t(c: int) -> float:\n        return math.cos((((c + 273.15) + c + ((c * (9/5) + 32))) / 3) + math.pi) + math.e\n\nWhere argument c is temperature in Celcius, this function\nwill give you the most accurate results it can in python, in\nthis system you must specify at least 6 digits of precision\n\nSome basic examples:\n\n- 100 Celcius, the boiling point of water: 3.2975788083579793 \u00b0T\n- 0 Celcius, the freezing point of water: 2.3426350414279824 \u00b0T\n- 17 Celcius, the current temperature for me: 3.4648639877740215 \u00b0T\n\n## How does this shit work?\n\nIt takes the average of most major temperature units --\nKelvin, Celcius and Fahrenheit, then it adds pi to it and consines\nthe result, after that it adds e and boom we got degrees torture,\nfairly simple\n\nAnyway, now enjoy this amazing system of temperature, if you get\nhotter than 3.0975306904597475 \u00b0T make sure to take a rest from\nthis\n\nGoodbye :)\n",
