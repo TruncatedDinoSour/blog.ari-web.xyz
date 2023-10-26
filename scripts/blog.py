@@ -1016,9 +1016,6 @@ def rss(config: dict[str, typing.Any]) -> int:
     etree.SubElement(channel, "link").text = config["blog"]
     etree.SubElement(channel, "description").text = config["description"]
     etree.SubElement(channel, "generator").text = GEN
-    etree.SubElement(
-        channel, "webmaster"
-    ).text = f"{config['author']} [{config['email']}]"
     etree.SubElement(channel, "language").text = (
         config["locale"].lower().replace("_", "-")
     )
