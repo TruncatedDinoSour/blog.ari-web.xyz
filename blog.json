@@ -46,7 +46,7 @@
   "website": "https://ari-web.xyz",
   "blog": "https://blog.ari-web.xyz",
   "source": "/git",
-  "visitor-count": "/visit",
+  "visitor-count": "https://server.ari-web.xyz/visit",
   "comment": "/c",
   "theme": {
     "primary": "#262220",
@@ -2159,7 +2159,7 @@
     "how-to-print-coloured-text-in-c-and-c--": {
       "title": "how to print coloured text in c and c++",
       "description": "this is a simple problem but ppl look for complex solutions",
-      "content": "I decided to make this blog as I always need to\nfind how to print coloured text, so this is my solution to it\n\n## C++\n\n### Code\n\n    #define ANSI_BEGIN \"\\x1B[\"\n\n    namespace AnsiColour {\n    const char *red = ANSI_BEGIN \"31m\";\n    const char *green = ANSI_BEGIN \"32m\";\n    const char *yellow = ANSI_BEGIN \"33m\";\n    const char *blue = ANSI_BEGIN \"34m\";\n    const char *magenta = ANSI_BEGIN \"35m\";\n    const char *cyan = ANSI_BEGIN \"36m\";\n    const char *white = ANSI_BEGIN \"37m\";\n    } // namespace AnsiColour\n\n    namespace AnsiEffect {\n    const char *bold = ANSI_BEGIN \"1m\";\n    const char *reset = ANSI_BEGIN \"0m\";\n    const char *underline = ANSI_BEGIN \"4m\";\n    } // namespace AnsiEffect\n\n### Example usage\n\n    std::cout << AnsiColour::blue << AnsiEffect::bold\n        << \"Hello world\" << AnsiEffect::reset << '\\n';\n\n## C\n\n### Code\n\n    #define ANSI_BEGIN \"\\x1B[\"\n\n    const char *CLR_RED = ANSI_BEGIN \"31m\";\n    const char *CLR_GREEN = ANSI_BEGIN \"32m\";\n    const char *CLR_YELLOW = ANSI_BEGIN \"33m\";\n    const char *CLR_BLUE = ANSI_BEGIN \"34m\";\n    const char *CLR_MAGENTA = ANSI_BEGIN \"35m\";\n    const char *CLR_CYAN = ANSI_BEGIN \"36m\";\n    const char *CLR_WHITE = ANSI_BEGIN \"37m\";\n\n    const char *EFF_BOLD = ANSI_BEGIN \"1m\";\n    const char *EFF_RESET = ANSI_BEGIN \"0m\";\n    const char *EFF_UNDERLINE = ANSI_BEGIN \"4m\";\n\n### Example usage\n\n    printf(\"%s%sHello world%s\\n\", CLR_BLUE, EFF_BOLD, EFF_RESET);\n",
+      "content": "I decided to make this blog as I always need to\nfind how to print coloured text, so this is my solution to it\n\n## C++\n\n### Code\n\n    #define ANSI_BEGIN \"\\x1B[\"\n\n    namespace AnsiColour {\n        const char *red = ANSI_BEGIN \"31m\";\n        const char *green = ANSI_BEGIN \"32m\";\n        const char *yellow = ANSI_BEGIN \"33m\";\n        const char *blue = ANSI_BEGIN \"34m\";\n        const char *magenta = ANSI_BEGIN \"35m\";\n        const char *cyan = ANSI_BEGIN \"36m\";\n        const char *white = ANSI_BEGIN \"37m\";\n    } // namespace AnsiColour\n\n    namespace AnsiEffect {\n        const char *bold = ANSI_BEGIN \"1m\";\n        const char *reset = ANSI_BEGIN \"0m\";\n        const char *underline = ANSI_BEGIN \"4m\";\n    } // namespace AnsiEffect\n\n### Example usage\n\n    std::cout << AnsiColour::blue << AnsiEffect::bold\n        << \"Hello world\" << AnsiEffect::reset << '\\n';\n\n## C\n\n### Code\n\n    #define ANSI_BEGIN \"\\x1B[\"\n\n    const char *CLR_RED = ANSI_BEGIN \"31m\";\n    const char *CLR_GREEN = ANSI_BEGIN \"32m\";\n    const char *CLR_YELLOW = ANSI_BEGIN \"33m\";\n    const char *CLR_BLUE = ANSI_BEGIN \"34m\";\n    const char *CLR_MAGENTA = ANSI_BEGIN \"35m\";\n    const char *CLR_CYAN = ANSI_BEGIN \"36m\";\n    const char *CLR_WHITE = ANSI_BEGIN \"37m\";\n\n    const char *EFF_BOLD = ANSI_BEGIN \"1m\";\n    const char *EFF_RESET = ANSI_BEGIN \"0m\";\n    const char *EFF_UNDERLINE = ANSI_BEGIN \"4m\";\n\n### Example usage\n\n    printf(\"%s%sHello world%s\\n\", CLR_BLUE, EFF_BOLD, EFF_RESET);",
       "keywords": [
         "colour",
         "C++",
@@ -2174,7 +2174,8 @@
         "colors",
         "terminal"
       ],
-      "created": 1652041043.26174
+      "created": 1652041043.26174,
+      "edited": 1698513497.438135
     },
     "happy-pi-e--day": {
       "title": "happy pi(e) day",

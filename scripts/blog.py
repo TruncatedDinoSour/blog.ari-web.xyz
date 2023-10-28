@@ -215,7 +215,6 @@ POST_TEMPLATE: typing.Final[str] = (
 </head>
 
 <body>
-<main id="post-content">
  <header role="group">
   <h1 role="heading" aria-level="1">{post_title}</h1>
 
@@ -253,9 +252,10 @@ POST_TEMPLATE: typing.Final[str] = (
     <hr aria-hidden="true" role="seperator" />
   </nav>
  </header>
+<main>
  <article id="main">{post_content}</article>
- <footer><p>{author} &lt;<a href="mailto:{email}">{email}</a>&gt; + {license}</p></footer>
 </main>
+ <footer><p>{author} &lt;<a href="mailto:{email}">{email}</a>&gt; + {license}</p></footer>
 </body>
 </html>"""
 )
@@ -269,7 +269,6 @@ INDEX_TEMPLATE: typing.Final[str] = (
 </head>
 
 <body>
-<main id="post-content">
  <header role="group">
   <h1 role="heading" aria-level="1">{blog_header}</h1>
 
@@ -301,9 +300,10 @@ INDEX_TEMPLATE: typing.Final[str] = (
     <hr aria-hidden="true" role="seperator" />
   </nav>
  </header>
- <article id="main"><ol reversed>{blog_list}</ol></article>
- <footer><p>{author} &lt;<a href="mailto:{email}">{email}</a>&gt; + {license}</p></footer>
+<main>
+ <article id="main"><ol reversed id=blist>{blog_list}</ol></article>
 </main>
+ <footer><p>{author} &lt;<a href="mailto:{email}">{email}</a>&gt; + {license}</p></footer>
 </body>
 </html>"""
 )

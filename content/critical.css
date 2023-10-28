@@ -1,9 +1,5 @@
 :root {
-    --bq-b: #ede9d3;
-
-    --bqw: 2px;
-
-    --a-f: #cdc4c4; /* #9e9b9b; */
+    --af: #cdc4c4;
 }
 
 *,
@@ -14,7 +10,16 @@
     word-wrap: break-word;
 }
 
+h1 {
+    text-align: center;
+}
+
 html {
+    background-image: -o-radial-gradient(
+        circle,
+        rgba(249, 240, 194, 0.15) 1px,
+        transparent 1px
+    );
     background-image: radial-gradient(
         circle,
         rgba(249, 240, 194, 0.15) 1px,
@@ -25,71 +30,68 @@ html {
 }
 
 body {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+    -ms-flex-direction: column;
+    flex-direction: column;
+
+    padding: 2em;
+
     margin: auto;
-    padding: 2rem;
     max-width: 1100px;
     min-height: 100vh;
     text-rendering: optimizeSpeed;
 }
 
-h1 {
-    text-align: center;
-    margin: 1em;
-    font-size: 2em;
-}
-
-li {
-    margin: 0.5em;
-}
-
-#info-bar {
-    text-align: center;
-}
-
-#post-content {
-    padding: 0.3em;
+main {
+    -webkit-box-flex: 1;
+    -ms-flex: 1;
+    flex: 1;
     line-height: 1.4;
 }
 
-a {
-    text-decoration: none;
-    font-style: italic;
-    color: var(--a-f);
-}
-
-*[h] > a {
-    opacity: 0.3;
-    -webkit-transition: opacity 0.1s ease-in-out;
-    -o-transition: opacity 0.1s ease-in-out;
-    transition: opacity 0.1s ease-in-out;
-}
-
-nav img {
-    height: 1rem;
-}
-
-code:not(pre code),
-time {
-    border-radius: 2px;
-    padding: 0.2em;
+footer {
+    text-align: center;
+    -webkit-filter: brightness(75%);
+    filter: brightness(75%);
 }
 
 br {
     margin-bottom: 0.2em;
 }
 
-main {
-    height: 96.5vh;
-    display: flex;
-    flex-direction: column;
+hr {
+    margin-top: 1em;
 }
 
-footer {
+nav {
     text-align: center;
-    filter: brightness(75%);
+}
 
-    display: flex;
-    flex-direction: column;
-    flex-grow: 2;
-    justify-content: flex-end;
+#blist {
+    margin-left: 1em;
+}
+
+li {
+    margin-bottom: 0.3em;
+}
+
+a {
+    text-decoration: none;
+    font-style: italic;
+    color: var(--af);
+}
+
+nav img {
+    height: 1em;
+}
+
+code:not(pre code),
+time,
+pre {
+    border-radius: 2px;
+    padding: 0.2em;
 }

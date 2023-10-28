@@ -1,3 +1,21 @@
+:root {
+    --qw: 2px;
+    --qb: #ede9d3;
+    --qf: #e6e0c8;
+}
+
+pre {
+    padding: 1em;
+    overflow-y: auto;
+}
+
+*[h] > a {
+    opacity: 0.3;
+    -webkit-transition: opacity 0.1s ease-in-out;
+    -o-transition: opacity 0.1s ease-in-out;
+    transition: opacity 0.1s ease-in-out;
+}
+
 blockquote {
     margin: 10px 0;
     overflow: hidden;
@@ -6,24 +24,16 @@ blockquote {
     position: relative;
 }
 
+blockquote,
+blockquote * {
+    color: var(--qf);
+}
+
 blockquote:before {
     content: "";
-    border-left: var(--bqw) solid var(--bq-b); /* Thx cel */
+    border-left: var(--qw) solid var(--qb);
     position: absolute;
     bottom: 14px;
     top: 13px;
     left: 0;
-}
-
-pre {
-    padding: 1em;
-    border-radius: 4px;
-}
-
-pre,
-pre code {
-    overflow-x: auto !important;
-
-    scrollbar-width: initial;
-    -ms-overflow-style: initial;
 }
