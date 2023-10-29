@@ -179,7 +179,6 @@ html{{background-color:var(--b);color:var(--f)}}{critical_css}
 <link
   href="/{styles}"
   rel="preload"
-  hreflang="en"
   referrerpolicy="no-referrer"
   type="text/css"
   as="style"
@@ -189,14 +188,12 @@ html{{background-color:var(--b);color:var(--f)}}{critical_css}
 <link
   href="/{styles}"
   rel="stylesheet"
-  hreflang="en"
   referrerpolicy="no-referrer"
   type="text/css"
 />
 </noscript>
 <link
   href="/{rss}"
-  hreflang="en"
   referrerpolicy="no-referrer"
   title="{blog_title}"
   rel="alternate"
