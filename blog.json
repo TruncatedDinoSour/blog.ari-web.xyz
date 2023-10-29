@@ -127,23 +127,6 @@
   "top-words": 64,
   "top-tags": 64,
   "posts": {
-    "notice-serverariwebxyz-temporary-shutdown": {
-      "title": "notice : server.ari-web.xyz temporary shutdown",
-      "description": "i am switching server.ari-web.xyz to hosthatch host so expect shutdowns anywhere from 2023/10/29 til 2023/11/29",
-      "content": "hello\n\ncurrently <https://server.ari-web.xyz/> is hosted on linode and i pay 6.05 dollars a month for it,\nwith tax ofc, monthly, which for the resources it provides -- 1 gb ram, 25 gigs of storage, 1 core and 1 tb\nof bandwidth is not a good deal\n\nthis is why a person brought my attention to <https://hosthatch.com/>, which from the next month i will\nb switching to\n\nin the <https://hosthatch.com/products> page i will end up getting the 6 dollar a month plan :\n\n- 2 cores\n- 4 gig ram\n- 20 gig storage\n- 1 tb bandwidth\n\nall for 6 dollars, which is a lot better than linode\n\n<https://server.ari-web.xyz/> will be shut down anywhere between 2023/10/29 and 2023/11/20, or even in the worst\ncase up to 2023/11/29, so dont be surprised if some parts of ari-web suddenly go down, including comments and\nvisitor count\n\ni will probably end up keeping the server up til 2023/11/01 at least and then switching to the new host --\nhosthatch on 2023/11/01, which is quite soon, but waiting those 2 weeks is worth it when we have a much brighter\nroad ahead\n\nthank u for ur patience in advance",
-      "keywords": [
-        "comments",
-        "visitor count",
-        "linode",
-        "bills",
-        "pricing",
-        "shutdown",
-        "server.ari-web.xyz",
-        "hosthatch",
-        "ari-web server"
-      ],
-      "created": 1698600446.012514
-    },
     "bluey": {
       "title": "bluey",
       "description": "me talking about the time i watched bluey with a friend, expressing my opinions on it and showing that bluey is a great show with a universally great experience",
