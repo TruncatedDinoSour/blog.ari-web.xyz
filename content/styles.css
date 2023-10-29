@@ -41,13 +41,6 @@ a:hover {
     text-decoration: underline;
 }
 
-code,
-time,
-pre {
-    color: var(--cf);
-    background-color: var(--cb);
-}
-
 *[h]:hover > a,
 *[h]:focus > a {
     opacity: 0.6;

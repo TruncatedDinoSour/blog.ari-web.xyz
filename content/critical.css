@@ -95,3 +95,10 @@ pre {
     border-radius: 2px;
     padding: 0.2em;
 }
+
+code,
+time,
+pre {
+    color: var(--cf);
+    background-color: var(--cb);
+}
