@@ -76,7 +76,7 @@ DEFAULT_CONFIG: dict[str, typing.Any] = {
             {
                 "src": "/favicon.ico",
                 "sizes": "128x128",
-                "type": "image/png",
+                "type": "image/x-icon",
             },
         ],
     },
@@ -160,6 +160,7 @@ HTML_BEGIN: typing.Final[
 <meta charset="UTF-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="/favicon.ico" sizes="128x128" type="image/x-icon" />
 <meta
     name="keywords"
     content="{keywords}"
