@@ -16,6 +16,7 @@ import sys
 import tempfile
 import typing
 import xml.etree.ElementTree as etree
+from collections import Counter
 from glob import iglob
 from html import escape as html_escape
 from threading import Thread
@@ -29,6 +30,7 @@ import mistune.plugins
 import unidecode
 import web_mini
 from readtime import of_markdown as read_time_of_markdown  # type: ignore
+from readtime.result import Result as MarkdownResult  # type: ignore
 
 __version__: typing.Final[int] = 2
 GEN: typing.Final[str] = f"ari-web blog generator version {__version__}"
@@ -137,6 +139,8 @@ DEFAULT_CONFIG: dict[str, typing.Any] = {
     "server-port": 8080,
     "post-preview-size": 196,
     "read-wpm": 150,
+    "top-words": 64,
+    "top-tags": 64,
     "posts": {},
 }
 
@@ -238,6 +242,9 @@ POST_TEMPLATE: typing.Final[str] = (
     <a role="menuitem" href="/">home</a>
     <span role="seperator" aria-hidden="true"> | </span>
 
+    <a role="menuitem" href="/stats">stats</a>
+    <span role="seperator" aria-hidden="true"> | </span>
+
     <a role="menuitem" href="{comment}">comment</a>
     <span role="seperator" aria-hidden="true"> | </span>
 
@@ -286,6 +293,9 @@ INDEX_TEMPLATE: typing.Final[str] = (
     /></span>
     <br role="seperator" aria-hidden="true" />
 
+    <a role="menuitem" href="/stats">stats</a>
+    <span role="seperator" aria-hidden="true"> | </span>
+
     <a role="menuitem" href="{comment}">comment</a>
     <span role="seperator" aria-hidden="true"> | </span>
 
@@ -302,6 +312,109 @@ INDEX_TEMPLATE: typing.Final[str] = (
  </header>
 <main>
  <article id="main"><ol reversed id=blist>{blog_list}</ol></article>
+</main>
+ <footer><p>{author} &lt;<a href="mailto:{email}">{email}</a>&gt; + {license}</p></footer>
+</body>
+</html>"""
+)
+
+STATS_TEMPLATE: typing.Final[str] = (
+    HTML_BEGIN
+    + """
+<title>{blog_title} -> stats</title>
+<meta name="description" content="stats of {blog_title}, {blog_description}" />
+<meta property="og:type" content="website" />
+</head>
+
+<body>
+ <header role="group">
+  <h1 role="heading" aria-level="1">stats of {blog_header}</h1>
+
+  <nav id="info-bar" role="menubar">
+    <a role="menuitem"
+      aria-label="skip"
+      href="#main">skip</a>
+    <span role="seperator" aria-hidden="true"> | </span>
+
+    <span role="menuitem"
+       >visitor <img src="{visitor_count}" alt="visitor count"
+    /></span>
+    <br role="seperator" aria-hidden="true" />
+
+    <a role="menuitem" href="/">home</a>
+    <span role="seperator" aria-hidden="true"> | </span>
+
+    <a role="menuitem" href="{comment}">comment</a>
+    <span role="seperator" aria-hidden="true"> | </span>
+
+    <a role="menuitem" href="{website}">website</a>
+    <span role="seperator" aria-hidden="true"> | </span>
+
+    <a role="menuitem" href="{source}">src</a>
+    <span role="seperator" aria-hidden="true"> | </span>
+
+    <a role="menuitem" href="/{rss}">rss</a>
+
+    <hr aria-hidden="true" role="seperator" />
+  </nav>
+ </header>
+<main>
+ <article id="main">
+ <ul id=blist>
+   <li>total count of blog posts : <code>{post_count}</code></li>
+   <li>edited post count : <code>{edited_post_count}</code>, <code>{edited_post_count_p:.2f}%</code></li>
+   <li>
+   total read time : <time>{read_time}</time>
+   <ul>
+   <li>average read time : <time>{avg_read_time}</time></li>
+   </ul>
+   </li>
+
+   <li>
+      content
+
+      <ul>
+        <li>characters : <code>{char_count}</code></li>
+        <ul>
+        <li>average count of characters : <code>{avg_chars:.2f}</code></li>
+        </ul>
+      </ul>
+
+      <ul>
+        <li>words : <code>{word_count}</code></li>
+        <ul>
+        <li>average count of words : <code>{avg_words:.2f}</code></li>
+        <li>average word length : <code>{avg_word_len:.2f}</code></li>
+        <li>
+          top {top_words} used words
+          <ol>{word_most_used}</ol>
+        </li>
+        </ul>
+      </ul>
+
+      <ul>
+        <li>tags : <code>{tag_count}</code></li>
+        <ul>
+        <li>average count of tags : <code>{avg_tags}</code></li>
+        <li>
+          top {top_tags} used tags
+          <ol>{tags_most_used}</ol>
+        </li>
+        </ul>
+      </ul>
+   </li>
+
+   <li>
+    time ( GMT )
+    <ul>
+      <li>average posts by year : {posts_by_yr_avg} <ol>{posts_by_yr}</ol></li>
+      <li>average posts by month : {posts_by_month_avg} <ol>{posts_by_month}</ol></li>
+      <li>average posts by day : {posts_by_day_avg} <ol>{posts_by_day}</ol></li>
+      <li>average posts by hour : {posts_by_hr_avg} <ol>{posts_by_hr}</ol></li>
+    </ul>
+   </li>
+ </ul>
+ </article>
 </main>
  <footer><p>{author} &lt;<a href="mailto:{email}">{email}</a>&gt; + {license}</p></footer>
 </body>
@@ -388,6 +501,11 @@ def slugify(
         )[:slug_limit].strip("-")
         or "post"
     )
+
+
+def rf_format_time(ts: float) -> typing.Tuple[datetime.datetime, str]:
+    d: datetime.datetime = datetime.datetime.utcfromtimestamp(ts)
+    return d, d.strftime("%Y-%m-%d %H:%M:%S")
 
 
 def rformat_time(ts: float) -> str:
@@ -483,6 +601,53 @@ def min_css_file(file: str, out: str) -> None:
     with open(file, "r") as icss:
         with open(out, "w") as ocss:
             ocss.write(web_mini.css.minify_css(icss.read()))
+
+
+def sorted_post_counter(
+    c: Counter[int],
+    pcount: int,
+    fix: str,
+) -> typing.Dict[str, typing.Any]:
+    s: int = sum(c.values())
+    avg: float = s / len(c)
+
+    return {
+        f"posts_by_{fix}": " ".join(
+            f"<li><time>{v}</time> -- <code>{p}</code> post{'' if p == 1 else 's'}, <code>{p / pcount * 100:.2f}%</code></li>"
+            for v, p in c.most_common()
+        ),
+        f"posts_by_{fix}_avg": f"<code>{round(avg, 2)}</code>, <code>{round(avg / s * 100, 2)}%</code>",
+    }
+
+
+def s_to_str(seconds: float) -> str:
+    minutes, sec = divmod(seconds, 60)
+    hours, minutes = divmod(minutes, 60)
+    days, hours = divmod(hours, 24)
+
+    periods: typing.Tuple[typing.Tuple[float, str, str], ...] = (
+        (round(days, 2), "day", "days"),
+        (round(hours, 2), "hour", "hours"),
+        (round(minutes, 2), "minute", "minutes"),
+        (round(sec, 2), "second", "seconds"),
+    )
+
+    time_periods: typing.List[str] = []
+
+    for period in periods:
+        if period[0] != 0:
+            time_periods.append(
+                "{} {}".format(period[0], period[1] if period[0] == 1 else period[2])
+            )
+
+    readable_text: str = ", ".join(time_periods[:-1])
+
+    if len(time_periods) > 1:
+        readable_text += " and " + time_periods[-1]
+    else:
+        readable_text = time_periods[0]
+
+    return f"{readable_text} ( {round(seconds, 2)} second{'' if seconds == 1 else 's'} )"
 
 
 # markdown
@@ -747,7 +912,11 @@ def build(config: dict[str, typing.Any]) -> int:
     if os.path.exists(config["posts-dir"]):
         shutil.rmtree(config["posts-dir"])
 
+    if os.path.exists("stats"):
+        shutil.rmtree("stats")
+
     os.makedirs(config["posts-dir"], exist_ok=True)
+    os.makedirs("stats", exist_ok=True)
 
     llog("building blog")
 
@@ -769,11 +938,36 @@ def build(config: dict[str, typing.Any]) -> int:
         with open(critp, "r") as fp:
             post_crit_css = web_mini.css.minify_css(fp.read())
 
+    rt: typing.List[int] = []
+    cc: typing.List[int] = []
+    ws: Counter[str] = Counter()
+    tgs: Counter[str] = Counter()
+
+    py: Counter[int] = Counter()
+    pm: Counter[int] = Counter()
+    pd: Counter[int] = Counter()
+    ph: Counter[int] = Counter()
+
     def build_post(slug: str, post: dict[str, typing.Any]) -> None:
         ct: float = ctimer()
 
         post_dir: str = f"{config['posts-dir']}/{slug}"
         os.makedirs(post_dir)
+
+        rtm: MarkdownResult = read_time_of_markdown(post["content"], config["read-wpm"])
+        cont: str = post["content"] + " " + post["title"]
+
+        rt.append(rtm.seconds)
+        cc.append(len(cont))
+        ws.update(Counter(cont.split()))
+        tgs.update(Counter(post["keywords"]))
+
+        dt, s = rf_format_time(post["created"])
+
+        py[dt.year] += 1
+        pm[dt.month] += 1
+        pd[dt.day] += 1
+        ph[dt.hour] += 1
 
         with open(f"{post_dir}/index.html", "w") as html:
             html.write(
@@ -797,12 +991,9 @@ def build(config: dict[str, typing.Any]) -> int:
                         post_title=html_escape(post["title"]),
                         author=author,
                         locale=config["locale"],
-                        post_creation_time=rformat_time(post["created"]),
+                        post_creation_time=s,
                         post_description=html_escape(post["description"]),
-                        post_read_time=read_time_of_markdown(
-                            post["content"],
-                            config["read-wpm"],
-                        ).text,
+                        post_read_time=rtm.text,
                         post_edit_time=(
                             ""
                             if "edited" not in post
@@ -838,7 +1029,7 @@ def build(config: dict[str, typing.Any]) -> int:
             web_mini.html.minify_html(
                 INDEX_TEMPLATE.format(  # type: ignore
                     lang=lang,
-                    keywords=html_escape(", ".join(config["blog-keywords"])),
+                    keywords=(bkw := html_escape(", ".join(config["blog-keywords"]))),
                     theme_type=config["theme"]["type"],
                     theme_primary=config["theme"]["primary"],
                     theme_secondary=config["theme"]["secondary"],
@@ -852,8 +1043,8 @@ def build(config: dict[str, typing.Any]) -> int:
                     author=author,
                     locale=config["locale"],
                     license=config["license"],
-                    blog_description=html_escape(config["description"]),
-                    blog_header=html_escape(config["header"]),
+                    blog_description=(bd := html_escape(config["description"])),
+                    blog_header=(bh := html_escape(config["header"])),
                     latest_post_path=f"{config['posts-dir']}/{latest_post[0]}",
                     latest_post_title_trunc=html_escape(
                         trunc(latest_post[1]["title"], config["recent-title-trunc"])
@@ -876,6 +1067,80 @@ def build(config: dict[str, typing.Any]) -> int:
 
     for t in ts:
         t.join()
+
+    char_count: int = sum(cc)
+    post_count: int = len(config["posts"])
+    epost_count: int = sum("edited" in p for p in config["posts"].values())
+
+    rts: int = sum(rt)
+
+    wcs: int = sum(ws.values())
+    wcl: int = len(ws)
+
+    tcs: int = sum(tgs.values())
+    tcl: int = len(tgs)
+
+    avg_chars: float = char_count / post_count
+    avg_words: float = wcs / post_count
+    avg_tags: float = tcs / post_count
+
+    with open("stats/index.html", "w") as stats:
+        stats.write(
+            web_mini.html.minify_html(
+                STATS_TEMPLATE.format(
+                    lang=lang,
+                    keywords=bkw + ", stats, statistics",
+                    theme_type=config["theme"]["type"],
+                    theme_primary=config["theme"]["primary"],
+                    theme_secondary=config["theme"]["secondary"],
+                    blog=config["blog"],
+                    path="",
+                    styles=styles,
+                    critical_css=crit_css,
+                    gen=GEN,
+                    locale=config["locale"],
+                    blog_title=blog_title,
+                    blog_description=bd,
+                    blog_header=bh,
+                    visitor_count=config["visitor-count"],
+                    comment=config["comment"],
+                    website=config["website"],
+                    source=config["source"],
+                    rss=config["rss-file"],
+                    post_count=post_count,
+                    edited_post_count=epost_count,
+                    edited_post_count_p=epost_count / post_count * 100,
+                    read_time=s_to_str(rts),
+                    avg_read_time=s_to_str(rts / post_count),
+                    char_count=char_count,
+                    avg_chars=avg_chars,
+                    word_count=wcs,
+                    avg_words=avg_words,
+                    avg_word_len=avg_chars / avg_words,
+                    top_words=config["top-words"],
+                    word_most_used=" ".join(
+                        f"<li><code>{html_escape(w)}</code>, <code>{u}</code> use{'' if u == 1 else 's'}, <code>{u / wcl * 100:.2f}%</code></li>"
+                        for w, u in ws.most_common(config["top-words"])
+                    ),
+                    tag_count=tcs,
+                    avg_tags=avg_tags,
+                    top_tags=config["top-tags"],
+                    tags_most_used=" ".join(
+                        f"<li><code>{html_escape(w)}</code>, <code>{u}</code> use{'' if u == 1 else 's'}, <code>{u / tcl * 100:.2f}%</code></li>"
+                        for w, u in tgs.most_common(config["top-tags"])
+                    ),
+                    **sorted_post_counter(py, post_count, "yr"),
+                    **sorted_post_counter(pm, post_count, "month"),
+                    **sorted_post_counter(pd, post_count, "day"),
+                    **sorted_post_counter(ph, post_count, "hr"),
+                    author=config["author"],
+                    email=config["email"],
+                    license=config["license"],
+                )
+            )
+        )
+
+        lnew(f"generated {stats.name!r}")
 
     return 0
 
@@ -979,6 +1244,7 @@ def sitemap(config: dict[str, typing.Any]) -> int:
         ("", config["website"]),
         ("", config["blog"]),
         ("", f"{config['blog']}/{config['rss-file']}"),
+        ("", f'{config["blog"]}/stats'),
     ) + tuple(config["posts"].items()):
         llog(f"adding {slug or post!r} to sitemap")
 
@@ -1111,6 +1377,7 @@ def clean(config: dict[str, typing.Any]) -> int:
         config["rss-file"],
         "robots.txt",
         "sitemap.xml",
+        "stats",
     ):
         if os.path.exists(pattern):
             remove(pattern)

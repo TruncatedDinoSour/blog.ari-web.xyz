@@ -46,7 +46,7 @@
   "website": "https://ari-web.xyz",
   "blog": "https://blog.ari-web.xyz",
   "source": "/git",
-  "visitor-count": "https://server.ari-web.xyz/visit",
+  "visitor-count": "/visit",
   "comment": "/c",
   "theme": {
     "primary": "#262220",
@@ -124,6 +124,8 @@
   "server-port": 8080,
   "post-preview-size": 196,
   "read-wpm": 150,
+  "top-words": 64,
+  "top-tags": 64,
   "posts": {
     "bluey": {
       "title": "bluey",
