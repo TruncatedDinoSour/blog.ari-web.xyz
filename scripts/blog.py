@@ -400,6 +400,7 @@ STATS_TEMPLATE: typing.Final[str] = (
           top {top_tags} used tags
           <ol>{tags_most_used}</ol>
         </li>
+        <li>default tags <ol>{default_tags}</ol></li>
         </ul>
       </ul>
    </li>
@@ -647,7 +648,9 @@ def s_to_str(seconds: float) -> str:
     else:
         readable_text = time_periods[0]
 
-    return f"{readable_text} ( {round(seconds, 2)} second{'' if seconds == 1 else 's'} )"
+    return (
+        f"{readable_text} ( {round(seconds, 2)} second{'' if seconds == 1 else 's'} )"
+    )
 
 
 # markdown
@@ -1128,6 +1131,10 @@ def build(config: dict[str, typing.Any]) -> int:
                     tags_most_used=" ".join(
                         f"<li><code>{html_escape(w)}</code>, <code>{u}</code> use{'' if u == 1 else 's'}, <code>{u / tcl * 100:.2f}%</code></li>"
                         for w, u in tgs.most_common(config["top-tags"])
+                    ),
+                    default_tags=" ".join(
+                        f"<li><code>{html_escape(t)}</code></li>"
+                        for t in config["default-keywords"]
                     ),
                     **sorted_post_counter(py, post_count, "yr"),
                     **sorted_post_counter(pm, post_count, "month"),
