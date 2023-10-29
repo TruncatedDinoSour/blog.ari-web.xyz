@@ -1097,7 +1097,7 @@ def build(config: dict[str, typing.Any]) -> int:
                     theme_primary=config["theme"]["primary"],
                     theme_secondary=config["theme"]["secondary"],
                     blog=config["blog"],
-                    path="/stats",
+                    path="stats",
                     styles=styles,
                     critical_css=crit_css,
                     gen=GEN,
