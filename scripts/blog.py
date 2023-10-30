@@ -540,12 +540,15 @@ def select_posts(posts: dict[str, dict[str, typing.Any]]) -> tuple[str, ...]:
 
 
 if NCI:
-    import readline
+    try:
+        import readline
+    except Exception:
+        readline: typing.Any = None
 
     def iinput(prompt: str, default_text: str = "", force: bool = True) -> str:
         default_text = default_text.strip()
 
-        if default_text:
+        if readline is not None and default_text:
 
             def hook() -> None:
                 readline.insert_text(default_text)
@@ -556,7 +559,8 @@ if NCI:
         while not (user_input := input(f"\033[1m{prompt}\033[0m ").strip()) and force:
             pass
 
-        readline.set_pre_input_hook()
+        if readline is not None:
+            readline.set_pre_input_hook()
 
         return user_input
 
