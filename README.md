@@ -26,6 +26,8 @@ Or
 $ python3 -m pip install --user -r requirements.txt
 ```
 
+do the same with `requirements-extra.txt` if ur using stuff like `new`
+
 ## creating a new blog
 
 ```bash
