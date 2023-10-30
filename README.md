@@ -1,4 +1,4 @@
-# [ari-web blogs](https://blog.ari-web.xyz/)
+# [ari-web blog](https://blog.ari-web.xyz/)
 
 <p align="center">
   <img src="https://img.shields.io/badge/Maintained-Yes-green?color=red&style=flat-square">
