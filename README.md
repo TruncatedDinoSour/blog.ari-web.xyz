@@ -26,12 +26,10 @@ Or
 $ python3 -m pip install --user -r requirements.txt
 ```
 
-## completions
-
--   bash
+## creating a new blog
 
 ```bash
-$ . completions/blog.bash
+$ ./scripts/blog.py blog
 ```
 
 ## building
@@ -42,18 +40,20 @@ $ . completions/blog.bash
 $ CI=1 ./scripts/blog static
 ```
 
--   only build blogs
+-   only build posts
 
 ```bash
-$ CI=1 ./scripts/blog static
+$ CI=1 ./scripts/blog build
 ```
 
 `CI` environment variable is optional,
 though setting it in a build/CI environment is good
 to save time on some operations that are useless
-in that context, for example sorting blogs.
+in that context, for example sorting blogs
 
-`CI` can have any value.
+`CI` can have any value
+
+`NOCLR` also disables colours
 
 ## the API
 

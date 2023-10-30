@@ -1469,6 +1469,17 @@ def dev(config: dict[str, typing.Any]) -> int:
     return serve(config)
 
 
+@cmds.new
+def blog(config: dict[str, typing.Any]) -> int:
+    """generate a new blog"""
+
+    log("changing config")
+    config.update(DEFAULT_CONFIG)
+    lnew("blog set to default values")
+
+    return OK
+
+
 def main() -> int:
     """entry / main function"""
 
