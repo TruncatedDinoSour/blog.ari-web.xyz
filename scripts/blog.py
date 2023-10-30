@@ -582,7 +582,11 @@ def get_tmpfile(name: str) -> str:
 
 def open_file(editor: typing.Sequence[str], path: str) -> None:
     log(f"formatting and running {editor!r} with {path!r}")
-    subprocess.run([(token.replace("%s", path)) for token in editor])
+
+    try:
+        subprocess.run([(token.replace("%s", path)) for token in editor])
+    except Exception as e:
+        sys.exit(err(f"failed to run editor : {e}"))
 
 
 def trunc(data: str, length: int, end: str = " ...") -> str:
@@ -907,6 +911,9 @@ def rm(config: dict[str, typing.Any]) -> int:
 @cmds.new
 def build(config: dict[str, typing.Any]) -> int:
     """build blog posts"""
+
+    if not config["posts"]:
+        return err("no posts to be built")
 
     log("compiling regex")
 
