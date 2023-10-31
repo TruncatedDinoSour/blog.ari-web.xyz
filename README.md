@@ -62,6 +62,10 @@ in that context, for example sorting blogs
 -   <https://blog.ari-web.xyz/b/ari-web-blog-api-change/>
 -   <https://blog.ari-web.xyz/b/ari-web-apis--how-to-use-them/>
 
+## features u might wanna add
+
+-   syntax highlighting : <https://github.com/lepture/mistune/issues/54> -- edit `BlogRender`
+
 ## why ari-web blog manager
 
 -   writer friendly -- uses markdown, keeps tracks of dates useful custom markdown extensions, support for editing, removal of posts,, and u can style ur blog the way you want it to b using css, easy build directory cleanup, support for custom fonts, locales, licenses, etc

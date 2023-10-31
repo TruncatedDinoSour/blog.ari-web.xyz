@@ -217,50 +217,44 @@ POST_TEMPLATE: typing.Final[str] = (
 </head>
 
 <body>
- <header role="group">
-  <h1 role="heading" aria-level="1">{post_title}</h1>
+<header role="group">
+ <h1 role="heading" aria-level="1">{post_title}</h1>
 
-  <nav id="info-bar" role="menubar">
-    <a role="menuitem"
-      aria-label="skip"
-      href="#main">skip</a>
-    <span role="seperator" aria-hidden="true"> | </span>
+ <nav id="info-bar" role="menubar">
+   <a role="menuitem" aria-label="skip" href="#main">skip</a>
+   <span role="seperator" aria-hidden="true"> | </span>
 
-    <span role="menuitem"><time>{post_creation_time}</time> GMT{post_edit_time}</span>
-    <span role="seperator" aria-hidden="true"> | </span>
+   <span role="menuitem"><time>{post_creation_time}</time> GMT{post_edit_time}</span>
+   <span role="seperator" aria-hidden="true"> | </span>
 
-    <span role="menuitem"
-       >visitor <img src="{visitor_count}" alt="visitor count"
-    /></span>
-    <span role="seperator" aria-hidden="true"> | </span>
+   <span role="menuitem" >visitor <img src="{visitor_count}" alt="visitor count" /></span>
+   <span role="seperator" aria-hidden="true"> | </span>
 
-    <span role="menuitem"><time>{post_read_time}</time> read</span>
-    <br role="seperator" aria-hidden="true" />
+   <span role="menuitem"><time>{post_read_time}</time> read</span>
+   <br role="seperator" aria-hidden="true" />
 
-    <a role="menuitem" href="/">home</a>
-    <span role="seperator" aria-hidden="true"> | </span>
+   <a role="menuitem" href="/">home</a>
+   <span role="seperator" aria-hidden="true"> | </span>
 
-    <a role="menuitem" href="/stats">stats</a>
-    <span role="seperator" aria-hidden="true"> | </span>
+   <a role="menuitem" href="/stats">stats</a>
+   <span role="seperator" aria-hidden="true"> | </span>
 
-    <a role="menuitem" href="{comment}">comment</a>
-    <span role="seperator" aria-hidden="true"> | </span>
+   <a role="menuitem" href="{comment}">comment</a>
+   <span role="seperator" aria-hidden="true"> | </span>
 
-    <a role="menuitem" href="{website}">website</a>
-    <span role="seperator" aria-hidden="true"> | </span>
+   <a role="menuitem" href="{website}">website</a>
+   <span role="seperator" aria-hidden="true"> | </span>
 
-    <a role="menuitem" href="{source}">src</a>
-    <span role="seperator" aria-hidden="true"> | </span>
+   <a role="menuitem" href="{source}">src</a>
+   <span role="seperator" aria-hidden="true"> | </span>
 
-    <a role="menuitem" href="/{rss}">rss</a>
+   <a role="menuitem" href="/{rss}">rss</a>
 
-    <hr aria-hidden="true" role="seperator" />
-  </nav>
- </header>
-<main>
- <article id="main">{post_content}</article>
-</main>
- <footer><p>{author} &lt;<a href="mailto:{email}">{email}</a>&gt; + {license}</p></footer>
+   <hr aria-hidden="true" role="seperator" />
+ </nav>
+</header>
+<main> <article id="main">{post_content}</article> </main>
+<footer><p>{author} &lt;<a href="mailto:{email}">{email}</a>&gt; + {license}</p></footer>
 </body>
 </html>"""
 )
@@ -274,44 +268,40 @@ INDEX_TEMPLATE: typing.Final[str] = (
 </head>
 
 <body>
- <header role="group">
-  <h1 role="heading" aria-level="1">{blog_header}</h1>
+<header role="group">
+ <h1 role="heading" aria-level="1">{blog_header}</h1>
 
-  <nav id="info-bar" role="menubar">
-    <a role="menuitem"
-      aria-label="skip"
-      href="#main">skip</a>
-    <span role="seperator" aria-hidden="true"> | </span>
+ <nav id="info-bar" role="menubar">
+   <a role="menuitem"
+     aria-label="skip"
+     href="#main">skip</a>
+   <span role="seperator" aria-hidden="true"> | </span>
 
-    <span role="menuitem">latest post : <a href="/{latest_post_path}">{latest_post_title_trunc}</a> at <time>{latest_post_creation_time}</time> GMT</span>
-    <span role="seperator" aria-hidden="true"> | </span>
+   <span role="menuitem">latest post : <a href="/{latest_post_path}">{latest_post_title_trunc}</a> at <time>{latest_post_creation_time}</time> GMT</span>
+   <span role="seperator" aria-hidden="true"> | </span>
 
-    <span role="menuitem"
-       >visitor <img src="{visitor_count}" alt="visitor count"
-    /></span>
-    <br role="seperator" aria-hidden="true" />
+   <span role="menuitem">visitor <img src="{visitor_count}" alt="visitor count" /></span>
+   <br role="seperator" aria-hidden="true" />
 
-    <a role="menuitem" href="/stats">stats</a>
-    <span role="seperator" aria-hidden="true"> | </span>
+   <a role="menuitem" href="/stats">stats</a>
+   <span role="seperator" aria-hidden="true"> | </span>
 
-    <a role="menuitem" href="{comment}">comment</a>
-    <span role="seperator" aria-hidden="true"> | </span>
+   <a role="menuitem" href="{comment}">comment</a>
+   <span role="seperator" aria-hidden="true"> | </span>
 
-    <a role="menuitem" href="{website}">website</a>
-    <span role="seperator" aria-hidden="true"> | </span>
+   <a role="menuitem" href="{website}">website</a>
+   <span role="seperator" aria-hidden="true"> | </span>
 
-    <a role="menuitem" href="{source}">src</a>
-    <span role="seperator" aria-hidden="true"> | </span>
+   <a role="menuitem" href="{source}">src</a>
+   <span role="seperator" aria-hidden="true"> | </span>
 
-    <a role="menuitem" href="/{rss}">rss</a>
+   <a role="menuitem" href="/{rss}">rss</a>
 
-    <hr aria-hidden="true" role="seperator" />
-  </nav>
- </header>
-<main>
- <article id="main"><ol reversed id=blist>{blog_list}</ol></article>
-</main>
- <footer><p>{author} &lt;<a href="mailto:{email}">{email}</a>&gt; + {license}</p></footer>
+   <hr aria-hidden="true" role="seperator" />
+ </nav>
+</header>
+<main> <article id="main"><ol reversed id=blist>{blog_list}</ol></article> </main>
+<footer><p>{author} &lt;<a href="mailto:{email}">{email}</a>&gt; + {license}</p></footer>
 </body>
 </html>"""
 )
@@ -325,37 +315,37 @@ STATS_TEMPLATE: typing.Final[str] = (
 </head>
 
 <body>
- <header role="group">
-  <h1 role="heading" aria-level="1">stats of {blog_header}</h1>
+<header role="group">
+ <h1 role="heading" aria-level="1">stats of {blog_header}</h1>
 
-  <nav id="info-bar" role="menubar">
-    <a role="menuitem"
-      aria-label="skip"
-      href="#main">skip</a>
-    <span role="seperator" aria-hidden="true"> | </span>
+ <nav id="info-bar" role="menubar">
+   <a role="menuitem"
+     aria-label="skip"
+     href="#main">skip</a>
+   <span role="seperator" aria-hidden="true"> | </span>
 
-    <span role="menuitem"
-       >visitor <img src="{visitor_count}" alt="visitor count"
-    /></span>
-    <br role="seperator" aria-hidden="true" />
+   <span role="menuitem"
+      >visitor <img src="{visitor_count}" alt="visitor count"
+   /></span>
+   <br role="seperator" aria-hidden="true" />
 
-    <a role="menuitem" href="/">home</a>
-    <span role="seperator" aria-hidden="true"> | </span>
+   <a role="menuitem" href="/">home</a>
+   <span role="seperator" aria-hidden="true"> | </span>
 
-    <a role="menuitem" href="{comment}">comment</a>
-    <span role="seperator" aria-hidden="true"> | </span>
+   <a role="menuitem" href="{comment}">comment</a>
+   <span role="seperator" aria-hidden="true"> | </span>
 
-    <a role="menuitem" href="{website}">website</a>
-    <span role="seperator" aria-hidden="true"> | </span>
+   <a role="menuitem" href="{website}">website</a>
+   <span role="seperator" aria-hidden="true"> | </span>
 
-    <a role="menuitem" href="{source}">src</a>
-    <span role="seperator" aria-hidden="true"> | </span>
+   <a role="menuitem" href="{source}">src</a>
+   <span role="seperator" aria-hidden="true"> | </span>
 
-    <a role="menuitem" href="/{rss}">rss</a>
+   <a role="menuitem" href="/{rss}">rss</a>
 
-    <hr aria-hidden="true" role="seperator" />
-  </nav>
- </header>
+   <hr aria-hidden="true" role="seperator" />
+ </nav>
+</header>
 <main>
  <article id="main">
  <ul id=blist>
@@ -414,9 +404,7 @@ STATS_TEMPLATE: typing.Final[str] = (
    </li>
  </ul>
  </article>
-</main>
- <footer><p>{author} &lt;<a href="mailto:{email}">{email}</a>&gt; + {license}</p></footer>
-</body>
+</main> <footer><p>{author} &lt;<a href="mailto:{email}">{email}</a>&gt; + {license}</p></footer> </body>
 </html>"""
 )
 
