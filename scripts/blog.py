@@ -836,7 +836,7 @@ def new(config: dict[str, typing.Any]) -> int:
 def ls(config: dict[str, typing.Any]) -> int:
     """list all posts"""
 
-    for slug, post in config["posts"].items():
+    for slug, post in reversed(config["posts"].items()):
         llog(
             f"""post({slug})
 
