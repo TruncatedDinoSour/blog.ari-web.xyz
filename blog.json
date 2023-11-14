@@ -127,6 +127,17 @@
   "top-words": 64,
   "top-tags": 64,
   "posts": {
+    "ariweb-server-update-2": {
+      "title": "ari-web server ( update #2 )",
+      "description": "ari-web server update ( its up ! )",
+      "content": "its up !\n\ni have bought `62.171.174.136`, and honestly so far -- so much better than linode\n\nwill finish <https://ari-web.xyz/gh/a.ari-web.xyz> and itll b up, probs in the next 6 days\n\nthx",
+      "keywords": [
+        "server",
+        "contabo",
+        "linode"
+      ],
+      "created": 1699963618.734886
+    },
     "comparing-hosting-providers-serverariwebxyz": {
       "title": "comparing hosting providers for server.ari-web.xyz",
       "description": "comparing a few hosting providers for server.ari-web.xyz -- i decided to use contabo",
