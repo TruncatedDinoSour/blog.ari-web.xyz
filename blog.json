@@ -127,6 +127,17 @@
   "top-words": 64,
   "top-tags": 64,
   "posts": {
+    "support-ariweb": {
+      "title": "support ari-web",
+      "description": "support ari-webs creator ari archer through multiple means -- paypal and bitcoin",
+      "content": "hello, if u want to support me and the costs of ari-web ur free to support me in the following means\n\n- <https://ari-web.xyz/btc> -- bitcoin\n- <https://ari-web.xyz/paypal> -- paypal\n\ni just set up paypal donations so if u wanna ur free to, although no obligation, the\n<https://ari-web.xyz/gh/a.ari-web.xyz> thing costs me the most and on current money i cant\nafford good hardware, but maybe w support of the community i could get better resources for\nthe server and provide ppl w one of my goals -- free hosting, which i cant rlly do reliably\ncurrently\n\ncya :3",
+      "keywords": [
+        "bitcoin",
+        "paypal",
+        "support"
+      ],
+      "created": 1700404469.446359
+    },
     "ariweb-server-update-2": {
       "title": "ari-web server ( update #2 )",
       "description": "ari-web server update ( its up ! )",
