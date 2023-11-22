@@ -114,7 +114,8 @@
     "for",
     "with",
     "without",
-    "using"
+    "using",
+    "im"
   ],
   "wslug-limit": 10,
   "slug-limit": 96,

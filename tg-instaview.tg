@@ -1,0 +1,18 @@
+~version: "2.1"
+?path: .*
+
+# metadata
+
+title: //title
+description: //meta[@name='description']/@content
+author: //meta[@name='author']/@content
+published_date: //time
+
+# content
+
+body: //main
+site_name: //title
+description: //meta[@name="description"]/@content
+
+@simplify
+@remove
