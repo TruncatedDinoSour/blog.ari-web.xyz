@@ -128,6 +128,23 @@
   "top-words": 64,
   "top-tags": 64,
   "posts": {
+    "arilt-new-ariweb-domain": {
+      "title": "ari.lt -- new ari-web domain",
+      "description": "switching domains from ari-web.xyz to ari.lt including some other changes",
+      "content": "hello\n\ni am here to announce the new <https://ari-web.xyz/> domain name -- <https://ari.lt/>\n\n`ari-web.xyz` will stay up til january 11 th iirc of 2025 and `ari.lt` so far is paid for til\n2024/11/25 by my best friend casey, xD\n\n## why\n\na long while ago i looked into `ari.lt` but i can't recall why i didn't take it, i assume it was either\nasking me for id verification or i already had `ari-web.xyz` at the time, idk, but i didn't think\nmuch of it xD\n\nwell, not too long ago a person ( can't recall who ) pointed out that `ari.lt` is still available,\nand i wanted it, but due to some stuff in family i couldn't get it, like i have the funds for it and\nall just that there's one wall standing against me lol\n\nwell, today i said fuck it, ill pay double and throw more money into the wall hoping it breaks\ndown, i would've paid double for the domain, and my best friend found out and she bought it\nfor me, that was honestly a night and a half lol, im shook til now,, i'm not used to this type\nof thing xD\n\nbut welp, in the year i have i will find a way to pay for it in the following years, but i think\ni might be able to as i'm going into freelancing soon[tm] ( i can't right now as i'm pretty sick )\nand im turning 18 soon enough ( in a couple of years ) and in the mean time i might be able to\nconvince the wall to open up my card or let me use theirs xD\n\nso in the next couple of months, probably like a good 3-4 months, i will be migrating from `ari-web.xyz`\nto `ari.lt` -- it looks better, is shorter, i am indeed ari and i am, in fact, lithuania ( !11!!11 )\n\n`ari-web.xyz` should begin redirecting people to `ari.lt` soon enough ( give it a couple of days )\nand at the same time `ari.lt` will go up\n\n## following changes to ari-web\n\n- github username change, possibly a github org under `TruncatedDinoSour` coming\n- more resources as time goes\n    - ref to <https://ari-web.xyz/gh/a.ari-web.xyz>\n- less content at least for now as i'm pretty busy and overwhelmed with life\n- `ari-web.xyz` might get taken by someone at 2025/01/11 ( iirc that's the expiry ) and `ari.lt` will become the only domain\n    - i'm most likely not paying for `ari-web.xyz` anymore to renew it\n- i am definitely giving casey her own page for the funny, because without her i wouldn't've bought `ari.lt`\n\nat the current stage there will be a lot of transitional periods in my life and on ari-web\nand it'll be apparent by possibly instability, missing features and unavailable resources\n\nsorry for any downtime, dns and https weirdness, resources missing and stuff like that xD\n\nari\n\n2023/11/24",
+      "keywords": [
+        "changes",
+        "github",
+        "ari.lt",
+        "git",
+        "resources",
+        "domain",
+        "domain change",
+        "ari-web.xyz",
+        "transitional period"
+      ],
+      "created": 1700792517.31168
+    },
     "support-ariweb": {
       "title": "support ari-web",
       "description": "support ari-webs creator ari archer through multiple means -- paypal and bitcoin",
