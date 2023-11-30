@@ -1,3 +1,5 @@
+# deprecated -- use <https://blog.ari.lt/git> instead
+
 # [ari-web blog](https://blog.ari-web.xyz/)
 
 <p align="center">

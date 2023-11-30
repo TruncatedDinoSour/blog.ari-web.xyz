@@ -1,0 +1,95 @@
+[build]
+    command = "CI=1 NOCLR=1 python3 ./scripts/blog.py static"
+
+[[redirects]]
+    from = "/git/*"
+    to = "https://ari-web.xyz/gh/blog.ari-web.xyz/:splat"
+    status = 301
+    force = true
+
+[[redirects]]
+    from = "/favicon.ico"
+    to = "https://ari-web.xyz/favicon.ico"
+    status = 200
+    force = true
+
+[[redirects]]
+    from = "/blogs/:blog"
+    to = "https://legacy.blog.ari-web.xyz/blogs/:blog"
+    status = 301
+    force = true
+
+[[redirects]]
+    from = "/c"
+    to = "https://user.ari-web.xyz/"
+    status = 301
+    force = true
+
+[[redirects]]
+    from = "/netlify.toml"
+    to = "https://ari-web.xyz/404.blog.xyz"
+    status = 404
+    force = true
+
+[[redirects]]
+    from = "/visit"
+    to = "https://server.ari-web.xyz/visit"
+    status = 301
+    force = true
+
+[[redirects]]
+    from = "/*"
+    to = "https://ari-web.xyz/404.blog.xyz"
+    status = 404
+    force = false
+
+# This has been replaced, currently I'm looking how
+# JavaScript blocking is affecting my statistics
+# as it seems like most people are much more interested
+# in the legacy blog, not sure why, but it might have
+# something to do with the content blocking features
+# that is JavaScript blocking, even though both
+# the legacy blog and the non-legacy blogs have JavaScript
+# blocking
+
+# Content-Security-Policy = "upgrade-insecure-requests; sandbox; script-src 'sha512-v'; object-src 'none';"
+
+[[headers]]
+    for = "/blog.json"
+
+    [headers.values]
+        Access-Control-Allow-Origin = "*"
+        Access-Control-Allow-Methods = "GET"
+
+[[headers]]
+    for = "/blog_json_hash.txt"
+
+    [headers.values]
+        Access-Control-Allow-Origin = "*"
+        Access-Control-Allow-Methods = "GET"
+
+[[headers]]
+    for = "/recents_json_hash.txt"
+
+    [headers.values]
+        Access-Control-Allow-Origin = "*"
+        Access-Control-Allow-Methods = "GET"
+
+[[headers]]
+    for = "/recents.json"
+
+    [headers.values]
+        Access-Control-Allow-Origin = "*"
+        Access-Control-Allow-Methods = "GET"
+
+[[headers]]
+    for = "/*"
+
+    [headers.values]
+        Strict-Transport-Security = "max-age=63072000; includeSubDomains; preload"
+        X-Frame-Options = "deny"
+        X-Content-Type-Options = "nosniff"
+        Content-Security-Policy = "upgrade-insecure-requests"
+        X-Permitted-Cross-Domain-Policies = "none"
+        Referrer-Policy = "no-referrer"
+
